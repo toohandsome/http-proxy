@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>路由管理</title>
+    <script src="vue.js"></script>
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="index.css"/>
+</head>
+<body>
+
+<div id="app">
+
+    <el-table
+            :data="tableData"
+            border stripe
+            style="width: 100%">
+
+        <el-table-column
+                prop="name"
+                label="名称(唯一)"
+                width="200">
+        </el-table-column>
+        <el-table-column
+                prop="prefix"
+                label="匹配前缀"
+        >
+        </el-table-column>
+        <el-table-column
+                prop="remote"
+                label="远程地址"
+        >
+        </el-table-column>
+        <el-table-column
+                prop="preview"
+                label="预览"
+        >
+        </el-table-column>
+        </el-table-column>
+        <el-table-column
+                prop="remark"
+                label="备注"
+        >
+        </el-table-column>
+        <el-table-column
+                fixed="right"
+                label="操作"
+                width="100">
+            <template slot-scope="scope">
+                <el-button @click="openDialog('edit',scope.row)" type="text" size="small">
+                    修改
+                </el-button>
+                <el-button @click="handleDel(scope.row)" type="text" size="small">
+                    删除
+                </el-button>
+
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <el-button type="text" @click="openDialog('add','')">新增</el-button>
+
+    <el-dialog title="新增" :visible.sync="dialogFormVisible">
+        <el-form :model="form">
+            <el-form-item label="名称" :label-width="formLabelWidth">
+                <el-input v-model="form.name"></el-input>
+            </el-form-item>
+            <el-form-item label="匹配前缀" :label-width="formLabelWidth">
+                <el-input v-model="form.prefix"></el-input>
+            </el-form-item>
+            <el-form-item label="远程地址" :label-width="formLabelWidth">
+                <el-input v-model="form.remote"></el-input>
+            </el-form-item>
+            <el-form-item label="模式" :label-width="formLabelWidth">
+                <el-select v-model="form.mode" placeholder="请选择模式" @change="changeMode($event)">
+
+                    <el-option
+                            key="transparent"
+                            label="透传"
+                            value="transparent">
+                    </el-option>
+                    <el-option
+                            key="enhance"
+                            label="增强"
+                            value="enhance">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="备注" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="form.remark"></el-input>
+            </el-form-item>
+
+            <el-form-item label="备注" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="form.remark"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="closeDialog()">取 消</el-button>
+            <el-button type="primary" @click="handleSave() ">确 定</el-button>
+        </div>
+    </el-dialog>
+
+</div>
+
+<script>
+
+
+    const App = {
+        data() {
+            return {
+                tableData: [],
+                dialogFormVisible: false,
+                formLabelWidth: '120px',
+                editMode: "save",
+                showEnhanceOption:false,
+                form: {
+                    name: '',
+                    prefix: '',
+                    remote: '',
+                    remark: '',
+                    mode:'transparent'
+
+                },
+            }
+        },
+        methods: {
+            changeMode(value){
+console.log(value);
+if (value=="enhance"){
+   this.showEnhanceOption = true;
+}
+            },
+            closeDialog() {
+                this.dialogFormVisible = false;
+                this.form.name = "";
+                this.form.prefix = "";
+                this.form.remote = "";
+                this.form.remark = "";
+            },
+            openDialog(mode, row) {
+                this.dialogFormVisible = true;
+
+                if (mode == "add") {
+                    this.editMode = 'add'
+                    this.form.name = "";
+                    this.form.prefix = "";
+                    this.form.remote = "";
+                    this.form.remark = "";
+                } else {
+                    this.editMode = 'edit'
+                    this.form.name = row.name;
+                    this.form.prefix = row.prefix;
+                    this.form.remote = row.remote;
+                    this.form.remark = row.remark;
+                }
+            },
+            handleSave() {
+                var url = "";
+                var name = this.form.name;
+                var prefix = this.form.prefix;
+                var remote = this.form.remote;
+                var remark = this.form.remark;
+                if (this.editMode == "add") {
+                    url = "addProxy"
+                } else {
+                    url = "editProxy"
+                }
+                fetch(url, {
+                    method: 'post',
+                    body: JSON.stringify({
+                        name: name,
+                        prefix: prefix,
+                        remote: remote,
+                        remark: remark
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    let resdata = res.text();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+                    if (res == "true") {
+                        this.$message({
+                            message: '操作成功',
+                            type: 'success'
+                        });
+                        this.getRouteList();
+                    } else {
+                        this.$message.error('操作失败');
+                    }
+
+                });
+                this.dialogFormVisible = false;
+
+            },
+            handleDel(row) {
+                console.log("row:", row);
+
+                fetch("delProxy", {
+                    method: 'post',
+                    body: JSON.stringify({
+                        name: row.name
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    let resdata = res.text();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+                    this.getRouteList();
+                });
+            },
+            getRouteList() {
+                var vue = this;
+                fetch("getRouteList", {
+                    "method": "GET",
+                }).then(res => {
+                    let resdata = res.json();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+                    vue.tableData = res;
+                });
+            }
+        },
+        mounted: function () {
+            console.log("页面打开了!");
+
+            this.getRouteList();
+
+        }
+    }
+    var Ctor = Vue.extend(App);
+    new Ctor().$mount('#app');
+    // const app = Vue.createApp(App);
+    // app.use(ElementPlus);
+    // app.mount("#app");
+
+</script>
+</body>
+
+</html>
