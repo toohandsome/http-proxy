@@ -1,10 +1,9 @@
 package io.github.toohandsome.httproxy.util;
 
 import com.alibaba.fastjson2.JSON;
-import io.github.toohandsome.httproxy.Route;
+import io.github.toohandsome.httproxy.entity.Route;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;

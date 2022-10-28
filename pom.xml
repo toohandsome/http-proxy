@@ -24,6 +24,14 @@
     </properties>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.jodd/jodd-servlet -->
+        <dependency>
+            <groupId>org.jodd</groupId>
+            <artifactId>jodd-servlet</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>

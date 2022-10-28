@@ -39,12 +39,8 @@ import java.lang.reflect.Field;
 @RestController
 public class Application {
 
-    static ConfigurableApplicationContext ca = null;
-
-
-    public static void main(String[] args) throws NoSuchFieldException, IllegalAccessException {
+    public static void main(String[] args)  {
         final ConfigurableApplicationContext run = SpringApplication.run(Application.class, args);
-        ca = run;
         Utils.loadRoutes();
     }
 }

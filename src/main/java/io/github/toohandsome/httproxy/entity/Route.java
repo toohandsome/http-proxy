@@ -1,4 +1,4 @@
-package io.github.toohandsome.httproxy;
+package io.github.toohandsome.httproxy.entity;
 
 import lombok.Data;
 

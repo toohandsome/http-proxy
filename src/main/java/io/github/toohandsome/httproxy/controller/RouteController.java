@@ -1,7 +1,11 @@
-package io.github.toohandsome.httproxy;
+package io.github.toohandsome.httproxy.controller;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
+import io.github.toohandsome.httproxy.Application;
+import io.github.toohandsome.httproxy.ProxyServlet;
+import io.github.toohandsome.httproxy.entity.Route;
+import io.github.toohandsome.httproxy.util.SpringUtil;
 import io.github.toohandsome.httproxy.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,7 +86,7 @@ public class RouteController {
 
     public boolean addServelet(Route route) {
         try {
-            final ServletContext servletContext = Application.ca.getBean(ServletContext.class);
+            final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
             Field appctx = servletContext.getClass().getDeclaredField("context");
             appctx.setAccessible(true);
             ApplicationContext applicationContext = (ApplicationContext) appctx.get(servletContext);

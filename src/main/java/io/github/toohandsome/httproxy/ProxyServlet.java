@@ -16,6 +16,9 @@
 
 package io.github.toohandsome.httproxy;
 
+import io.github.toohandsome.httproxy.entity.Rule;
+import jodd.servlet.ServletUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -46,9 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.HttpCookie;
 import java.net.URI;
-import java.util.BitSet;
-import java.util.Enumeration;
-import java.util.Formatter;
+import java.util.*;
 
 /**
  * An HTTP reverse proxy/gateway servlet. It is designed to be extended for customization
@@ -65,6 +66,7 @@ import java.util.Formatter;
  *
  * @author David Smiley dsmiley@apache.org
  */
+@Slf4j
 @SuppressWarnings({"deprecation", "serial", "WeakerAccess"})
 public class ProxyServlet extends HttpServlet {
 
@@ -170,6 +172,8 @@ public class ProxyServlet extends HttpServlet {
 
     private HttpClient proxyClient;
 
+    public List<Rule> ruleList = new ArrayList<>();
+
     @Override
     public String getServletInfo() {
         return "A proxy servlet by David Smiley, dsmiley@apache.org";
@@ -184,12 +188,15 @@ public class ProxyServlet extends HttpServlet {
         return (HttpHost) servletRequest.getAttribute(ATTR_TARGET_HOST);
     }
 
+    public HashMap<String, String> config = new HashMap<String, String>();
+
     /**
      * Reads a configuration parameter. By default it reads servlet init parameters but
      * it can be overridden.
      */
     protected String getConfigParam(String key) {
-        return getServletConfig().getInitParameter(key);
+        return config.get(key);
+//        return getServletConfig().getInitParameter(key);
     }
 
     @Override
@@ -388,6 +395,73 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws ServletException, IOException {
+        //  原始请求体
+        String originalRequestBody = ServletUtil.readRequestBodyFromStream(servletRequest);
+        // 获取修改规则
+        for (Rule rule : ruleList) {
+            final int mode = rule.getMode();
+            if (Rule.isReqOpt(mode)) {
+                // 操作请求头
+                if (Rule.isHeaderOpt(mode)) {
+                    // 修改
+                    if (mode == 0) {
+                        String header = servletRequest.getHeader(rule.getHeaderName());
+                        header = header.replace(rule.getSource(), rule.getContent());
+                    }
+                    // 增加
+                    else if (mode == 10) {
+
+                    }
+                    // 删除
+                    else if (mode == -10) {
+
+                    }
+                }
+                // 操作请求体
+                else if (Rule.isBodyOpt(mode)) {
+                    // 修改
+                    if (mode == 1) {
+
+                    }
+                    // 增加
+                    else if (mode == 11) {
+
+                    }
+                    // 删除
+                    else if (mode == -11) {
+
+                    }
+                }
+            }
+        }
+
+
+//        /**
+//         * 2.读取原请求体（密文），执行修改请求体函数得到修改后的请求体（明文），然后构建新的请求对象（包含修改后的请求体）
+//         */
+//        String originalRequestBody = ServletUtil.readRequestBody(originalRequest); // 读取原请求体（密文）
+//        String modifyRequestBody = modifyRequestBodyFun.apply(originalRequestBody); // 修改请求体（明文）
+//        ModifyRequestBodyWrapper requestWrapper = modifyRequestBodyAndContentType(originalRequest, modifyRequestBody, requestContentType);
+//
+//        /**
+//         * 3.构建新的响应对象，执行调用链（用新的请求对象和响应对象）
+//         * 得到应用层的响应后（明文），执行修改响应体函数，最后得到需要响应给调用方的响应体（密文）
+//         */
+//        ModifyResponseBodyWrapper responseWrapper = getHttpResponseWrapper(originalResponse);
+//        chain.doFilter(requestWrapper, responseWrapper);
+//        String originalResponseBody = responseWrapper.getResponseBody(); // 原响应体（明文）
+//        String modifyResponseBody = modifyResponseBodyFun.apply(originalResponseBody); // 修改后的响应体（密文）
+//
+//        /**
+//         * 4.将修改后的响应体用原响应对象的输出流来输出
+//         * 要保证响应类型和原请求中的一致，并重新设置响应体大小
+//         */
+//        originalResponse.setContentType(requestWrapper.getOrginalRequest().getContentType()); // 与请求时保持一致
+//        byte[] responseData = modifyResponseBody.getBytes(responseWrapper.getCharacterEncoding()); // 编码与实际响应一致
+//        originalResponse.setContentLength(responseData.length);
+//        @Cleanup ServletOutputStream out = originalResponse.getOutputStream();
+//        out.write(responseData);
+
         //initialize request attributes from caches if unset by a subclass by this point
         if (servletRequest.getAttribute(ATTR_TARGET_URI) == null) {
             servletRequest.setAttribute(ATTR_TARGET_URI, targetUri);
@@ -431,10 +505,6 @@ public class ProxyServlet extends HttpServlet {
             // See issue [#51](https://github.com/mitre/HTTP-Proxy-Servlet/issues/51)
             copyResponseHeaders(proxyResponse, servletRequest, servletResponse);
 
-//            HttpEntity entity = proxyResponse.getEntity();
-//            BufferedHttpEntity bufferedEntity = new BufferedHttpEntity(entity);
-//            String resp = getEntityContent(bufferedEntity);
-//            System.out.println("resp: "+ resp);
 
             if (statusCode == HttpServletResponse.SC_NOT_MODIFIED) {
                 // 304 needs special handling.  See:
@@ -459,7 +529,7 @@ public class ProxyServlet extends HttpServlet {
     }
 
     public String getEntityContent(HttpEntity entity) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent(), "UTF-8"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent(), "UTF-8"))) {
             String str = "";
             StringBuilder sb = new StringBuilder();
             while ((str = reader.readLine()) != null) {
@@ -515,13 +585,7 @@ public class ProxyServlet extends HttpServlet {
         // Add the input entity (streamed)
         //  note: we don't bother ensuring we close the servletInputStream since the container handles it
 
-        final Enumeration<String> headerNames = servletRequest.getHeaderNames();
-//        System.out.println("headers: ");
-//        while (headerNames.hasMoreElements()) {
-//            final String headerName = headerNames.nextElement();
-//            final String headerValue = servletRequest.getHeader(headerName);
-//            System.out.println(headerName + ": " + headerValue);
-//        }
+
         eProxyRequest.setEntity(
                 new InputStreamEntity(servletRequest.getInputStream(), getContentLength(servletRequest)));
         return eProxyRequest;
@@ -572,7 +636,7 @@ public class ProxyServlet extends HttpServlet {
         Enumeration<String> enumerationOfHeaderNames = servletRequest.getHeaderNames();
         while (enumerationOfHeaderNames.hasMoreElements()) {
             String headerName = enumerationOfHeaderNames.nextElement();
-            System.out.println(headerName + ": " + servletRequest.getHeader(headerName));
+            logger.info(headerName + ": " + servletRequest.getHeader(headerName));
             copyRequestHeader(servletRequest, proxyRequest, headerName);
         }
     }
@@ -639,7 +703,7 @@ public class ProxyServlet extends HttpServlet {
     protected void copyResponseHeaders(HttpResponse proxyResponse, HttpServletRequest servletRequest,
                                        HttpServletResponse servletResponse) {
         for (Header header : proxyResponse.getAllHeaders()) {
-            System.out.println(header.getName()+": "+ header.getValue());
+            logger.info(header.getName() + ": " + header.getValue());
             copyResponseHeader(servletRequest, servletResponse, header);
         }
     }
@@ -788,9 +852,8 @@ public class ProxyServlet extends HttpServlet {
                 InputStream is = entity.getContent();
 
                 ByteArrayOutputStream baos = cloneInputStream(is);
-                System.out.println("resp: " +baos.toString("UTF-8"));
+                logger.info("proxy resp: " + baos.toString("UTF-8"));
                 InputStream stream1 = new ByteArrayInputStream(baos.toByteArray());
-//                InputStream stream2 = new ByteArrayInputStream(baos.toByteArray());
 
                 OutputStream os = servletResponse.getOutputStream();
                 byte[] buffer = new byte[10 * 1024];
@@ -819,15 +882,16 @@ public class ProxyServlet extends HttpServlet {
                 OutputStream servletOutputStream = servletResponse.getOutputStream();
 
                 BufferedHttpEntity bufferedEntity = new BufferedHttpEntity(entity);
-                System.out.println("resp: "+getContentByWriteTo(bufferedEntity));
+                logger.info("proxy resp: " + getContentByWriteTo(bufferedEntity));
 
 
                 bufferedEntity.writeTo(servletOutputStream);
             }
         }
     }
+
     public String getContentByWriteTo(HttpEntity entity) {
-        try(ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
             entity.writeTo(outstream);
             return outstream.toString("UTF-8");
         } catch (Exception e) {
