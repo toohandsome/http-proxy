@@ -2,8 +2,10 @@ package io.github.toohandsome.httproxy.entity;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class Rule {
@@ -76,5 +78,16 @@ public class Rule {
             return true;
         }
         return false;
+    }
+
+    public static List<Rule> getRule(List<Rule> ruleList, int... modes) {
+        return ruleList.stream().filter(rule -> {
+            for (int i = 0; i < modes.length; i++) {
+                if (rule.getMode() == modes[i]) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
     }
 }

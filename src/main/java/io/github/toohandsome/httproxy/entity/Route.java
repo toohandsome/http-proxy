@@ -2,6 +2,8 @@ package io.github.toohandsome.httproxy.entity;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Route {
     private String name;
@@ -9,4 +11,5 @@ public class Route {
     private String prefix;
     private String remote;
     private String mode;
+    private List<Rule> ruleList;
 }

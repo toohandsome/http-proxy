@@ -14,8 +14,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 修改http请求体和contentType后构建新的请求对象
@@ -24,20 +24,85 @@ import java.util.NoSuchElementException;
  * @author zhaoxb
  * @create 2019-09-26 17:49
  */
-@Data
 public class ModifyRequestBodyWrapper extends HttpServletRequestWrapper {
     /**
      * 原请求对象
      */
     private HttpServletRequest orginalRequest;
+
+    public HttpServletRequest getOrginalRequest() {
+        return orginalRequest;
+    }
+
+    public void setOrginalRequest(HttpServletRequest orginalRequest) {
+        this.orginalRequest = orginalRequest;
+    }
+
     /**
      * 修改后的请求体
      */
     private String modifyRequestBody;
+
+    private Map<String, String> headerMap = new HashMap<String, String>();
+    private List <String> delHeaderList = new ArrayList<>();
+
     /**
-     * 修改后的请求类型
+     * add a header with given name and value
+     *
+     * @param name
+     * @param value
      */
-    private String contentType;
+    public void addHeader(String name, String value) {
+        headerMap.put(name, value);
+    }
+
+    public void removeHeader(String name) {
+        delHeaderList.add(name);
+    }
+
+    @Override
+    public String getHeader(String name) {
+        if (delHeaderList.contains(name)) {
+            return null;
+        }
+        String headerValue = super.getHeader(name);
+        if (headerMap.containsKey(name)) {
+            headerValue = headerMap.get(name);
+        }
+        return headerValue;
+    }
+
+    /**
+     * get the Header names
+     */
+    @Override
+    public Enumeration<String> getHeaderNames() {
+
+        List<String> names = Collections.list(super.getHeaderNames());
+        for (String name : headerMap.keySet()) {
+            names.add(name);
+        }
+
+        List<String> collect = names.stream().filter(item -> !delHeaderList.contains(item)).collect(Collectors.toList());
+
+        return Collections.enumeration(collect);
+    }
+
+
+    @Override
+    public Enumeration<String> getHeaders(String name) {
+
+        if (delHeaderList.contains(name)) {
+            return Collections.<String>emptyEnumeration();
+        }
+        List<String> values = Collections.list(super.getHeaders(name));
+        if (headerMap.containsKey(name)) {
+            values.add(headerMap.get(name));
+        }
+        return Collections.enumeration(values);
+
+    }
+
 
     /**
      * 修改请求体，请求类型沿用原来的
@@ -46,22 +111,11 @@ public class ModifyRequestBodyWrapper extends HttpServletRequestWrapper {
      * @param modifyRequestBody 修改后的请求体
      */
     public ModifyRequestBodyWrapper(HttpServletRequest orginalRequest, String modifyRequestBody) {
-        this(orginalRequest, modifyRequestBody, null);
-    }
-
-    /**
-     * 修改请求体和请求类型
-     *
-     * @param orginalRequest    原请求对象
-     * @param modifyRequestBody 修改后的请求体
-     * @param contentType       修改后的请求类型
-     */
-    public ModifyRequestBodyWrapper(HttpServletRequest orginalRequest, String modifyRequestBody, String contentType) {
         super(orginalRequest);
         this.modifyRequestBody = modifyRequestBody;
         this.orginalRequest = orginalRequest;
-        this.contentType = contentType;
     }
+
 
     /**
      * 构建新的输入流，在新的输入流中放入修改后的请求体（使用原请求中的字符集）
@@ -118,44 +172,4 @@ public class ModifyRequestBodyWrapper extends HttpServletRequestWrapper {
         return modifyRequestBody.getBytes(orginalRequest.getCharacterEncoding()).length;
     }
 
-    /**
-     * 获取新的请求类型，默认沿用原请求的
-     *
-     * @return
-     */
-    @Override
-    public String getContentType() {
-        return StringUtils.hasText(contentType) ? orginalRequest.getContentType() : contentType;
-    }
-
-    /**
-     * 修改contentType
-     *
-     * @param name 请求头
-     * @return
-     */
-    @Override
-    public Enumeration<String> getHeaders(String name) {
-        if (null != name && name.replace("-", "").toLowerCase().equals("contenttype") && !StringUtils.hasText(contentType)) {
-            return new Enumeration<String>() {
-                private boolean hasGetted = false;
-
-                @Override
-                public boolean hasMoreElements() {
-                    return !hasGetted;
-                }
-
-                @Override
-                public String nextElement() {
-                    if (hasGetted) {
-                        throw new NoSuchElementException();
-                    } else {
-                        hasGetted = true;
-                        return contentType;
-                    }
-                }
-            };
-        }
-        return super.getHeaders(name);
-    }
 }

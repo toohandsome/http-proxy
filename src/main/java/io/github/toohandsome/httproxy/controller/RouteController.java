@@ -31,16 +31,13 @@ import java.util.List;
 @Slf4j
 public class RouteController {
 
-    static List<Route> routes = new ArrayList<>();
+    public static List<Route> routes = new ArrayList<>();
 
 
     @GetMapping("/getRouteList")
     public List<Route> getRouteList() throws IOException, NoSuchFieldException, IllegalAccessException {
         if (routes.isEmpty()) {
             routes = Utils.loadRoutes();
-            for (Route route : routes) {
-                addServelet(route);
-            }
         }
         return routes;
     }
@@ -84,37 +81,12 @@ public class RouteController {
     }
 
 
-    public boolean addServelet(Route route) {
-        try {
-            final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
-            Field appctx = servletContext.getClass().getDeclaredField("context");
-            appctx.setAccessible(true);
-            ApplicationContext applicationContext = (ApplicationContext) appctx.get(servletContext);
-            Field stdctx = applicationContext.getClass().getDeclaredField("context");
-            stdctx.setAccessible(true);
-            StandardContext standardContext = (StandardContext) stdctx.get(applicationContext);
-            Wrapper wrapper = standardContext.createWrapper();
-            wrapper.setName(route.getName());
-            wrapper.setLoadOnStartup(1);
-            final ProxyServlet servlet = new ProxyServlet();
 
-            servlet.targetUri = route.getRemote();
-            wrapper.setServlet(servlet);
-            wrapper.setServletClass(servlet.getClass().getName());
-            standardContext.addChild(wrapper);
-            standardContext.addServletMappingDecoded("/" + route.getPrefix() + "/*", route.getName());
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("注册失败: " + JSON.toJSONString(route));
-        }
-        return false;
-    }
 
     @PostMapping("/addProxy")
     public boolean addProxy(@RequestBody Route route) throws NoSuchFieldException, IllegalAccessException {
 
-        if (addServelet(route)) {
+        if (Utils.addServelet(route)) {
             routes.add(route);
             saveRoute();
             return true;

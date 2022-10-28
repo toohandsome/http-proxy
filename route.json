@@ -1,56 +1,116 @@
 [
-	{
-		"name":"aa",
-		"prefix":"aa",
-		"remark":"http://www.baidu.com",
-		"remote":"http://www.baidu.com"
-	},
-	{
-		"name":"hh",
-		"prefix":"hh",
-		"remark":"bing",
-		"remote":"https://www.bing.com"
-	},
-	{
-		"name":"abc",
-		"prefix":"abc",
-		"remark":"asdas",
-		"remote":"https://www.baidu.com"
-	},
-	{
-		"name":"ddsa",
-		"prefix":"asdas",
-		"remark":"dasd",
-		"remote":"das"
-	},
-	{
-		"name":"t1",
-		"prefix":"t1",
-		"remark":"",
-		"remote":"http://127.0.0.1:8060/t1"
-	},
-	{
-		"name":"t2",
-		"prefix":"t2",
-		"remark":"",
-		"remote":"http://127.0.0.1:8060/t2"
-	},
-	{
-		"name":"t3",
-		"prefix":"t3",
-		"remark":"",
-		"remote":"http://127.0.0.1:8060/t3"
-	},
-	{
-		"name":"t4",
-		"prefix":"t4",
-		"remark":"",
-		"remote":"http://127.0.0.1:8060/t4"
-	},
-	{
-		"name":"t5",
-		"prefix":"t5",
-		"remark":"",
-		"remote":"http://127.0.0.1:8060/t5"
-	}
+  {
+    "name": "aa",
+    "prefix": "aa",
+    "remark": "http://www.baidu.com",
+    "remote": "http://www.baidu.com"
+  },
+  {
+    "name": "hh",
+    "prefix": "hh",
+    "remark": "bing",
+    "remote": "https://www.bing.com"
+  },
+  {
+    "name": "abc",
+    "prefix": "abc",
+    "remark": "asdas",
+    "remote": "https://www.baidu.com"
+  },
+  {
+    "name": "ddsa",
+    "prefix": "asdas",
+    "remark": "dasd",
+    "remote": "das"
+  },
+  {
+    "name": "t1",
+    "prefix": "t1",
+    "remark": "",
+    "remote": "http://192.168.2.102:8060/t1",
+    "ruleList": [
+      {
+        "mode": 0,
+        "headerName": "aaa",
+        "source": "",
+        "content": "ccc"
+      },
+      {
+        "mode": 10,
+        "headerName": "bbb",
+        "source": "",
+        "content": "123"
+      },
+      {
+        "mode": -10,
+        "headerName": "ccc",
+        "source": "",
+        "content": ""
+      }
+    ]
+  },
+  {
+    "name": "t2",
+    "prefix": "t2",
+    "remark": "",
+    "remote": "http://192.168.2.102:8060/t2"
+  },
+  {
+    "name": "t3",
+    "prefix": "t3",
+    "remark": "",
+    "remote": "http://192.168.2.102:8060/t3",
+    "ruleList": [
+      {
+        "mode": 1,
+        "headerName": "aaa",
+        "source": "",
+        "content": "{\"name\":\"lisi\",\"age\":44,\"big\":true,\"address\":\"中央花园2期110栋403\",\"a\":\"dasndjasdasdxxxxxxxxxxxxxxxxxxxxxxxxx11\"}"
+      },
+      {
+        "mode": 10,
+        "headerName": "bbb",
+        "source": "",
+        "content": "123"
+      },
+      {
+        "mode": -10,
+        "headerName": "ccc",
+        "source": "",
+        "content": ""
+      }
+    ]
+  },
+  {
+    "name": "t4",
+    "prefix": "t4",
+    "remark": "",
+    "remote": "http://192.168.2.102:8060/t4",
+    "ruleList": [
+      {
+        "mode": 1,
+        "headerName": "aaa",
+        "source": "true",
+        "content": "false"
+      },
+      {
+        "mode": 10,
+        "headerName": "bbb",
+        "source": "",
+        "content": "123"
+      },
+      {
+        "mode": -10,
+        "headerName": "ccc",
+        "source": "",
+        "content": ""
+      }
+    ]
+  },
+  {
+    "name": "t5",
+    "prefix": "t5",
+    "remark": "",
+    "remote": "http://192.168.2.102:8060/t5"
+  }
 ]

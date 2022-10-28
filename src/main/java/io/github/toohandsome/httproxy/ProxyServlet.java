@@ -16,7 +16,10 @@
 
 package io.github.toohandsome.httproxy;
 
+import com.alibaba.fastjson2.JSON;
 import io.github.toohandsome.httproxy.entity.Rule;
+import io.github.toohandsome.httproxy.util.HttpUtil;
+import io.github.toohandsome.httproxy.wrapper.ModifyRequestBodyWrapper;
 import jodd.servlet.ServletUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
@@ -40,6 +43,7 @@ import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.util.EntityUtils;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -270,7 +274,9 @@ public class ProxyServlet extends HttpServlet {
      * Sub-classes can override specific behaviour of {@link org.apache.http.client.config.RequestConfig}.
      */
     protected RequestConfig buildRequestConfig() {
+        HttpHost proxy = new HttpHost("127.0.0.1", 8888);
         return RequestConfig.custom()
+//                .setProxy(proxy)
                 .setRedirectsEnabled(doHandleRedirects)
                 .setCookieSpec(CookieSpecs.IGNORE_COOKIES) // we handle them in the servlet instead
                 .setConnectTimeout(connectTimeout)
@@ -395,72 +401,6 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws ServletException, IOException {
-        //  原始请求体
-        String originalRequestBody = ServletUtil.readRequestBodyFromStream(servletRequest);
-        // 获取修改规则
-        for (Rule rule : ruleList) {
-            final int mode = rule.getMode();
-            if (Rule.isReqOpt(mode)) {
-                // 操作请求头
-                if (Rule.isHeaderOpt(mode)) {
-                    // 修改
-                    if (mode == 0) {
-                        String header = servletRequest.getHeader(rule.getHeaderName());
-                        header = header.replace(rule.getSource(), rule.getContent());
-                    }
-                    // 增加
-                    else if (mode == 10) {
-
-                    }
-                    // 删除
-                    else if (mode == -10) {
-
-                    }
-                }
-                // 操作请求体
-                else if (Rule.isBodyOpt(mode)) {
-                    // 修改
-                    if (mode == 1) {
-
-                    }
-                    // 增加
-                    else if (mode == 11) {
-
-                    }
-                    // 删除
-                    else if (mode == -11) {
-
-                    }
-                }
-            }
-        }
-
-
-//        /**
-//         * 2.读取原请求体（密文），执行修改请求体函数得到修改后的请求体（明文），然后构建新的请求对象（包含修改后的请求体）
-//         */
-//        String originalRequestBody = ServletUtil.readRequestBody(originalRequest); // 读取原请求体（密文）
-//        String modifyRequestBody = modifyRequestBodyFun.apply(originalRequestBody); // 修改请求体（明文）
-//        ModifyRequestBodyWrapper requestWrapper = modifyRequestBodyAndContentType(originalRequest, modifyRequestBody, requestContentType);
-//
-//        /**
-//         * 3.构建新的响应对象，执行调用链（用新的请求对象和响应对象）
-//         * 得到应用层的响应后（明文），执行修改响应体函数，最后得到需要响应给调用方的响应体（密文）
-//         */
-//        ModifyResponseBodyWrapper responseWrapper = getHttpResponseWrapper(originalResponse);
-//        chain.doFilter(requestWrapper, responseWrapper);
-//        String originalResponseBody = responseWrapper.getResponseBody(); // 原响应体（明文）
-//        String modifyResponseBody = modifyResponseBodyFun.apply(originalResponseBody); // 修改后的响应体（密文）
-//
-//        /**
-//         * 4.将修改后的响应体用原响应对象的输出流来输出
-//         * 要保证响应类型和原请求中的一致，并重新设置响应体大小
-//         */
-//        originalResponse.setContentType(requestWrapper.getOrginalRequest().getContentType()); // 与请求时保持一致
-//        byte[] responseData = modifyResponseBody.getBytes(responseWrapper.getCharacterEncoding()); // 编码与实际响应一致
-//        originalResponse.setContentLength(responseData.length);
-//        @Cleanup ServletOutputStream out = originalResponse.getOutputStream();
-//        out.write(responseData);
 
         //initialize request attributes from caches if unset by a subclass by this point
         if (servletRequest.getAttribute(ATTR_TARGET_URI) == null) {
@@ -584,10 +524,33 @@ public class ProxyServlet extends HttpServlet {
                 new BasicHttpEntityEnclosingRequest(method, proxyRequestUri);
         // Add the input entity (streamed)
         //  note: we don't bother ensuring we close the servletInputStream since the container handles it
+        InputStream inputStream = servletRequest.getInputStream();
+        // 修改请求体
+        List<Rule> rules = Rule.getRule(ruleList, 1);
+        long contentLength = 0;
+        if (!rules.isEmpty()) {
+            Rule rule = rules.get(0);
+            String content = rule.getContent();
+            if (StringUtils.hasText(rule.getSource())) {
+                String sourceContent = ServletUtil.readRequestBodyFromStream(servletRequest);
+                String replace = sourceContent.replace(content, content);
+                byte[] bytes = replace.getBytes(servletRequest.getCharacterEncoding());
+                inputStream = new ByteArrayInputStream(bytes);
+            } else {
+                byte[] bytes = content.getBytes(servletRequest.getCharacterEncoding());
+                contentLength = bytes.length;
+                inputStream = new ByteArrayInputStream(bytes);
+            }
+        }
 
+        if (contentLength == 0) {
+            eProxyRequest.setEntity(
+                    new InputStreamEntity(inputStream, getContentLength(servletRequest)));
+        } else {
+            eProxyRequest.setEntity(
+                    new InputStreamEntity(inputStream, contentLength));
+        }
 
-        eProxyRequest.setEntity(
-                new InputStreamEntity(servletRequest.getInputStream(), getContentLength(servletRequest)));
         return eProxyRequest;
     }
 
@@ -629,6 +592,8 @@ public class ProxyServlet extends HttpServlet {
     /**
      * Copy request headers from the servlet client to the proxy request.
      * This is easily overridden to add your own.
+     * <p>
+     * 处理请求头
      */
     protected void copyRequestHeaders(HttpServletRequest servletRequest, HttpRequest proxyRequest) {
         // Get an Enumeration of all of the header names sent by the client
@@ -636,9 +601,21 @@ public class ProxyServlet extends HttpServlet {
         Enumeration<String> enumerationOfHeaderNames = servletRequest.getHeaderNames();
         while (enumerationOfHeaderNames.hasMoreElements()) {
             String headerName = enumerationOfHeaderNames.nextElement();
-            logger.info(headerName + ": " + servletRequest.getHeader(headerName));
+            //logger.info(headerName + ": " + servletRequest.getHeader(headerName));
+            // 删除和修改的 跳过原始的添加
+            List<Rule> headerRule1 = Rule.getRule(ruleList, -10, 0);
+            if (headerRule1.stream().filter(rule -> rule.getHeaderName().equalsIgnoreCase(headerName)).count() >= 1) {
+                continue;
+            }
             copyRequestHeader(servletRequest, proxyRequest, headerName);
         }
+        // 增加和修改的 手动添加
+        // TODO 替换支持正则
+        List<Rule> headerRule2 = Rule.getRule(ruleList, 0, 10);
+        for (Rule rule : headerRule2) {
+            proxyRequest.addHeader(rule.getHeaderName(), rule.getContent());
+        }
+        logger.info("proxyRequest headers: " + JSON.toJSONString(proxyRequest.getAllHeaders()));
     }
 
     /**
@@ -647,6 +624,7 @@ public class ProxyServlet extends HttpServlet {
      */
     protected void copyRequestHeader(HttpServletRequest servletRequest, HttpRequest proxyRequest,
                                      String headerName) {
+
         //Instead the content-length is effectively set via InputStreamEntity
         if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)) {
             return;

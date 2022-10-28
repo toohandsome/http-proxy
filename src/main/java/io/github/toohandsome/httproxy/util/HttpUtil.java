@@ -110,10 +110,10 @@ public class HttpUtil {
      * @param contentType       请求类型
      * @return
      */
-    public static ModifyRequestBodyWrapper modifyRequestBodyAndContentType(ServletRequest request, String modifyRequestBody, String contentType) {
+    public static ModifyRequestBodyWrapper modifyRequestBodyAndContentType(ServletRequest request, String modifyRequestBody, String... contentType) {
         logger.debug("ContentType改为 -> {}", contentType);
         HttpServletRequest orginalRequest = (HttpServletRequest) request;
-        return new ModifyRequestBodyWrapper(orginalRequest, modifyRequestBody, contentType);
+        return new ModifyRequestBodyWrapper(orginalRequest, modifyRequestBody);
     }
 
     /**
