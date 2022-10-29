@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.toohandsome.httproxy.core;
+package io.github.toohandsome.httproxy;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIUtils;
