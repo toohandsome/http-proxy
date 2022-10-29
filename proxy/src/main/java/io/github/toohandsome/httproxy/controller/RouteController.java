@@ -2,24 +2,15 @@ package io.github.toohandsome.httproxy.controller;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
-import io.github.toohandsome.httproxy.Application;
-import io.github.toohandsome.httproxy.ProxyServlet;
 import io.github.toohandsome.httproxy.entity.Route;
-import io.github.toohandsome.httproxy.util.SpringUtil;
 import io.github.toohandsome.httproxy.util.Utils;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.ApplicationContext;
-import org.apache.catalina.core.StandardContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.ServletContext;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;

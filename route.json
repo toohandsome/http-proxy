@@ -27,7 +27,7 @@
     "name": "t1",
     "prefix": "t1",
     "remark": "",
-    "remote": "http://192.168.2.102:8060/t1",
+    "remote": "http://127.0.0.1:8060/t1",
     "ruleList": [
       {
         "mode": 0,
@@ -53,13 +53,13 @@
     "name": "t2",
     "prefix": "t2",
     "remark": "",
-    "remote": "http://192.168.2.102:8060/t2"
+    "remote": "http://127.0.0.1:8060/t2"
   },
   {
     "name": "t3",
     "prefix": "t3",
     "remark": "",
-    "remote": "http://192.168.2.102:8060/t3",
+    "remote": "http://127.0.0.1:8060/t3",
     "ruleList": [
       {
         "mode": 1,
@@ -85,7 +85,7 @@
     "name": "t4",
     "prefix": "t4",
     "remark": "",
-    "remote": "http://192.168.2.102:8060/t4",
+    "remote": "http://127.0.0.1:8060/t4",
     "ruleList": [
       {
         "mode": 1,
@@ -111,6 +111,6 @@
     "name": "t5",
     "prefix": "t5",
     "remark": "",
-    "remote": "http://192.168.2.102:8060/t5"
+    "remote": "http://127.0.0.1:8060/t5"
   }
 ]

@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package io.github.toohandsome.httproxy;
+package io.github.toohandsome.httproxy.core;
 
 import com.alibaba.fastjson2.JSON;
 import io.github.toohandsome.httproxy.entity.Rule;
-import io.github.toohandsome.httproxy.util.HttpUtil;
-import io.github.toohandsome.httproxy.wrapper.ModifyRequestBodyWrapper;
 import jodd.servlet.ServletUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -36,6 +28,8 @@ import org.apache.http.client.methods.AbortableHttpRequest;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
@@ -53,6 +47,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -271,7 +266,7 @@ public class ProxyServlet extends HttpServlet {
     }
 
     /**
-     * Sub-classes can override specific behaviour of {@link org.apache.http.client.config.RequestConfig}.
+     * Sub-classes can override specific behaviour of {@link RequestConfig}.
      */
     protected RequestConfig buildRequestConfig() {
         HttpHost proxy = new HttpHost("127.0.0.1", 8888);
@@ -286,7 +281,7 @@ public class ProxyServlet extends HttpServlet {
     }
 
     /**
-     * Sub-classes can override specific behaviour of {@link org.apache.http.config.SocketConfig}.
+     * Sub-classes can override specific behaviour of {@link SocketConfig}.
      */
     protected SocketConfig buildSocketConfig() {
 
@@ -681,8 +676,18 @@ public class ProxyServlet extends HttpServlet {
     protected void copyResponseHeaders(HttpResponse proxyResponse, HttpServletRequest servletRequest,
                                        HttpServletResponse servletResponse) {
         for (Header header : proxyResponse.getAllHeaders()) {
-            logger.info(header.getName() + ": " + header.getValue());
+            // 删除和修改的 跳过原始的添加
+            List<Rule> headerRule1 = Rule.getRule(ruleList, -12, 2);
+            if (headerRule1.stream().filter(rule -> rule.getHeaderName().equalsIgnoreCase(header.getName())).count() >= 1) {
+                continue;
+            }
             copyResponseHeader(servletRequest, servletResponse, header);
+        }
+        // 增加和修改的 手动添加
+        // TODO 替换支持正则
+        List<Rule> headerRule2 = Rule.getRule(ruleList, 2, 12);
+        for (Rule rule : headerRule2) {
+            servletResponse.addHeader(rule.getHeaderName(), rule.getContent());
         }
     }
 
@@ -693,6 +698,7 @@ public class ProxyServlet extends HttpServlet {
     protected void copyResponseHeader(HttpServletRequest servletRequest,
                                       HttpServletResponse servletResponse, Header header) {
         String headerName = header.getName();
+
         if (hopByHopHeaders.containsHeader(headerName)) {
             return;
         }
@@ -830,7 +836,7 @@ public class ProxyServlet extends HttpServlet {
                 InputStream is = entity.getContent();
 
                 ByteArrayOutputStream baos = cloneInputStream(is);
-                logger.info("proxy resp: " + baos.toString("UTF-8"));
+                logger.info("proxy resp1: " + baos.toString("UTF-8"));
                 InputStream stream1 = new ByteArrayInputStream(baos.toByteArray());
 
                 OutputStream os = servletResponse.getOutputStream();
@@ -857,13 +863,26 @@ public class ProxyServlet extends HttpServlet {
                 }
                 // Entity closing/cleanup is done in the caller (#service)
             } else {
+
                 OutputStream servletOutputStream = servletResponse.getOutputStream();
+//
+//                BufferedHttpEntity bufferedEntity = new BufferedHttpEntity(entity);
+//                logger.info("proxy resp2: " + getContentByWriteTo(bufferedEntity));
 
-                BufferedHttpEntity bufferedEntity = new BufferedHttpEntity(entity);
-                logger.info("proxy resp: " + getContentByWriteTo(bufferedEntity));
+//                OutputStream servletOutputStream = servletResponse.getOutputStream();
+//                entity.writeTo(servletOutputStream);
 
+                byte[] bytes = StandardCharsets.UTF_8.encode("11").array();
+                proxyResponse.removeHeaders("content-length");
+                proxyResponse.addHeader("content-length", "" + bytes.length);
+//                servletResponse.
+                servletResponse.addHeader("content-length", "" + bytes.length);
+                final ByteArrayEntity byteArrayEntity = new ByteArrayEntity(bytes, ContentType.create("text/html",StandardCharsets.UTF_8));
+                proxyResponse.setEntity(byteArrayEntity);
+                proxyResponse.getEntity().writeTo(servletOutputStream);
+//                final ByteArrayEntity byteArrayEntity = new ByteArrayEntity(bytes, ContentType.APPLICATION_JSON);
+//                proxyResponse.setEntity(byteArrayEntity);
 
-                bufferedEntity.writeTo(servletOutputStream);
             }
         }
     }
@@ -923,7 +942,7 @@ public class ProxyServlet extends HttpServlet {
     }
 
     /**
-     * Allow overrides of {@link javax.servlet.http.HttpServletRequest#getPathInfo()}.
+     * Allow overrides of {@link HttpServletRequest#getPathInfo()}.
      * Useful when url-pattern of servlet-mapping (web.xml) requires manipulation.
      */
     protected String rewritePathInfoFromRequest(HttpServletRequest servletRequest) {
