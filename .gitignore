@@ -24,3 +24,5 @@ hs_err_pid*
 .idea
 http-proxy.iml
 target
+proxy/proxy.iml
+demo/demo.iml

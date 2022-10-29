@@ -1,7 +1,7 @@
 package io.github.toohandsome.httproxy.util;
 
 import com.alibaba.fastjson2.JSON;
-import io.github.toohandsome.httproxy.ProxyServlet;
+import io.github.toohandsome.httproxy.core.ProxyServlet;
 import io.github.toohandsome.httproxy.controller.RouteController;
 import io.github.toohandsome.httproxy.entity.Route;
 import lombok.extern.slf4j.Slf4j;
