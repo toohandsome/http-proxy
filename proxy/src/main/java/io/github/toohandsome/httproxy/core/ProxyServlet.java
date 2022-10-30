@@ -18,6 +18,7 @@ package io.github.toohandsome.httproxy.core;
 
 import com.alibaba.fastjson2.JSON;
 import io.github.toohandsome.httproxy.entity.Rule;
+import io.github.toohandsome.httproxy.util.Utils;
 import jodd.servlet.ServletUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.*;
@@ -47,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -676,6 +678,9 @@ public class ProxyServlet extends HttpServlet {
     protected void copyResponseHeaders(HttpResponse proxyResponse, HttpServletRequest servletRequest,
                                        HttpServletResponse servletResponse) {
         for (Header header : proxyResponse.getAllHeaders()) {
+            if (header.getName().equalsIgnoreCase("content-length")) {
+                continue;
+            }
             // 删除和修改的 跳过原始的添加
             List<Rule> headerRule1 = Rule.getRule(ruleList, -12, 2);
             if (headerRule1.stream().filter(rule -> rule.getHeaderName().equalsIgnoreCase(header.getName())).count() >= 1) {
@@ -863,34 +868,45 @@ public class ProxyServlet extends HttpServlet {
                 }
                 // Entity closing/cleanup is done in the caller (#service)
             } else {
-
                 OutputStream servletOutputStream = servletResponse.getOutputStream();
-//
-//                BufferedHttpEntity bufferedEntity = new BufferedHttpEntity(entity);
-//                logger.info("proxy resp2: " + getContentByWriteTo(bufferedEntity));
-
-//                OutputStream servletOutputStream = servletResponse.getOutputStream();
-//                entity.writeTo(servletOutputStream);
-
-                byte[] bytes = StandardCharsets.UTF_8.encode("11").array();
-                proxyResponse.removeHeaders("content-length");
-                proxyResponse.addHeader("content-length", "" + bytes.length);
-//                servletResponse.
-                servletResponse.addHeader("content-length", "" + bytes.length);
-                final ByteArrayEntity byteArrayEntity = new ByteArrayEntity(bytes, ContentType.create("text/html",StandardCharsets.UTF_8));
+                Header contentType = proxyResponse.getEntity().getContentType();
+                String contentCharset = Utils.getContentCharset(contentType);
+                String rawContent = getContentByWriteTo(entity,contentCharset);
+                logger.info("proxy resp2: " + rawContent);
+                List<Rule> bodyRule = Rule.getRule(ruleList, 3);
+                for (Rule rule : bodyRule) {
+                    if (!StringUtils.hasText(rule.getSource())) {
+                        rawContent = rawContent.replace(rule.getSource(), rule.getContent());
+                    } else {
+                        rawContent = rule.getContent();
+                    }
+                }
+                byte[] bytes = rawContent.getBytes(Charset.forName(contentCharset));
+                final ByteArrayEntity byteArrayEntity = new ByteArrayEntity(bytes);
                 proxyResponse.setEntity(byteArrayEntity);
-                proxyResponse.getEntity().writeTo(servletOutputStream);
-//                final ByteArrayEntity byteArrayEntity = new ByteArrayEntity(bytes, ContentType.APPLICATION_JSON);
-//                proxyResponse.setEntity(byteArrayEntity);
 
+                proxyResponse.removeHeaders("Content-length");
+                proxyResponse.addHeader("Content-length", "" + bytes.length);
+                servletResponse.addHeader("Content-length", "" + bytes.length);
+
+                String contentTypeStr = "application/json; charset=utf-8";
+                if (contentType != null) {
+                    contentTypeStr = contentType.getValue();
+                    byteArrayEntity.setContentType(contentTypeStr);
+                    proxyResponse.addHeader("Content-type", contentTypeStr);
+                    proxyResponse.addHeader("Content-type", contentTypeStr);
+                }
+
+                byteArrayEntity.writeTo(servletOutputStream);
+                logger.info("resp end");
             }
         }
     }
 
-    public String getContentByWriteTo(HttpEntity entity) {
-        try (ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
-            entity.writeTo(outstream);
-            return outstream.toString("UTF-8");
+    public String getContentByWriteTo(HttpEntity entity ,String charset) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            entity.writeTo(outputStream);
+            return outputStream.toString(charset);
         } catch (Exception e) {
             e.printStackTrace();
             return "";

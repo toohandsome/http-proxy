@@ -28,6 +28,8 @@ public class Rule {
      */
     private int mode;
 
+    private int order;
+
 
     private String headerName;
 
@@ -87,6 +89,6 @@ public class Rule {
                 }
             }
             return false;
-        }).collect(Collectors.toList());
+        }).sorted().collect(Collectors.toList());
     }
 }

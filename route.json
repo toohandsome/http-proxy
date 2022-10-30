@@ -53,7 +53,15 @@
     "name": "t2",
     "prefix": "t2",
     "remark": "",
-    "remote": "http://127.0.0.1:8060/t2"
+    "remote": "http://127.0.0.1:8060/t2",
+    "ruleList": [
+      {
+        "mode": 12,
+        "headerName": "aaa",
+        "source": "",
+        "content": "bbb"
+      }
+    ]
   },
   {
     "name": "t3",

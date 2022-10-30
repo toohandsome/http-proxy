@@ -8,9 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ApplicationContext;
 import org.apache.catalina.core.StandardContext;
+import org.apache.http.Header;
 
 import javax.servlet.ServletContext;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,7 +21,23 @@ import java.util.List;
 @Slf4j
 public class Utils {
 
-    public static List loadRoutes()   {
+    public static String getContentCharset(Header header) {
+        String charset = "utf-8";
+        if (header != null) {
+            String s = header.getValue();
+            if (s.toLowerCase().contains(StandardCharsets.ISO_8859_1.name().toLowerCase())) {
+                charset = StandardCharsets.ISO_8859_1.name();
+            } else if (s.toLowerCase().contains("gbk")) {
+                charset = "gbk";
+            } else if (s.toLowerCase().contains("gb2312")) {
+                charset = "gb2312";
+            }
+        }
+
+        return charset;
+    }
+
+    public static List loadRoutes() {
         List<Route> arrayList = new ArrayList();
 
         List<String> strings;
@@ -39,7 +57,7 @@ public class Utils {
         } catch (Exception e) {
             try {
                 Files.createFile(Paths.get("route.json"));
-            }catch (Exception exception){
+            } catch (Exception exception) {
                 e.printStackTrace();
             }
 
@@ -47,6 +65,7 @@ public class Utils {
         }
         return arrayList;
     }
+
     public static boolean addServelet(Route route) {
         try {
             final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
