@@ -38,6 +38,11 @@
         </el-table-column>
         </el-table-column>
         <el-table-column
+                prop="order"
+                label="排序(越低优先级越高)"
+        >
+        </el-table-column>
+        <el-table-column
                 prop="remark"
                 label="备注"
         >
@@ -53,7 +58,6 @@
                 <el-button @click="handleDel(scope.row)" type="text" size="small">
                     删除
                 </el-button>
-
             </template>
         </el-table-column>
     </el-table>
@@ -61,35 +65,136 @@
     <el-button type="text" @click="openDialog('add','')">新增</el-button>
 
     <el-dialog title="新增" :visible.sync="dialogFormVisible">
-        <el-form :model="form">
-            <el-form-item label="名称" :label-width="formLabelWidth">
-                <el-input v-model="form.name"></el-input>
+        <el-form :model="form" :rules="rules" ref="form">
+            <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
+                <el-input v-model="form.name" placeholder="请输入名称(保证唯一即可)"></el-input>
             </el-form-item>
-            <el-form-item label="匹配前缀" :label-width="formLabelWidth">
-                <el-input v-model="form.prefix"></el-input>
+            <el-form-item label="匹配前缀" :label-width="formLabelWidth" prop="prefix">
+                <el-input v-model="form.prefix" placeholder="例1: * (表示匹配所有) ; 例2: api ; 例3: api/user"></el-input>
             </el-form-item>
-            <el-form-item label="远程地址" :label-width="formLabelWidth">
-                <el-input v-model="form.remote"></el-input>
+            <el-form-item label="远程地址" :label-width="formLabelWidth" prop="remote">
+                <el-input v-model="form.remote"
+                          placeholder="例1: http://192.168.2.1 ; 例2: http://192.168.2.1/api ; 例3: http://192.168.2.1/api/user  "></el-input>
             </el-form-item>
             <el-form-item label="模式" :label-width="formLabelWidth">
                 <el-select v-model="form.mode" placeholder="请选择模式" @change="changeMode($event)">
-
                     <el-option
                             key="transparent"
                             label="透传"
                             value="transparent">
+                        <span style="float: left">透传</span>
+                        <span style="float: right; color: #8492a6; font-size: 13px">不做任何修改,直接转发</span>
                     </el-option>
                     <el-option
                             key="enhance"
                             label="增强"
                             value="enhance">
+                        <span style="float: left">增强</span>
+                        <span style="float: right; color: #8492a6; font-size: 13px">可以修改请求和响应</span>
                     </el-option>
                 </el-select>
             </el-form-item>
+            <el-tabs v-model="activeEnhanceName" type="card" @tab-click="handleEnhanceTabClick"
+                     v-show="showEnhanceOption" style="margin-left: 120px;margin-top: -13px;">
+                <el-tab-pane label="请求头" name="reqHeader">
+                    <el-button type="text" @click="addReqHeaderTableData()">新增</el-button>
+                    <el-table stripe
+                              :data="reqHeaderTableData"
+                              @cell-dblclick="openEditColumn">
+                        <el-table-column
+                                prop="mode"
+                                label="模式"
+                                width="180">
+                            <template slot-scope="scope">
+                                <span v-show="!scope.row.edit">{{ scope.row.mode }}</span>
 
-            <el-form-item label="备注" :label-width="formLabelWidth">
-                <el-input type="textarea" v-model="form.remark"></el-input>
-            </el-form-item>
+                                <el-select v-model="scope.row.mode" placeholder="请选择模式" v-show="scope.row.edit">
+                                    <el-option
+                                            v-for="item in reqHeaderOptions"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="headerName"
+                                label="请求头名称"
+                                width="180">
+                            <template slot-scope="scope">
+                                <span v-show="!scope.row.edit">{{ scope.row.headerName }}</span>
+                                <el-input
+                                        v-model="scope.row.headerName"
+                                        placeholder="请求头名称">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="source"
+                                label="查找目标">
+                            <template slot-scope="scope">
+                                <span v-show="!scope.row.edit">{{ scope.row.source }}</span>
+                                <el-input
+                                        v-model="scope.row.source"
+                                        placeholder="查找目标">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="content"
+                                label="替换为">
+                            <template slot-scope="scope">
+                                <span v-show="!scope.row.edit">{{ scope.row.content }}</span>
+                                <el-input
+                                        v-model="scope.row.content"
+                                        placeholder="替换为">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="排序"
+                               >
+                            <template slot-scope="scope">
+                                <span v-show="!scope.row.edit">{{ scope.row.order }}</span>
+                                <el-input-number v-model="scope.row.order" @change="handleChange" :min="1" :max="100"
+                                                 label="越小优先级越高"></el-input-number>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="操作"
+                                width="50">
+                            <template slot-scope="scope">
+                                <el-button @click="handleReqHeaderDel(scope.row)" type="text" size="small">
+                                    删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+
+                </el-tab-pane>
+                <el-tab-pane label="请求体" name="reqBody">
+
+
+                </el-tab-pane>
+                <el-tab-pane label="响应头" name="respHeader">
+
+
+                </el-tab-pane>
+                <el-tab-pane label="响应体" name="respBody">
+
+
+                </el-tab-pane>
+            </el-tabs>
+
+            <!--            <el-form-item label="排序" :label-width="formLabelWidth">-->
+            <!--                <el-input-number v-model="form.order" :min="1" :max="100" label="排序"></el-input-number>-->
+            <!--            </el-form-item>-->
 
             <el-form-item label="备注" :label-width="formLabelWidth">
                 <el-input type="textarea" v-model="form.remark"></el-input>
@@ -101,8 +206,12 @@
         </div>
     </el-dialog>
 
+
 </div>
 
+<style type="text/css">
+
+</style>
 <script>
 
 
@@ -113,23 +222,77 @@
                 dialogFormVisible: false,
                 formLabelWidth: '120px',
                 editMode: "save",
-                showEnhanceOption:false,
+                showEnhanceOption: false,
+                reqHeaderOptions: [
+                    {
+                        value: 10,
+                        label: '添加请求头'
+                    },
+                    {
+                        value: -10,
+                        label: '删除请求头'
+                    },
+                    {
+                        value: 0,
+                        label: '修改请求头'
+                    },
+                ],
+                reqHeaderTableData: [],
                 form: {
                     name: '',
                     prefix: '',
                     remote: '',
                     remark: '',
-                    mode:'transparent'
+                    mode: 'transparent',
+                    order: 1
 
+                }, rules: {
+                    name: [
+                        {required: true, message: '请输入唯一名称', trigger: 'blur'}
+                    ],
+                    prefix: [
+                        {required: true, message: '请输入前缀', trigger: 'blur'}
+                    ],
+                    remote: [
+                        {required: true, message: '请输入远程地址', trigger: 'blur'}
+                    ]
                 },
+                activeEnhanceName: 'reqHeader'
             }
         },
         methods: {
-            changeMode(value){
-console.log(value);
-if (value=="enhance"){
-   this.showEnhanceOption = true;
-}
+            handleReqHeaderDel(row) {
+                console.log(row)
+            },
+            addReqHeaderTableData() {
+                this.reqHeaderTableData.push({
+                    mode: 10,
+                    headerName: "",
+                    source: "",
+                    content: "",
+                    order: 1,
+                    edit: true
+                });
+            },
+            openEditColumn(row, column, cell, event) {
+                console.log(row, cell);
+                row.exit = true;
+            },
+            // 表格数据编辑保存并关闭编辑
+            editColumnData(row, column) {
+                // 关闭表格编辑
+                console.log(row, column)
+            },
+            handleEnhanceTabClick(tab, event) {
+                console.log(tab, event);
+            },
+            changeMode(value) {
+                console.log(value);
+                if (value == "enhance") {
+                    this.showEnhanceOption = true;
+                } else {
+                    this.showEnhanceOption = false;
+                }
             },
             closeDialog() {
                 this.dialogFormVisible = false;
