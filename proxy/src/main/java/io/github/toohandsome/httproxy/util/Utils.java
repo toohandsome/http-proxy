@@ -66,6 +66,12 @@ public class Utils {
         return arrayList;
     }
 
+    public static void main(String[] args) {
+        String a = "/a/*";
+        a = a.substring(0,a.length()-2);
+        System.out.println(a);
+    }
+
     public static boolean addServelet(Route route) {
         try {
             final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
@@ -86,7 +92,14 @@ public class Utils {
             wrapper.setServlet(servlet);
             wrapper.setServletClass(servlet.getClass().getName());
             standardContext.addChild(wrapper);
-            standardContext.addServletMappingDecoded("/" + route.getPrefix() + "/*", route.getName());
+
+            String prefix = route.getPrefix();
+
+            if ( prefix.equals("*") || prefix.equals("")) {
+                standardContext.addServletMappingDecoded("/*", route.getName());
+            } else {
+                standardContext.addServletMappingDecoded("/" + prefix + "/*", route.getName());
+            }
             logger.info("注册成功: " + route.getName());
             return true;
         } catch (Exception e) {

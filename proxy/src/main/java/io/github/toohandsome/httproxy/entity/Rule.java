@@ -3,6 +3,7 @@ package io.github.toohandsome.httproxy.entity;
 import lombok.Data;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,16 +16,16 @@ public class Rule {
      * -10 删除请求头
      * <p>
      * 01 修改请求体
-     * 11 增加请求体
-     * -11 删除请求体
+     * 11 增加请求体(无)
+     * -11 删除请求体(无)
      * <p>
      * 02 修改响应头
      * 12 增加响应头
      * -12 删除响应头
      * <p>
      * 03 修改响应体
-     * 13 增加响应体
-     * -13 删除响应体
+     * 13 增加响应体(无)
+     * -13 删除响应体(无)
      */
     private int mode;
 
@@ -89,6 +90,8 @@ public class Rule {
                 }
             }
             return false;
-        }).sorted().collect(Collectors.toList());
+        })
+        .sorted(Comparator.comparing(Rule::getOrder))
+        .collect(Collectors.toList());
     }
 }
