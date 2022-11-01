@@ -605,9 +605,9 @@
                 var mode = this.form.mode;
                 var remark = this.form.remark;
                 if (this.editMode == "add") {
-                    url = "addProxy"
+                    url = "api/addProxy"
                 } else {
-                    url = "editProxy"
+                    url = "api/editProxy"
                 }
                 var rules = this.reqHeaderTableData.concat(this.reqBodyTableData).concat(this.respHeaderTableData).concat(this.respBodyTableData);
                 console.log()
@@ -646,7 +646,7 @@
             handleDel(row) {
                 console.log("row:", row);
 
-                fetch("delProxy", {
+                fetch("api/delProxy", {
                     method: 'post',
                     body: JSON.stringify({
                         name: row.name
@@ -664,7 +664,7 @@
             },
             getRouteList() {
                 var vue = this;
-                fetch("getRouteList", {
+                fetch("api/getRouteList", {
                     "method": "GET",
                 }).then(res => {
                     let resdata = res.json();

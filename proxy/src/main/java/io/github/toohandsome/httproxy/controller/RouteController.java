@@ -1,72 +1,61 @@
 package io.github.toohandsome.httproxy.controller;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONWriter;
 import io.github.toohandsome.httproxy.entity.Route;
 import io.github.toohandsome.httproxy.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static io.github.toohandsome.httproxy.util.Utils.roxyServletMap;
 
 @RestController
+@RequestMapping("/routeView/api")
 @Slf4j
 public class RouteController {
 
-    public static List<Route> routes = new ArrayList<>();
 
-
+    /**
+     * 参数是为了兼容 全部转发时反射获取方法和执行方法,无作用
+     * @param route
+     * @return
+     * @throws IOException
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
     @GetMapping("/getRouteList")
-    public List<Route> getRouteList() throws IOException, NoSuchFieldException, IllegalAccessException {
-        if (routes.isEmpty()) {
-            routes = Utils.loadRoutes();
+    public List<Route> getRouteList(@RequestBody Route route) throws IOException, NoSuchFieldException, IllegalAccessException {
+        if (Utils.routes.isEmpty()) {
+            Utils.routes = Utils.loadRoutes();
         }
-        return routes;
+        return Utils.routes;
     }
 
     @PostMapping("/editProxy")
     public boolean editProxy(@RequestBody Route route) {
-
         try {
-            for (int i = 0; i < routes.size(); i++) {
-                Route route1 = routes.get(i);
-                if (route1.getName().equals(route.getName())) {
-                    routes.set(i,route);
-                    saveRoute();
-                    return true;
-                }
+            if (delProxy(route)) {
+                return addProxy(route);
             }
-
-
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return false;
     }
 
     @PostMapping("/delProxy")
     public boolean delProxy(@RequestBody Route route) {
         try {
-            Iterator<Route> iterator = routes.iterator();
+            Iterator<Route> iterator = Utils.routes.iterator();
             while (iterator.hasNext()) {
                 Route next = iterator.next();
                 if (next.getName().equals(route.getName())) {
-                    routes.remove(next);
-                    saveRoute();
-//                    Utils.proxyServletMap
+                    Utils.routes.remove(next);
+                    Utils.saveRoute();
+                    Utils.removeServelet(route);
                     return true;
                 }
             }
@@ -84,23 +73,11 @@ public class RouteController {
             return false;
         }
         if (Utils.addServelet(route)) {
-            routes.add(route);
-            saveRoute();
+            Utils.routes.add(route);
+            Utils.saveRoute();
             return true;
         }
         return false;
-    }
-
-    public boolean saveRoute() {
-
-        String prettyStr = JSON.toJSONString(routes, JSONWriter.Feature.PrettyFormat);
-        try {
-            Files.write(Paths.get("route.json"), prettyStr.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 
 

@@ -1,10 +1,11 @@
 package io.github.toohandsome.httproxy.util;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 import io.github.toohandsome.httproxy.core.ProxyServlet;
-import io.github.toohandsome.httproxy.controller.RouteController;
 import io.github.toohandsome.httproxy.entity.Route;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Container;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ApplicationContext;
 import org.apache.catalina.core.StandardContext;
@@ -21,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class Utils {
+
+    public static ConcurrentHashMap<String, Container> wrapperMap = new ConcurrentHashMap<>();
+    public static List<Route> routes = new ArrayList<>();
 
     public static String getContentCharset(Header header) {
         String charset = "utf-8";
@@ -53,7 +57,7 @@ public class Utils {
             for (Route route : routes) {
                 addServelet(route);
             }
-            RouteController.routes = arrayList;
+            Utils.routes = arrayList;
             return arrayList;
         } catch (Exception e) {
             try {
@@ -67,23 +71,42 @@ public class Utils {
         return arrayList;
     }
 
-    public static void main(String[] args) {
-        String a = "/a/*";
-        a = a.substring(0,a.length()-2);
-        System.out.println(a);
+    public static boolean removeServelet(Route route) {
+        Container container = wrapperMap.get(route.getName());
+        if (container != null) {
+            standardContext.removeChild(container);
+        }
+        return true;
     }
 
-    public static ConcurrentHashMap<String,ProxyServlet> roxyServletMap = new ConcurrentHashMap<>();
+    public static boolean saveRoute() {
+
+        String prettyStr = JSON.toJSONString(routes, JSONWriter.Feature.PrettyFormat);
+        try {
+            Files.write(Paths.get("route.json"), prettyStr.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+    static StandardContext standardContext = null;
 
     public static boolean addServelet(Route route) {
         try {
             final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
-            Field appctx = servletContext.getClass().getDeclaredField("context");
-            appctx.setAccessible(true);
-            ApplicationContext applicationContext = (ApplicationContext) appctx.get(servletContext);
-            Field stdctx = applicationContext.getClass().getDeclaredField("context");
-            stdctx.setAccessible(true);
-            StandardContext standardContext = (StandardContext) stdctx.get(applicationContext);
+
+            if (standardContext == null) {
+                Field appctx = servletContext.getClass().getDeclaredField("context");
+                appctx.setAccessible(true);
+                ApplicationContext applicationContext = (ApplicationContext) appctx.get(servletContext);
+                Field stdctx = applicationContext.getClass().getDeclaredField("context");
+                stdctx.setAccessible(true);
+                standardContext = (StandardContext) stdctx.get(applicationContext);
+            }
+
             Wrapper wrapper = standardContext.createWrapper();
             wrapper.setName(route.getName());
             wrapper.setLoadOnStartup(1);
@@ -95,16 +118,16 @@ public class Utils {
             wrapper.setServlet(proxyServlet);
             wrapper.setServletClass(proxyServlet.getClass().getName());
             standardContext.addChild(wrapper);
-
             String prefix = route.getPrefix();
 
-            if ( prefix.equals("*") || prefix.equals("")) {
+            if (prefix.equals("*") || prefix.equals("")) {
                 standardContext.addServletMappingDecoded("/*", route.getName());
             } else {
                 standardContext.addServletMappingDecoded("/" + prefix + "/*", route.getName());
             }
             logger.info("注册成功: " + route.getName());
-            proxyServletMap.put(route.getName(),proxyServlet);
+
+            wrapperMap.put(route.getName(), wrapper);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

@@ -11,5 +11,6 @@ public class Route {
     private String prefix;
     private String remote;
     private String mode;
+    private int order;
     private List<Rule> ruleList;
 }

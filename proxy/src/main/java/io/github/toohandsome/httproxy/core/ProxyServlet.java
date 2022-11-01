@@ -17,7 +17,11 @@
 package io.github.toohandsome.httproxy.core;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import io.github.toohandsome.httproxy.controller.RouteController;
+import io.github.toohandsome.httproxy.entity.Route;
 import io.github.toohandsome.httproxy.entity.Rule;
+import io.github.toohandsome.httproxy.util.SpringUtil;
 import io.github.toohandsome.httproxy.util.Utils;
 import jodd.servlet.ServletUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +37,13 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.RequestWrapper;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.util.EntityUtils;
+import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
@@ -46,10 +52,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -197,7 +206,6 @@ public class ProxyServlet extends HttpServlet {
      */
     protected String getConfigParam(String key) {
         return config.get(key);
-//        return getServletConfig().getInitParameter(key);
     }
 
     @Override
@@ -271,7 +279,7 @@ public class ProxyServlet extends HttpServlet {
      * Sub-classes can override specific behaviour of {@link RequestConfig}.
      */
     protected RequestConfig buildRequestConfig() {
-        HttpHost proxy = new HttpHost("127.0.0.1", 8888);
+//        HttpHost proxy = new HttpHost("127.0.0.1", 8888);
         return RequestConfig.custom()
 //                .setProxy(proxy)
                 .setRedirectsEnabled(doHandleRedirects)
@@ -398,6 +406,42 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws ServletException, IOException {
+
+        //  优先处理 页面请求,不然在全部转发情况下 无法访问页面
+        String pathInfo = servletRequest.getPathInfo();
+        if (pathInfo != null && (pathInfo.startsWith("/routeView/") || pathInfo.equals("/favicon.ico"))) {
+            if (pathInfo.contains("/api")) {
+                try {
+                    RouteController routeController = SpringUtil.getBean(RouteController.class);
+                    String methodName = pathInfo.split("/")[3];
+                    Method method = routeController.getClass().getDeclaredMethod(methodName, Route.class);
+                    String reqStr = ServletUtil.readRequestBodyFromStream(servletRequest);
+                    Route route = JSON.parseObject(reqStr, Route.class);
+                    Object invoke = method.invoke(routeController, route);
+                    servletResponse.setContentType("application/json; charset=utf-8");
+                    servletResponse.getOutputStream().write(JSON.toJSONString(invoke).getBytes(StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                File file = ResourceUtils.getFile("classpath:static/" + pathInfo);
+                byte[] data = Files.readAllBytes(file.toPath());
+                if (pathInfo.endsWith("html")) {
+                    servletResponse.setContentType("text/html; charset=utf-8");
+                } else if (pathInfo.endsWith("css")) {
+                    servletResponse.setContentType("text/css");
+                } else if (pathInfo.endsWith("js")) {
+                    servletResponse.setContentType("text/javascript; charset=utf-8");
+                } else if (pathInfo.endsWith("ico")) {
+                    servletResponse.setContentType("image/x-icon");
+                }
+                servletResponse.setContentLength(data.length);
+                servletResponse.getOutputStream().write(data);
+            }
+            return;
+        }
+
 
         //initialize request attributes from caches if unset by a subclass by this point
         if (servletRequest.getAttribute(ATTR_TARGET_URI) == null) {
@@ -871,7 +915,7 @@ public class ProxyServlet extends HttpServlet {
                 OutputStream servletOutputStream = servletResponse.getOutputStream();
                 Header contentType = proxyResponse.getEntity().getContentType();
                 String contentCharset = Utils.getContentCharset(contentType);
-                String rawContent = getContentByWriteTo(entity,contentCharset);
+                String rawContent = getContentByWriteTo(entity, contentCharset);
                 logger.info("proxy resp2: " + rawContent);
                 List<Rule> bodyRule = Rule.getRule(ruleList, 3);
                 for (Rule rule : bodyRule) {
@@ -903,7 +947,7 @@ public class ProxyServlet extends HttpServlet {
         }
     }
 
-    public String getContentByWriteTo(HttpEntity entity ,String charset) {
+    public String getContentByWriteTo(HttpEntity entity, String charset) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             entity.writeTo(outputStream);
             return outputStream.toString(charset);
