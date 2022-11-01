@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONWriter;
 import io.github.toohandsome.httproxy.entity.Route;
 import io.github.toohandsome.httproxy.util.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,13 +38,15 @@ public class RouteController {
     public boolean editProxy(@RequestBody Route route) {
 
         try {
-            for (Route route1 : routes) {
+            for (int i = 0; i < routes.size(); i++) {
+                Route route1 = routes.get(i);
                 if (route1.getName().equals(route.getName())) {
-                    route1 = route;
+                    routes.set(i,route);
                     saveRoute();
                     return true;
                 }
             }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,11 +75,11 @@ public class RouteController {
     }
 
 
-
-
     @PostMapping("/addProxy")
     public boolean addProxy(@RequestBody Route route) throws NoSuchFieldException, IllegalAccessException {
-
+        if (!StringUtils.hasText(route.getName()) || !StringUtils.hasText(route.getPrefix())) {
+            return false;
+        }
         if (Utils.addServelet(route)) {
             routes.add(route);
             saveRoute();

@@ -10,7 +10,7 @@
 <body>
 
 <div id="app">
-
+    <el-button type="text" @click="openDialog('add','')">新增</el-button>
     <el-table
             :data="tableData"
             border stripe
@@ -62,9 +62,8 @@
         </el-table-column>
     </el-table>
 
-    <el-button type="text" @click="openDialog('add','')">新增</el-button>
 
-    <el-dialog title="新增" :visible.sync="dialogFormVisible">
+    <el-dialog :title="editTitle" :visible.sync="dialogFormVisible" width="1200px">
         <el-form :model="form" :rules="rules" ref="form">
             <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
                 <el-input v-model="form.name" placeholder="请输入名称(保证唯一即可)"></el-input>
@@ -94,26 +93,28 @@
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-tabs v-model="activeEnhanceName" type="card" @tab-click="handleEnhanceTabClick"
+            <el-tabs tab-position="left" v-model="activeEnhanceName" @tab-click="handleEnhanceTabClick"
                      v-show="showEnhanceOption" style="margin-left: 120px;margin-top: -13px;">
+                <el-button type="text" @click="addEnhanceTableData()">新增</el-button>
                 <el-tab-pane label="请求头" name="reqHeader">
-                    <el-button type="text" @click="addReqHeaderTableData()">新增</el-button>
+
                     <el-table stripe
                               :data="reqHeaderTableData"
                               @cell-dblclick="openEditColumn">
                         <el-table-column
                                 prop="mode"
                                 label="模式"
-                                width="180">
+                                width="120">
                             <template slot-scope="scope">
-                                <span v-show="!scope.row.edit">{{ scope.row.mode }}</span>
 
-                                <el-select v-model="scope.row.mode" placeholder="请选择模式" v-show="scope.row.edit">
+                                <el-select v-model="scope.row.mode" placeholder="请选择模式"
+                                           size="small" stype="    width: 100px;">
                                     <el-option
                                             v-for="item in reqHeaderOptions"
                                             :key="item.value"
                                             :label="item.label"
-                                            :value="item.value">
+                                            :value="item.value"
+                                    >
                                     </el-option>
                                 </el-select>
                             </template>
@@ -123,7 +124,6 @@
                                 label="请求头名称"
                                 width="180">
                             <template slot-scope="scope">
-                                <span v-show="!scope.row.edit">{{ scope.row.headerName }}</span>
                                 <el-input
                                         v-model="scope.row.headerName"
                                         placeholder="请求头名称">
@@ -135,7 +135,6 @@
                                 prop="source"
                                 label="查找目标">
                             <template slot-scope="scope">
-                                <span v-show="!scope.row.edit">{{ scope.row.source }}</span>
                                 <el-input
                                         v-model="scope.row.source"
                                         placeholder="查找目标">
@@ -147,22 +146,11 @@
                                 prop="content"
                                 label="替换为">
                             <template slot-scope="scope">
-                                <span v-show="!scope.row.edit">{{ scope.row.content }}</span>
                                 <el-input
                                         v-model="scope.row.content"
                                         placeholder="替换为">
                                     >
                                 </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="排序"
-                               >
-                            <template slot-scope="scope">
-                                <span v-show="!scope.row.edit">{{ scope.row.order }}</span>
-                                <el-input-number v-model="scope.row.order" @change="handleChange" :min="1" :max="100"
-                                                 label="越小优先级越高"></el-input-number>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -179,22 +167,187 @@
 
                 </el-tab-pane>
                 <el-tab-pane label="请求体" name="reqBody">
+                    <el-table stripe
+                              :data="reqBodyTableData"
+                              @cell-dblclick="openEditColumn">
 
+                        <el-table-column
+                                prop="source"
+                                label="查找目标">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.source"
+                                        placeholder="查找目标">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="content"
+                                label="替换为">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.content"
+                                        placeholder="替换为">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="排序"
+                                width="150"
+                        >
+                            <template slot-scope="scope">
+
+                                <el-input-number size="small" v-model="scope.row.order" :min="1" :max="100"
+                                                 label="越小优先级越高"></el-input-number>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="操作"
+                                width="50">
+                            <template slot-scope="scope">
+                                <el-button @click="handleReqBodyDel(scope.row)" type="text" size="small">
+                                    删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
 
                 </el-tab-pane>
                 <el-tab-pane label="响应头" name="respHeader">
+                    <el-table stripe
+                              :data="respHeaderTableData"
+                              @cell-dblclick="openEditColumn">
+                        <el-table-column
+                                prop="mode"
+                                label="模式"
+                                width="120">
+                            <template slot-scope="scope">
+
+
+                                <el-select v-model="scope.row.mode" placeholder="请选择模式"
+                                           size="small" stype="    width: 100px;">
+                                    <el-option
+                                            v-for="item in respHeaderOptions"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value"
+                                    >
+                                    </el-option>
+                                </el-select>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="headerName"
+                                label="请求头名称"
+                                width="180">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.headerName"
+                                        placeholder="请求头名称">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="source"
+                                label="查找目标">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.source"
+                                        placeholder="查找目标">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="content"
+                                label="替换为">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.content"
+                                        placeholder="替换为">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="操作"
+                                width="50">
+                            <template slot-scope="scope">
+                                <el-button @click="handleRespHeaderDel(scope.row)" type="text" size="small">
+                                    删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
 
 
                 </el-tab-pane>
                 <el-tab-pane label="响应体" name="respBody">
 
+                    <el-table stripe
+                              :data="respBodyTableData"
+                              @cell-dblclick="openEditColumn">
 
+                        <el-table-column
+                                prop="source"
+                                label="查找目标">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.source"
+                                        placeholder="查找目标">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="content"
+                                label="替换为">
+                            <template slot-scope="scope">
+
+                                <el-input
+                                        v-model="scope.row.content"
+                                        placeholder="替换为">
+                                    >
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="排序"
+                                width="150"
+                        >
+                            <template slot-scope="scope">
+
+                                <el-input-number size="small" v-model="scope.row.order" :min="1" :max="100"
+                                                 label="越小优先级越高"></el-input-number>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="order"
+                                label="操作"
+                                width="50">
+                            <template slot-scope="scope">
+                                <el-button @click="handleRespBodyDel(scope.row)" type="text" size="small">
+                                    删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
                 </el-tab-pane>
             </el-tabs>
 
-            <!--            <el-form-item label="排序" :label-width="formLabelWidth">-->
-            <!--                <el-input-number v-model="form.order" :min="1" :max="100" label="排序"></el-input-number>-->
-            <!--            </el-form-item>-->
 
             <el-form-item label="备注" :label-width="formLabelWidth">
                 <el-input type="textarea" v-model="form.remark"></el-input>
@@ -226,18 +379,35 @@
                 reqHeaderOptions: [
                     {
                         value: 10,
-                        label: '添加请求头'
+                        label: '添加'
                     },
                     {
                         value: -10,
-                        label: '删除请求头'
+                        label: '删除'
                     },
                     {
                         value: 0,
-                        label: '修改请求头'
+                        label: '修改'
+                    },
+                ],
+                respHeaderOptions: [
+                    {
+                        value: 12,
+                        label: '添加'
+                    },
+                    {
+                        value: -12,
+                        label: '删除'
+                    },
+                    {
+                        value: 2,
+                        label: '修改'
                     },
                 ],
                 reqHeaderTableData: [],
+                respHeaderTableData: [],
+                reqBodyTableData: [],
+                respBodyTableData: [],
                 form: {
                     name: '',
                     prefix: '',
@@ -257,12 +427,86 @@
                         {required: true, message: '请输入远程地址', trigger: 'blur'}
                     ]
                 },
-                activeEnhanceName: 'reqHeader'
+                activeEnhanceName: 'reqHeader',
+                editTitle: '新增'
             }
         },
         methods: {
+            filterRule(ruleList, modes) {
+                return ruleList.filter((rule) => {
+                    for (let i = 0; i < modes.length; i++) {
+                        let ti = modes[i];
+                        if (rule.mode == ti) {
+                            return true;
+                        }
+                    }
+                });
+            },
+            getRowKey() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0,
+                        v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+                ;
+            },
+            addEnhanceTableData() {
+                if (this.activeEnhanceName == "reqHeader") {
+                    this.addReqHeaderTableData();
+                } else if (this.activeEnhanceName == "reqBody") {
+                    this.addReqBodyTableData();
+                } else if (this.activeEnhanceName == "respHeader") {
+                    this.addRespHeaderTableData();
+                } else if (this.activeEnhanceName == "respBody") {
+                    this.addRespBodyTableData();
+                }
+            },
+
+            handleRespHeaderDel(row) {
+                console.log(row);
+                for (let i = 0; i < this.respHeaderTableData.length; i++) {
+                    if (this.respHeaderTableData[i].key == row.key) {
+                        this.respHeaderTableData.splice(i, 1);
+                    }
+                }
+            },
+            addRespHeaderTableData() {
+                this.respHeaderTableData.push({
+                    mode: 12,
+                    headerName: "",
+                    source: "",
+                    content: "",
+                    order: 1,
+                    edit: true,
+                    key: this.getRowKey()
+                });
+            },
+            handleRespBodyDel(row) {
+                console.log(row);
+                for (let i = 0; i < this.respBodyTableData.length; i++) {
+                    if (this.respBodyTableData[i].key == row.key) {
+                        this.respBodyTableData.splice(i, 1);
+                    }
+                }
+            },
+            addRespBodyTableData() {
+                this.respBodyTableData.push({
+                    mode: 3,
+                    headerName: "",
+                    source: "",
+                    content: "",
+                    order: 1,
+                    edit: true,
+                    key: this.getRowKey()
+                });
+            },
             handleReqHeaderDel(row) {
-                console.log(row)
+                console.log(row);
+                for (let i = 0; i < this.reqHeaderTableData.length; i++) {
+                    if (this.reqHeaderTableData[i].key == row.key) {
+                        this.reqHeaderTableData.splice(i, 1);
+                    }
+                }
             },
             addReqHeaderTableData() {
                 this.reqHeaderTableData.push({
@@ -271,12 +515,32 @@
                     source: "",
                     content: "",
                     order: 1,
-                    edit: true
+                    edit: true,
+                    key: this.getRowKey()
+                });
+            },
+            handleReqBodyDel(row) {
+                console.log(row)
+                for (let i = 0; i < this.reqBodyTableData.length; i++) {
+                    if (this.reqBodyTableData[i].key == row.key) {
+                        this.reqBodyTableData.splice(i, 1);
+                    }
+                }
+            },
+            addReqBodyTableData() {
+                this.reqBodyTableData.push({
+                    mode: 1,
+                    headerName: "",
+                    source: "",
+                    content: "",
+                    order: 1,
+                    edit: true,
+                    key: this.getRowKey()
                 });
             },
             openEditColumn(row, column, cell, event) {
                 console.log(row, cell);
-                row.exit = true;
+                row.edit = true;
             },
             // 表格数据编辑保存并关闭编辑
             editColumnData(row, column) {
@@ -310,12 +574,27 @@
                     this.form.prefix = "";
                     this.form.remote = "";
                     this.form.remark = "";
+                    this.editTitle = "添加";
+                    this.reqHeaderTableData = [];
+                    this.respBodyTableData = [];
+                    this.reqHeaderTableData = [];
+                    this.respBodyTableData = [];
                 } else {
                     this.editMode = 'edit'
                     this.form.name = row.name;
                     this.form.prefix = row.prefix;
                     this.form.remote = row.remote;
                     this.form.remark = row.remark;
+                    this.form.mode = row.mode;
+                    this.editTitle = "修改";
+                    this.reqHeaderTableData = this.filterRule(row.ruleList, [0, 10, -10]);
+                    this.reqBodyTableData = this.filterRule(row.ruleList, [1]);
+                    this.respHeaderTableData = this.filterRule(row.ruleList, [2, 12, -12]);
+                    this.respBodyTableData = this.filterRule(row.ruleList, [3]);
+                    console.log(this.reqHeaderTableData);
+                    console.log(this.reqBodyTableData);
+                    console.log(this.respHeaderTableData);
+                    console.log(this.respBodyTableData);
                 }
             },
             handleSave() {
@@ -323,19 +602,24 @@
                 var name = this.form.name;
                 var prefix = this.form.prefix;
                 var remote = this.form.remote;
+                var mode = this.form.mode;
                 var remark = this.form.remark;
                 if (this.editMode == "add") {
                     url = "addProxy"
                 } else {
                     url = "editProxy"
                 }
+                var rules = this.reqHeaderTableData.concat(this.reqBodyTableData).concat(this.respHeaderTableData).concat(this.respBodyTableData);
+                console.log()
                 fetch(url, {
                     method: 'post',
                     body: JSON.stringify({
                         name: name,
                         prefix: prefix,
                         remote: remote,
-                        remark: remark
+                        remark: remark,
+                        mode: mode,
+                        ruleList: rules
                     }),
                     headers: {
                         'Content-Type': 'application/json'
