@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class Utils {
@@ -72,6 +73,8 @@ public class Utils {
         System.out.println(a);
     }
 
+    public static ConcurrentHashMap<String,ProxyServlet> roxyServletMap = new ConcurrentHashMap<>();
+
     public static boolean addServelet(Route route) {
         try {
             final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
@@ -84,13 +87,13 @@ public class Utils {
             Wrapper wrapper = standardContext.createWrapper();
             wrapper.setName(route.getName());
             wrapper.setLoadOnStartup(1);
-            final ProxyServlet servlet = new ProxyServlet();
+            final ProxyServlet proxyServlet = new ProxyServlet();
             if (route.getRuleList() != null) {
-                servlet.ruleList = route.getRuleList();
+                proxyServlet.ruleList = route.getRuleList();
             }
-            servlet.targetUri = route.getRemote();
-            wrapper.setServlet(servlet);
-            wrapper.setServletClass(servlet.getClass().getName());
+            proxyServlet.targetUri = route.getRemote();
+            wrapper.setServlet(proxyServlet);
+            wrapper.setServletClass(proxyServlet.getClass().getName());
             standardContext.addChild(wrapper);
 
             String prefix = route.getPrefix();
@@ -101,6 +104,7 @@ public class Utils {
                 standardContext.addServletMappingDecoded("/" + prefix + "/*", route.getName());
             }
             logger.info("注册成功: " + route.getName());
+            proxyServletMap.put(route.getName(),proxyServlet);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

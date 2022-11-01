@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static io.github.toohandsome.httproxy.util.Utils.roxyServletMap;
+
 @RestController
 @Slf4j
 public class RouteController {
@@ -64,6 +66,7 @@ public class RouteController {
                 if (next.getName().equals(route.getName())) {
                     routes.remove(next);
                     saveRoute();
+//                    Utils.proxyServletMap
                     return true;
                 }
             }
