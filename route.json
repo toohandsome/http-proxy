@@ -77,11 +77,11 @@
 	},
 	{
 		"mode":"transparent",
-		"name":"all",
+		"name":"ALL",
 		"order":0,
 		"prefix":"*",
 		"remark":"",
-		"remote":"http://127.0.0.1:8060",
+		"remote":"HTTP://127.0.0.1",
 		"ruleList":[
 			
 		]

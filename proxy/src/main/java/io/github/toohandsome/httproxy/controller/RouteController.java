@@ -25,7 +25,7 @@ public class RouteController {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    @GetMapping("/getRouteList")
+    @PostMapping("/getRouteList")
     public List<Route> getRouteList(@RequestBody Route route) throws IOException, NoSuchFieldException, IllegalAccessException {
         if (Utils.routes.isEmpty()) {
             Utils.routes = Utils.loadRoutes();

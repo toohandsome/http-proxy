@@ -60,6 +60,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * An HTTP reverse proxy/gateway servlet. It is designed to be extended for customization
@@ -403,14 +404,18 @@ public class ProxyServlet extends HttpServlet {
         super.destroy();
     }
 
+    AtomicLong atomicLong = new AtomicLong(0);
+
     @Override
     protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws ServletException, IOException {
-
+        logger.info(this + " , " + this.getServletName() + " , " + atomicLong.getAndIncrement());
         //  优先处理 页面请求,不然在全部转发情况下 无法访问页面
         String pathInfo = servletRequest.getPathInfo();
-        if (pathInfo != null && (pathInfo.startsWith("/routeView/") || pathInfo.equals("/favicon.ico"))) {
-            if (pathInfo.contains("/api")) {
+        if (pathInfo != null && (pathInfo.startsWith("/routeView/") || pathInfo.equals("/favicon.ico") || pathInfo.equals("/error"))) {
+            if (pathInfo.equals("/error")) {
+                servletResponse.getOutputStream().write("error".getBytes(StandardCharsets.UTF_8));
+            } else if (pathInfo.contains("/api")) {
                 try {
                     RouteController routeController = SpringUtil.getBean(RouteController.class);
                     String methodName = pathInfo.split("/")[3];
@@ -574,6 +579,7 @@ public class ProxyServlet extends HttpServlet {
             String content = rule.getContent();
             if (StringUtils.hasText(rule.getSource())) {
                 String sourceContent = ServletUtil.readRequestBodyFromStream(servletRequest);
+                logger.info("访问id: " + atomicLong.get() + " , 原始请求内容: " + sourceContent);
                 String replace = sourceContent.replace(content, content);
                 byte[] bytes = replace.getBytes(servletRequest.getCharacterEncoding());
                 inputStream = new ByteArrayInputStream(bytes);
@@ -885,7 +891,7 @@ public class ProxyServlet extends HttpServlet {
                 InputStream is = entity.getContent();
 
                 ByteArrayOutputStream baos = cloneInputStream(is);
-                logger.info("proxy resp1: " + baos.toString("UTF-8"));
+                logger.info("访问id: " + atomicLong.get() + " , proxy resp1: " + baos.toString("UTF-8"));
                 InputStream stream1 = new ByteArrayInputStream(baos.toByteArray());
 
                 OutputStream os = servletResponse.getOutputStream();
@@ -916,7 +922,7 @@ public class ProxyServlet extends HttpServlet {
                 Header contentType = proxyResponse.getEntity().getContentType();
                 String contentCharset = Utils.getContentCharset(contentType);
                 String rawContent = getContentByWriteTo(entity, contentCharset);
-                logger.info("proxy resp2: " + rawContent);
+                logger.info("访问id: " + atomicLong.get() + " , proxy resp2: " + rawContent);
                 List<Rule> bodyRule = Rule.getRule(ruleList, 3);
                 for (Rule rule : bodyRule) {
                     if (!StringUtils.hasText(rule.getSource())) {

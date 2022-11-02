@@ -665,7 +665,12 @@
             getRouteList() {
                 var vue = this;
                 fetch("api/getRouteList", {
-                    "method": "GET",
+                    "method": "POST",
+                    body: JSON.stringify({
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 }).then(res => {
                     let resdata = res.json();
                     return resdata;
