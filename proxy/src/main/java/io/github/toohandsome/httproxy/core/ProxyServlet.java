@@ -17,7 +17,6 @@
 package io.github.toohandsome.httproxy.core;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import io.github.toohandsome.httproxy.controller.RouteController;
 import io.github.toohandsome.httproxy.entity.Route;
 import io.github.toohandsome.httproxy.entity.Rule;
@@ -29,15 +28,13 @@ import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.AbortableHttpRequest;
+
+import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.config.SocketConfig;
-import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.RequestWrapper;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
@@ -52,7 +49,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.HttpCookie;
 import java.net.URI;
@@ -78,7 +74,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author David Smiley dsmiley@apache.org
  */
 @Slf4j
-@SuppressWarnings({"deprecation", "serial", "WeakerAccess"})
 public class ProxyServlet extends HttpServlet {
 
     /* INIT PARAMETER NAME CONSTANTS */
@@ -199,7 +194,7 @@ public class ProxyServlet extends HttpServlet {
         return (HttpHost) servletRequest.getAttribute(ATTR_TARGET_HOST);
     }
 
-    public HashMap<String, String> config = new HashMap<String, String>();
+    public HashMap<String, String> config = new HashMap<>();
 
     /**
      * Reads a configuration parameter. By default it reads servlet init parameters but
@@ -404,16 +399,18 @@ public class ProxyServlet extends HttpServlet {
         super.destroy();
     }
 
-    AtomicLong atomicLong = new AtomicLong(0);
+    AtomicLong atomicLong = new AtomicLong(1);
 
     @Override
     protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws ServletException, IOException {
-        logger.info(this + " , " + this.getServletName() + " , " + atomicLong.getAndIncrement());
+
+        String accessId = atomicLong.getAndIncrement() + "";
+        logger.info(this.getServletName() + " , " + accessId + " , " + servletRequest.getRequestURL());
         //  优先处理 页面请求,不然在全部转发情况下 无法访问页面
         String pathInfo = servletRequest.getPathInfo();
-        if (pathInfo != null && (pathInfo.startsWith("/routeView/") || pathInfo.equals("/favicon.ico") || pathInfo.equals("/error"))) {
-            if (pathInfo.equals("/error")) {
+        if (pathInfo != null && (pathInfo.startsWith("/routeView/") || "/favicon.ico".equals(pathInfo) || "/error".equals(pathInfo))) {
+            if ("/error".equals(pathInfo)) {
                 servletResponse.getOutputStream().write("error".getBytes(StandardCharsets.UTF_8));
             } else if (pathInfo.contains("/api")) {
                 try {
@@ -464,12 +461,12 @@ public class ProxyServlet extends HttpServlet {
         //spec: RFC 2616, sec 4.3: either of these two headers signal that there is a message body.
         if (servletRequest.getHeader(HttpHeaders.CONTENT_LENGTH) != null ||
                 servletRequest.getHeader(HttpHeaders.TRANSFER_ENCODING) != null) {
-            proxyRequest = newProxyRequestWithEntity(method, proxyRequestUri, servletRequest);
+            proxyRequest = newProxyRequestWithEntity(method, proxyRequestUri, servletRequest, accessId);
         } else {
             proxyRequest = new BasicHttpRequest(method, proxyRequestUri);
         }
 
-        copyRequestHeaders(servletRequest, proxyRequest);
+        copyRequestHeaders(servletRequest, proxyRequest, accessId);
 
         setXForwardedForHeader(servletRequest, proxyRequest);
 
@@ -499,7 +496,7 @@ public class ProxyServlet extends HttpServlet {
                 servletResponse.setIntHeader(HttpHeaders.CONTENT_LENGTH, 0);
             } else {
                 // Send the content to the client
-                copyResponseEntity(proxyResponse, servletResponse, proxyRequest, servletRequest);
+                copyResponseEntity(proxyResponse, servletResponse, proxyRequest, servletRequest, accessId);
             }
 
         } catch (Exception e) {
@@ -530,8 +527,8 @@ public class ProxyServlet extends HttpServlet {
 
     protected void handleRequestException(HttpRequest proxyRequest, HttpResponse proxyResonse, Exception e) throws ServletException, IOException {
         //abort request, according to best practice with HttpClient
-        if (proxyRequest instanceof AbortableHttpRequest) {
-            AbortableHttpRequest abortableHttpRequest = (AbortableHttpRequest) proxyRequest;
+        if (proxyRequest instanceof AbstractExecutionAwareRequest) {
+            AbstractExecutionAwareRequest abortableHttpRequest = (AbstractExecutionAwareRequest) proxyRequest;
             abortableHttpRequest.abort();
         }
         // If the response is a chunked response, it is read to completion when
@@ -564,7 +561,7 @@ public class ProxyServlet extends HttpServlet {
     }
 
     protected HttpRequest newProxyRequestWithEntity(String method, String proxyRequestUri,
-                                                    HttpServletRequest servletRequest)
+                                                    HttpServletRequest servletRequest, String accessId)
             throws IOException {
         HttpEntityEnclosingRequest eProxyRequest =
                 new BasicHttpEntityEnclosingRequest(method, proxyRequestUri);
@@ -579,7 +576,7 @@ public class ProxyServlet extends HttpServlet {
             String content = rule.getContent();
             if (StringUtils.hasText(rule.getSource())) {
                 String sourceContent = ServletUtil.readRequestBodyFromStream(servletRequest);
-                logger.info("访问id: " + atomicLong.get() + " , 原始请求内容: " + sourceContent);
+                logger.info(this.getServletName() + " , " + accessId + " , 原始请求内容:" + sourceContent);
                 String replace = sourceContent.replace(content, content);
                 byte[] bytes = replace.getBytes(servletRequest.getCharacterEncoding());
                 inputStream = new ByteArrayInputStream(bytes);
@@ -642,7 +639,7 @@ public class ProxyServlet extends HttpServlet {
      * <p>
      * 处理请求头
      */
-    protected void copyRequestHeaders(HttpServletRequest servletRequest, HttpRequest proxyRequest) {
+    protected void copyRequestHeaders(HttpServletRequest servletRequest, HttpRequest proxyRequest, String accessId) {
         // Get an Enumeration of all of the header names sent by the client
         @SuppressWarnings("unchecked")
         Enumeration<String> enumerationOfHeaderNames = servletRequest.getHeaderNames();
@@ -662,7 +659,7 @@ public class ProxyServlet extends HttpServlet {
         for (Rule rule : headerRule2) {
             proxyRequest.addHeader(rule.getHeaderName(), rule.getContent());
         }
-        logger.info("proxyRequest headers: " + JSON.toJSONString(proxyRequest.getAllHeaders()));
+        logger.info(this.getServletName() + " , " + accessId + " , proxyRequest headers: " + JSON.toJSONString(proxyRequest.getAllHeaders()));
     }
 
     /**
@@ -728,7 +725,7 @@ public class ProxyServlet extends HttpServlet {
     protected void copyResponseHeaders(HttpResponse proxyResponse, HttpServletRequest servletRequest,
                                        HttpServletResponse servletResponse) {
         for (Header header : proxyResponse.getAllHeaders()) {
-            if (header.getName().equalsIgnoreCase("content-length")) {
+            if ("content-length".equalsIgnoreCase(header.getName())) {
                 continue;
             }
             // 删除和修改的 跳过原始的添加
@@ -882,7 +879,7 @@ public class ProxyServlet extends HttpServlet {
      * Copy response body data (the entity) from the proxy to the servlet client.
      */
     protected void copyResponseEntity(HttpResponse proxyResponse, HttpServletResponse servletResponse,
-                                      HttpRequest proxyRequest, HttpServletRequest servletRequest)
+                                      HttpRequest proxyRequest, HttpServletRequest servletRequest, String accessId)
             throws IOException {
         HttpEntity entity = proxyResponse.getEntity();
         if (entity != null) {
@@ -891,7 +888,7 @@ public class ProxyServlet extends HttpServlet {
                 InputStream is = entity.getContent();
 
                 ByteArrayOutputStream baos = cloneInputStream(is);
-                logger.info("访问id: " + atomicLong.get() + " , proxy resp1: " + baos.toString("UTF-8"));
+                logger.info(this.getServletName() + " , " + accessId + " , proxy resp1: " + baos.toString("UTF-8"));
                 InputStream stream1 = new ByteArrayInputStream(baos.toByteArray());
 
                 OutputStream os = servletResponse.getOutputStream();
@@ -922,7 +919,7 @@ public class ProxyServlet extends HttpServlet {
                 Header contentType = proxyResponse.getEntity().getContentType();
                 String contentCharset = Utils.getContentCharset(contentType);
                 String rawContent = getContentByWriteTo(entity, contentCharset);
-                logger.info("访问id: " + atomicLong.get() + " , proxy resp2: " + rawContent);
+                logger.info(this.getServletName() + " , " + accessId + " , proxy resp2: " + rawContent);
                 List<Rule> bodyRule = Rule.getRule(ruleList, 3);
                 for (Rule rule : bodyRule) {
                     if (!StringUtils.hasText(rule.getSource())) {
@@ -948,7 +945,7 @@ public class ProxyServlet extends HttpServlet {
                 }
 
                 byteArrayEntity.writeTo(servletOutputStream);
-                logger.info("resp end");
+
             }
         }
     }

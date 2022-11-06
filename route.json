@@ -1,10 +1,22 @@
 [
 	{
+		"mode":"transparent",
+		"name":"ALL",
+		"order":0,
+		"prefix":"*",
+		"remark":"",
+		"remote":"HTTP://127.0.0.1",
+		"ruleList":[
+			
+		]
+	},
+	{
+		"mode":"enhance",
 		"name":"t2",
 		"order":0,
 		"prefix":"t2",
 		"remark":"",
-		"remote":"http://127.0.0.1:8060/t2",
+		"remote":"http://127.0.0.1/t2",
 		"ruleList":[
 			{
 				"content":"bbb",
@@ -16,49 +28,13 @@
 		]
 	},
 	{
-		"name":"t3",
-		"order":0,
-		"prefix":"t3",
-		"remark":"",
-		"remote":"http://127.0.0.1:8060/t3",
-		"ruleList":[
-			{
-				"content":"{\"name\":\"lisi\",\"age\":44,\"big\":true,\"address\":\"中央花园2期110栋403\",\"a\":\"dasndjasdasdxxxxxxxxxxxxxxxxxxxxxxxxx11\"}",
-				"headerName":"aaa",
-				"mode":1,
-				"order":0,
-				"source":""
-			},
-			{
-				"content":"123",
-				"headerName":"bbb",
-				"mode":10,
-				"order":0,
-				"source":""
-			},
-			{
-				"content":"",
-				"headerName":"ccc",
-				"mode":-10,
-				"order":0,
-				"source":""
-			}
-		]
-	},
-	{
+		"mode":"enhance",
 		"name":"t4",
 		"order":0,
 		"prefix":"t4",
 		"remark":"",
-		"remote":"http://127.0.0.1:8060/t4",
+		"remote":"http://127.0.0.1/t4",
 		"ruleList":[
-			{
-				"content":"false",
-				"headerName":"aaa",
-				"mode":1,
-				"order":0,
-				"source":"true"
-			},
 			{
 				"content":"123",
 				"headerName":"bbb",
@@ -72,18 +48,44 @@
 				"mode":-10,
 				"order":0,
 				"source":""
+			},
+			{
+				"content":"false",
+				"headerName":"aaa",
+				"mode":1,
+				"order":1,
+				"source":"true"
 			}
 		]
 	},
 	{
-		"mode":"transparent",
-		"name":"ALL",
+		"name":"t3",
 		"order":0,
-		"prefix":"*",
+		"prefix":"t3",
 		"remark":"",
-		"remote":"HTTP://127.0.0.1",
+		"remote":"http://127.0.0.1/t3",
 		"ruleList":[
-			
+			{
+				"content":"123",
+				"headerName":"bbb",
+				"mode":10,
+				"order":0,
+				"source":""
+			},
+			{
+				"content":"",
+				"headerName":"ccc",
+				"mode":-10,
+				"order":0,
+				"source":""
+			},
+			{
+				"content":"{\"name\":\"lisi\",\"age\":44,\"big\":true,\"address\":\"中央花园2期110栋403\",\"a\":\"dasndjasdasdxxxxxxxxxxxxxxxxxxxxxxxxx11\"}",
+				"headerName":"aaa",
+				"mode":1,
+				"order":1,
+				"source":""
+			}
 		]
 	}
 ]
