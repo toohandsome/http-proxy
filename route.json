@@ -3,7 +3,7 @@
 		"mode":"transparent",
 		"name":"ALL",
 		"order":0,
-		"prefix":"*",
+		"prefix":"/**",
 		"remark":"",
 		"remote":"HTTP://127.0.0.1",
 		"ruleList":[
@@ -14,7 +14,7 @@
 		"mode":"enhance",
 		"name":"t2",
 		"order":0,
-		"prefix":"t2",
+		"prefix":"/t2/**",
 		"remark":"",
 		"remote":"http://127.0.0.1/t2",
 		"ruleList":[
@@ -31,7 +31,7 @@
 		"mode":"enhance",
 		"name":"t4",
 		"order":0,
-		"prefix":"t4",
+		"prefix":"/t4/**",
 		"remark":"",
 		"remote":"http://127.0.0.1/t4",
 		"ruleList":[
@@ -61,7 +61,7 @@
 	{
 		"name":"t3",
 		"order":0,
-		"prefix":"t3",
+		"prefix":"/t3/**",
 		"remark":"",
 		"remote":"http://127.0.0.1/t3",
 		"ruleList":[

@@ -96,6 +96,10 @@ public class Utils {
 
     public static boolean addServelet(Route route) {
         try {
+            if (!route.getName().equals("ALL")) {
+                return true;
+            }
+            route.setPrefix("*");
             final ServletContext servletContext = SpringUtil.getBean(ServletContext.class);
 
             if (standardContext == null) {
@@ -123,7 +127,7 @@ public class Utils {
             if (prefix.equals("*") || prefix.equals("")) {
                 standardContext.addServletMappingDecoded("/*", route.getName());
             } else {
-                standardContext.addServletMappingDecoded("/" + prefix + "/*", route.getName());
+                standardContext.addServletMappingDecoded(prefix + "/*", route.getName());
             }
             logger.info("注册成功: " + route.getName());
 

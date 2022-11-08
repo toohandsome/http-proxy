@@ -40,6 +40,7 @@ import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.util.EntityUtils;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 
@@ -400,6 +401,7 @@ public class ProxyServlet extends HttpServlet {
     }
 
     AtomicLong atomicLong = new AtomicLong(1);
+    AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
@@ -407,6 +409,26 @@ public class ProxyServlet extends HttpServlet {
 
         String accessId = atomicLong.getAndIncrement() + "";
         logger.info(this.getServletName() + " , " + accessId + " , " + servletRequest.getRequestURL());
+        // http://abc/abc.thml
+        // http://abc:9090/abc.thml
+        // http://abc/
+        // http://abc
+        Route currentRoute = null;
+        boolean routrMatch = false;
+        for (Route route : Utils.routes) {
+            final String prefix = route.getPrefix();
+            routrMatch = pathMatcher.match(prefix, servletRequest.getRequestURI());
+            logger.info(route.getName() + ": " + prefix + " match : " + servletRequest.getRequestURI() + " , result:" + routrMatch);
+            if (routrMatch) {
+                resetTarget(route.getRemote());
+                currentRoute = route;
+                break;
+            }
+        }
+        if (!routrMatch){
+            currentRoute = Route.
+        }
+
         //  优先处理 页面请求,不然在全部转发情况下 无法访问页面
         String pathInfo = servletRequest.getPathInfo();
         if (pathInfo != null && (pathInfo.startsWith("/routeView/") || "/favicon.ico".equals(pathInfo) || "/error".equals(pathInfo))) {
