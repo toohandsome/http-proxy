@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>trouble fix</title>
+    <script src="vue.js"></script>
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="index.css"/>
+</head>
+<body>
+
+<div id="app">
+
+    <el-container style="height: 800px; border: 1px solid #eee">
+        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+            <el-tree :data="treeData" :props="defaultProps" @node-click="handleNodeClick"
+                     @node-contextmenu="rightClick"></el-tree>
+        </el-aside>
+
+        <el-container>
+            <el-header style=" font-size: 12px">
+
+                <div>
+                    <el-button type="primary" @click="compileClass">反编译写回内存</el-button>
+                    <el-input v-model="funName" placeholder="当前类的方法名" style="width: 900px"></el-input>
+                    <el-button-group>
+                        <el-button type="primary" icon="el-icon-edit">watch</el-button>
+                        <el-button type="primary" icon="el-icon-share">trace</el-button>
+                        <el-button type="primary" icon="el-icon-delete">stack</el-button>
+                    </el-button-group>
+                </div>
+            </el-header>
+            <el-main>
+                <el-input
+                        type="textarea"
+
+                        :autosize="{ minRows: 2, maxRows: 100}"
+                        placeholder="请输入内容"
+                        v-model="sourceTextarea">
+                </el-input>
+            </el-main>
+        </el-container>
+    </el-container>
+
+
+</div>
+
+<style type="text/css">
+
+</style>
+<script>
+
+
+    const App = {
+        data() {
+            return {
+                tableData: [],
+                treeData: [],
+                defaultProps: {
+                    children: 'children',
+                    label: 'label'
+                },
+                sourceArr: [],
+                sourceTextarea: "",
+                funName:"",
+                currentClass:"",
+                currentFullName:""
+            }
+        },
+        methods: {
+            tracking(){
+                var vue = this;
+                fetch("tracking", {
+                    method: 'post',
+                    body: JSON.stringify({
+                        className: vue.currentClass,
+                        source: vue.sourceTextarea,
+                        fullName:vue.currentFullName,
+                        funName:vue.funName
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    let resdata = res.text();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+                    if (res+""=="true"){
+                        vue.$message({
+                            message: '编译成功',
+                            type: 'success'
+                        });
+                    }else{
+                        vue.$message.error('编译失败');
+                    }
+
+                });
+            },
+            compileClass(){
+                var vue = this;
+                fetch("compileClass", {
+                    method: 'post',
+                    body: JSON.stringify({
+                        className: vue.currentClass,
+                        source: vue.sourceTextarea,
+                        fullName:vue.currentFullName,
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    let resdata = res.text();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+                    if (res+""=="true"){
+                        vue.$message({
+                            message: '编译成功',
+                            type: 'success'
+                        });
+                    }else{
+                        vue.$message.error('编译失败');
+                    }
+
+                });
+            },
+            rightClick(event, data, node, self) {
+                var vue = this;
+                console.log(data, node, self);
+                if (!data.children) {
+                    fetch("jad?className=" + data.fullName, {
+                        "method": "GET"
+                    }).then(res => {
+                        let resdata = res.json();
+                        return resdata;
+                    }).then(res => {
+                        console.log("res:", res);
+                        var sourceMap = {};
+                        sourceMap.source = res.body.results[0].source;
+                        const regex = /\\n/gm;
+                        const subst = `\r\n`;
+                        sourceMap.source = sourceMap.source.replace(regex, subst);
+                        sourceMap.className = data.fullName;
+                        vue.sourceArr.push(sourceMap);
+                        vue.sourceTextarea = sourceMap.source;
+                        vue.currentClass = data.label;
+                        vue.currentFullName = data.fullName;
+                    });
+                }
+            },
+            handleNodeClick(data) {
+                console.log(data);
+            },
+            startArthas() {
+                fetch("startArthas", {
+                    "method": "GET"
+                });
+            },
+            checkState() {
+                var vue = this;
+                fetch("checkState", {
+                    "method": "GET"
+                }).then(res => {
+                    let resdata = res.text();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+
+                    if (res + "" == "true") {
+                        vue.getMainPackageTree();
+                    } else {
+                        checkState();
+                    }
+                });
+            },
+            getMainPackageTree() {
+                var vue = this;
+                fetch("getMainPackageTree", {
+                    "method": "GET"
+
+                }).then(res => {
+                    let resdata = res.json();
+                    return resdata;
+                }).then(res => {
+                    console.log("res:", res);
+                    vue.treeData = res;
+                });
+            },
+
+        },
+        mounted: function () {
+            console.log("页面打开了!");
+            this.startArthas();
+            this.checkState();
+        }
+    }
+    var Ctor = Vue.extend(App);
+    new Ctor().$mount('#app');
+    // const app = Vue.createApp(App);
+    // app.use(ElementPlus);
+    // app.mount("#app");
+
+</script>
+</body>
+
+</html>

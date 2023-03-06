@@ -15,6 +15,28 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.github.toohandsome</groupId>-->
+<!--            <artifactId>proxy-patch</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>io.github.toohandsome</groupId>-->
+<!--            <artifactId>class-assist</artifactId>-->
+<!--            <version>1.0.4</version>-->
+<!--        </dependency>-->
+    </dependencies>
+
+
     <build>
         <plugins>
             <plugin>

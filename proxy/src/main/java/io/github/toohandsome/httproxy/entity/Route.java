@@ -2,6 +2,7 @@ package io.github.toohandsome.httproxy.entity;
 
 import lombok.Data;
 
+
 import java.util.List;
 
 @Data

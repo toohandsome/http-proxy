@@ -12,14 +12,19 @@ public class HttpInterceptorAgent {
     public static void premain(String agentArgs, Instrumentation inst) {
 //        inst.addTransformer(new HttpTransformer());
 //    }
-        String agentJarPath = System.getProperty("java.class.path");
-        System.out.println("MyAgent jar path: " + agentJarPath);
-        new AgentBuilder.Default()
-                .type(ElementMatchers.nameContains("Tc"))
-                .transform((builder, typeDescription, classLoader, module) ->
-                        builder.visit(Advice.to(HttpURLConnectionInterceptor.class).on(ElementMatchers.isMethod())))
-                                .installOn(inst);
+        try {
+            JarFileHelper.addJarToBootstrap(inst);
+//            String agentJarPath = System.getProperty("java.class.path");
+//            System.out.println("MyAgent jar path: " + agentJarPath);
 
+            new AgentBuilder.Default()
+                    .type(ElementMatchers.nameContains("HttpURLConnection"))
+                    .transform((builder, typeDescription, classLoader, module) ->
+                            builder.visit(Advice.to(HttpURLConnectionInterceptor.class).on(ElementMatchers.isMethod())))
+                    .installOn(inst);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static class HttpURLConnectionInterceptor {

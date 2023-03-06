@@ -1,8 +1,26 @@
 package io.github.toohandsome.demo;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.util.UUIDUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +36,21 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+
+import java.io.File;
+
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @Slf4j
@@ -76,6 +109,51 @@ public class Tc1 {
 
         return "t1";
     }
+    @Autowired
+    RestTemplate restTemplate;
+
+    @GetMapping("/proxy")
+    public String proxy()  {
+        System.setProperty("http.proxyHost", "127.0.0.1");
+        System.setProperty("http.proxyPort", "9999");
+        return "success";
+    }
+
+    @GetMapping("/tt1")
+    public String tt1() throws Exception {
+        final ResponseEntity<String> forEntity = restTemplate.getForEntity("https://www.baidu.com", String.class, new HashMap<>());
+        System.out.println("forEntity: " +forEntity.getBody());
+
+//        CloseableHttpClient httpClient1 = HttpClients.createDefault();
+//        HttpGet httpGet = new HttpGet("http://127.0.0.1/t1");
+//        CloseableHttpResponse response = httpClient1.execute(httpGet);
+//        HttpEntity entity = response.getEntity();
+//        String ret = EntityUtils.toString(entity, "UTF-8");
+//        System.out.println(ret);
+
+//        for (int i = 0; i < 4; i++) {
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    while (true) {
+//                        try {
+//                            CloseableHttpClient httpClient1 = HttpClients.createDefault();
+//                            HttpGet httpPost = new HttpGet("http://127.0.0.1:8080/t1");
+//                            CloseableHttpResponse response = httpClient1.execute(httpPost);
+//                            HttpEntity entity = response.getEntity();
+//                            String ret = EntityUtils.toString(entity, "UTF-8");
+//                            System.out.println(ret);
+//                        } catch (Exception e) {
+//                            System.out.println("1");
+//                        }
+//                    }
+//                }
+//            }).start();
+//        }
+
+        return "t1";
+    }
+
 
     @GetMapping("/t1")
     public String t1(HttpServletRequest request, Integer times) {
@@ -152,6 +230,132 @@ public class Tc1 {
             sb.append("a");
         }
         return sb.toString();
+    }
+
+
+    @GetMapping("/t7")
+    public String t7(String packageName, String level) {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger logger = context.getLogger(packageName);
+
+        logger.setLevel(Level.toLevel(level));
+        // Don't inherit root appender
+        logger.setAdditive(false);
+
+        ConsoleAppender consoleAppender = new ConsoleAppender();
+
+        RollingFileAppender rollingFile = new RollingFileAppender();
+        rollingFile.setContext(context);
+        rollingFile.setName("dynamic_logger_fileAppender");
+
+        // Optional
+        rollingFile.setFile("/log"
+                + File.separator + "msg.log");
+        rollingFile.setAppend(true);
+
+        // Set up rolling policy
+        TimeBasedRollingPolicy rollingPolicy = new TimeBasedRollingPolicy();
+        rollingPolicy.setFileNamePattern("/log"
+                + File.separator + "%d{yyyy-MM,aux}"
+                + File.separator + "msg_%d{yyyy-MM-dd_HH-mm}.txt");
+
+        rollingPolicy.setParent(rollingFile);
+        rollingPolicy.setContext(context);
+        rollingPolicy.start();
+
+        // set up pattern encoder
+        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+        encoder.setContext(context);
+        encoder.setPattern("%-4relative [%thread] %-5level %logger{35} - %msg%n");
+        encoder.start();
+
+        rollingFile.setRollingPolicy(rollingPolicy);
+        rollingFile.setEncoder(encoder);
+        rollingFile.start();
+
+        consoleAppender.setEncoder(encoder);
+        consoleAppender.start();
+
+        // Atach appender to logger
+        logger.addAppender(rollingFile);
+        logger.addAppender(consoleAppender);
+        return "";
+    }
+
+    @GetMapping("/t8")
+    public String t8(String packageName, String level) {
+        logger.info("info");
+        logger.warn("warn");
+        logger.error("error");
+        logger.debug("debug");
+
+        return "";
+    }
+
+    public static void main(String[] args) {
+        String messageid = UUID.randomUUID().toString().replace("-", "");
+        System.out.println(messageid.length());
+    }
+
+    @GetMapping("/t9")
+    public String t9() throws IOException {
+        String url = "https://www.stgl-sirius.com/ydqmjk/api/1.0.1/medical/scanLogin";
+        final String s = sendCaReq(url, "e30=");
+        return s;
+    }
+
+    @GetMapping("/t10")
+    public String t10(String transactionId) throws IOException {
+        String url = "https://www.stgl-sirius.com/ydqmjk/api/1.0.1/medical/authState";
+        final String message = "{\"transactionId\":\"" + transactionId + "\"}";
+        final String s1 = new String(Base64.getEncoder().encode(message.getBytes(StandardCharsets.UTF_8)));
+        final String s = sendCaReq(url, s1);
+        return s;
+    }
+
+    CloseableHttpClient httpClient = HttpClients.createDefault();
+
+    public String sendCaReq(String url, String message) throws IOException {
+        String appKey = "2cf7a341657a87a3dd110a0049c96651";
+        String appid = "18b19fc77e57497087c7c0b6b8188534";
+        String datetime = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date());
+        String format = "JSON";
+
+        String messageid = UUID.randomUUID().toString().replace("-", "");
+        String version = "1.0.1";
+
+        StringBuilder sb = new StringBuilder(url).append("?");
+        StringBuilder sb1 = new StringBuilder();
+        sb.append("appid").append("=").append(appid).append("&");
+        sb.append("datetime").append("=").append(datetime).append("&");
+        sb.append("format").append("=").append(format).append("&");
+        sb.append("message").append("=").append(message).append("&");
+        sb.append("messageid").append("=").append(messageid).append("&");
+        sb.append("version").append("=").append(version).append("&");
+        final String secStr = sb1.append(appKey).append(appid).append(datetime).append(format).append(message).append(messageid).append(version).append(appKey).toString();
+
+        String security = DigestUtils.md5Hex(secStr).toUpperCase();
+        System.out.println("5.4 md5  ： " + security);
+        sb.append("security").append("=").append(security);
+
+        HttpPost httpPost = new HttpPost(sb.toString());
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+
+        String ret = "";
+        if (response.getStatusLine().getStatusCode() == 200) {
+            HttpEntity entity = response.getEntity();
+
+            // 获取返回的信息
+            ret = EntityUtils.toString(entity, "UTF-8");
+            System.out.println(ret);
+        } else {
+            System.out.println("删除失败，请重试！！！");
+        }
+
+        // 关闭response、HttpClient资源
+        response.close();
+//        httpClient.close();
+        return ret;
     }
 
 

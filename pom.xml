@@ -14,9 +14,14 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
     <modules>
+        <module>proxy-patch</module>
         <module>proxy</module>
         <module>demo</module>
         <module>agent</module>
+        <module>arthas-demo</module>
+        <module>attach-agent</module>
+        <module>attach-boot</module>
+
     </modules>
 
     <properties>
