@@ -426,7 +426,7 @@ public class ProxyServlet extends HttpServlet {
             }
         }
         if (!routrMatch){
-            currentRoute = Route.
+//            currentRoute = Route.
         }
 
         //  优先处理 页面请求,不然在全部转发情况下 无法访问页面

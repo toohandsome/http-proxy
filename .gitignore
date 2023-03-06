@@ -26,3 +26,4 @@ http-proxy.iml
 target
 proxy/proxy.iml
 demo/demo.iml
+*.iml
