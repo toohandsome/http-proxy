@@ -65,10 +65,6 @@ public class Tc1 {
 
         try {
 
-            URL url1 = new URL("https://www.baidu.com");
-            HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
 
             URL url = new URL("http://www.baidu.com");
             //得到连接对象
@@ -94,6 +90,7 @@ public class Tc1 {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 //得到响应流
                 InputStream inputStream = con.getInputStream();
+                //sun.net.www.http.HttpClient.getInputStream
                 //将响应流转换成字符串
                 resultBuffer = new StringBuffer();
                 String line;

@@ -17,21 +17,21 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.28.0-GA</version>
+        </dependency>
 <!--        <dependency>-->
-<!--            <groupId>io.github.toohandsome</groupId>-->
-<!--            <artifactId>class-assist</artifactId>-->
-<!--            <version>1.0.3</version>-->
+<!--            <groupId>org.ow2.asm</groupId>-->
+<!--            <artifactId>asm</artifactId>-->
+<!--            <version>7.1</version>-->
 <!--        </dependency>-->
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>7.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-commons</artifactId>
-            <version>7.1</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.ow2.asm</groupId>-->
+<!--            <artifactId>asm-commons</artifactId>-->
+<!--            <version>7.1</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -52,34 +52,34 @@
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-shade-plugin</artifactId>-->
+<!--                <version>3.2.1</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
 
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
+<!--                        <goals>-->
+<!--                            <goal>shade</goal>-->
+<!--                        </goals>-->
 
-                        <configuration>
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.ow2.asm</pattern>
-                                    <shadedPattern>me.ya.agent.hidden.org.ow2.asm</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>me.ya.agent.hidden.org.objectweb.asm</shadedPattern>
-                                </relocation>
-                            </relocations>
+<!--                        <configuration>-->
+<!--                            <relocations>-->
+<!--                                <relocation>-->
+<!--                                    <pattern>org.ow2.asm</pattern>-->
+<!--                                    <shadedPattern>me.ya.agent.hidden.org.ow2.asm</shadedPattern>-->
+<!--                                </relocation>-->
+<!--                                <relocation>-->
+<!--                                    <pattern>org.objectweb.asm</pattern>-->
+<!--                                    <shadedPattern>me.ya.agent.hidden.org.objectweb.asm</shadedPattern>-->
+<!--                                </relocation>-->
+<!--                            </relocations>-->
 
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
