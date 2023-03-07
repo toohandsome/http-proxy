@@ -58,9 +58,9 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-context:5.3.23" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:5.3.23" level="project" />
     <orderEntry type="module-library">
-      <library name="Maven: com.sun:tools:1.8">
+      <library name="Maven: com.sun:tools:1.8.0_172">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../Program Files/Java/jdk1.8.0_181/lib/tools.jar!/" />
+          <root url="jar://d:/jdk1.8.0_172/lib/tools.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

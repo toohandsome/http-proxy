@@ -20,8 +20,8 @@ public class AgentMain {
     static {
         retransformClassList.add("java.net.URL");
         retransformClassList.add("org.apache.http.client.config.RequestConfig");
-//        retransformClassList.add("okhttp3.Route");
         retransformClassList.add("okhttp3.OkHttpClient");
+        retransformClassList.add("cn.hutool.http.HttpConnection");
     }
 
     public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {

@@ -10,354 +10,433 @@
 <body>
 
 <div id="app">
-    <el-button type="text" @click="openDialog('add','')">新增</el-button>
-    <el-table
-            :data="tableData"
-            border stripe
-            style="width: 100%">
 
-        <el-table-column
-                prop="name"
-                label="名称(唯一)"
-                width="200">
-        </el-table-column>
-        <el-table-column
-                prop="prefix"
-                label="匹配前缀"
-        >
-        </el-table-column>
-        <el-table-column
-                prop="remote"
-                label="远程地址"
-        >
-        </el-table-column>
-        <el-table-column
-                prop="preview"
-                label="预览"
-        >
-        </el-table-column>
-        </el-table-column>
-        <el-table-column
-                prop="order"
-                label="排序(越低优先级越高)"
-        >
-        </el-table-column>
-        <el-table-column
-                prop="remark"
-                label="备注"
-        >
-        </el-table-column>
-        <el-table-column
-                fixed="right"
-                label="操作"
-                width="100">
-            <template slot-scope="scope">
-                <el-button @click="openDialog('edit',scope.row)" type="text" size="small">
-                    修改
-                </el-button>
-                <el-button @click="handleDel(scope.row)" type="text" size="small">
-                    删除
-                </el-button>
-            </template>
-        </el-table-column>
-    </el-table>
+    <el-tabs type="border-card">
+        <el-tab-pane label="反向代理">
 
 
-    <el-dialog :title="editTitle" :visible.sync="dialogFormVisible" width="1200px">
-        <el-form :model="form" :rules="rules" ref="form">
-            <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
-                <el-input v-model="form.name" placeholder="请输入名称(保证唯一即可)"></el-input>
-            </el-form-item>
-            <el-form-item label="匹配前缀" :label-width="formLabelWidth" prop="prefix">
-                <el-input v-model="form.prefix" placeholder="例1: * (表示匹配所有) ; 例2: api ; 例3: api/user"></el-input>
-            </el-form-item>
-            <el-form-item label="远程地址" :label-width="formLabelWidth" prop="remote">
-                <el-input v-model="form.remote"
-                          placeholder="例1: http://192.168.2.1 ; 例2: http://192.168.2.1/api ; 例3: http://192.168.2.1/api/user  "></el-input>
-            </el-form-item>
-            <el-form-item label="模式" :label-width="formLabelWidth">
-                <el-select v-model="form.mode" placeholder="请选择模式" @change="changeMode($event)">
-                    <el-option
-                            key="transparent"
-                            label="透传"
-                            value="transparent">
-                        <span style="float: left">透传</span>
-                        <span style="float: right; color: #8492a6; font-size: 13px">不做任何修改,直接转发</span>
-                    </el-option>
-                    <el-option
-                            key="enhance"
-                            label="增强"
-                            value="enhance">
-                        <span style="float: left">增强</span>
-                        <span style="float: right; color: #8492a6; font-size: 13px">可以修改请求和响应</span>
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <el-tabs tab-position="left" v-model="activeEnhanceName" @tab-click="handleEnhanceTabClick"
-                     v-show="showEnhanceOption" style="margin-left: 120px;margin-top: -13px;">
-                <el-button type="text" @click="addEnhanceTableData()">新增</el-button>
-                <el-tab-pane label="请求头" name="reqHeader">
+            <el-button type="text" @click="openDialog('add','')">新增</el-button>
+            <el-table
+                    :data="tableData"
+                    border stripe
+                    style="width: 100%">
 
-                    <el-table stripe
-                              :data="reqHeaderTableData"
-                              @cell-dblclick="openEditColumn">
-                        <el-table-column
-                                prop="mode"
-                                label="模式"
-                                width="120">
-                            <template slot-scope="scope">
-
-                                <el-select v-model="scope.row.mode" placeholder="请选择模式"
-                                           size="small" stype="    width: 100px;">
-                                    <el-option
-                                            v-for="item in reqHeaderOptions"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value"
-                                    >
-                                    </el-option>
-                                </el-select>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="headerName"
-                                label="请求头名称"
-                                width="180">
-                            <template slot-scope="scope">
-                                <el-input
-                                        v-model="scope.row.headerName"
-                                        placeholder="请求头名称">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="source"
-                                label="查找目标">
-                            <template slot-scope="scope">
-                                <el-input
-                                        v-model="scope.row.source"
-                                        placeholder="查找目标">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="content"
-                                label="替换为">
-                            <template slot-scope="scope">
-                                <el-input
-                                        v-model="scope.row.content"
-                                        placeholder="替换为">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="操作"
-                                width="50">
-                            <template slot-scope="scope">
-                                <el-button @click="handleReqHeaderDel(scope.row)" type="text" size="small">
-                                    删除
-                                </el-button>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-
-                </el-tab-pane>
-                <el-tab-pane label="请求体" name="reqBody">
-                    <el-table stripe
-                              :data="reqBodyTableData"
-                              @cell-dblclick="openEditColumn">
-
-                        <el-table-column
-                                prop="source"
-                                label="查找目标">
-                            <template slot-scope="scope">
-
-                                <el-input
-                                        v-model="scope.row.source"
-                                        placeholder="查找目标">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="content"
-                                label="替换为">
-                            <template slot-scope="scope">
-
-                                <el-input
-                                        v-model="scope.row.content"
-                                        placeholder="替换为">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="排序"
-                                width="150"
-                        >
-                            <template slot-scope="scope">
-
-                                <el-input-number size="small" v-model="scope.row.order" :min="1" :max="100"
-                                                 label="越小优先级越高"></el-input-number>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="操作"
-                                width="50">
-                            <template slot-scope="scope">
-                                <el-button @click="handleReqBodyDel(scope.row)" type="text" size="small">
-                                    删除
-                                </el-button>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-
-                </el-tab-pane>
-                <el-tab-pane label="响应头" name="respHeader">
-                    <el-table stripe
-                              :data="respHeaderTableData"
-                              @cell-dblclick="openEditColumn">
-                        <el-table-column
-                                prop="mode"
-                                label="模式"
-                                width="120">
-                            <template slot-scope="scope">
+                <el-table-column
+                        prop="name"
+                        label="名称(唯一)"
+                        width="200">
+                </el-table-column>
+                <el-table-column
+                        prop="prefix"
+                        label="匹配前缀"
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="remote"
+                        label="远程地址"
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="preview"
+                        label="预览"
+                >
+                </el-table-column>
+                </el-table-column>
+                <el-table-column
+                        prop="order"
+                        label="排序(越低优先级越高)"
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="remark"
+                        label="备注"
+                >
+                </el-table-column>
+                <el-table-column
+                        fixed="right"
+                        label="操作"
+                        width="100">
+                    <template slot-scope="scope">
+                        <el-button @click="openDialog('edit',scope.row)" type="text" size="small">
+                            修改
+                        </el-button>
+                        <el-button @click="handleDel(scope.row)" type="text" size="small">
+                            删除
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
 
 
-                                <el-select v-model="scope.row.mode" placeholder="请选择模式"
-                                           size="small" stype="    width: 100px;">
-                                    <el-option
-                                            v-for="item in respHeaderOptions"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value"
-                                    >
-                                    </el-option>
-                                </el-select>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="headerName"
-                                label="请求头名称"
-                                width="180">
-                            <template slot-scope="scope">
+            <el-dialog :title="editTitle" :visible.sync="dialogFormVisible" width="1200px">
+                <el-form :model="form" :rules="rules" ref="form">
+                    <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
+                        <el-input v-model="form.name" placeholder="请输入名称(保证唯一即可)"></el-input>
+                    </el-form-item>
+                    <el-form-item label="匹配前缀" :label-width="formLabelWidth" prop="prefix">
+                        <el-input v-model="form.prefix"
+                                  placeholder="例1: * (表示匹配所有) ; 例2: api ; 例3: api/user"></el-input>
+                    </el-form-item>
+                    <el-form-item label="远程地址" :label-width="formLabelWidth" prop="remote">
+                        <el-input v-model="form.remote"
+                                  placeholder="例1: http://192.168.2.1 ; 例2: http://192.168.2.1/api ; 例3: http://192.168.2.1/api/user  "></el-input>
+                    </el-form-item>
+                    <el-form-item label="模式" :label-width="formLabelWidth">
+                        <el-select v-model="form.mode" placeholder="请选择模式" @change="changeMode($event)">
+                            <el-option
+                                    key="transparent"
+                                    label="透传"
+                                    value="transparent">
+                                <span style="float: left">透传</span>
+                                <span style="float: right; color: #8492a6; font-size: 13px">不做任何修改,直接转发</span>
+                            </el-option>
+                            <el-option
+                                    key="enhance"
+                                    label="增强"
+                                    value="enhance">
+                                <span style="float: left">增强</span>
+                                <span style="float: right; color: #8492a6; font-size: 13px">可以修改请求和响应</span>
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-tabs tab-position="left" v-model="activeEnhanceName" @tab-click="handleEnhanceTabClick"
+                             v-show="showEnhanceOption" style="margin-left: 120px;margin-top: -13px;">
+                        <el-button type="text" @click="addEnhanceTableData()">新增</el-button>
+                        <el-tab-pane label="请求头" name="reqHeader">
 
-                                <el-input
-                                        v-model="scope.row.headerName"
-                                        placeholder="请求头名称">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="source"
-                                label="查找目标">
-                            <template slot-scope="scope">
+                            <el-table stripe
+                                      :data="reqHeaderTableData"
+                                      @cell-dblclick="openEditColumn">
+                                <el-table-column
+                                        prop="mode"
+                                        label="模式"
+                                        width="120">
+                                    <template slot-scope="scope">
 
-                                <el-input
-                                        v-model="scope.row.source"
-                                        placeholder="查找目标">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="content"
-                                label="替换为">
-                            <template slot-scope="scope">
+                                        <el-select v-model="scope.row.mode" placeholder="请选择模式"
+                                                   size="small" stype="    width: 100px;">
+                                            <el-option
+                                                    v-for="item in reqHeaderOptions"
+                                                    :key="item.value"
+                                                    :label="item.label"
+                                                    :value="item.value"
+                                            >
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="headerName"
+                                        label="请求头名称"
+                                        width="180">
+                                    <template slot-scope="scope">
+                                        <el-input
+                                                v-model="scope.row.headerName"
+                                                placeholder="请求头名称">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="source"
+                                        label="查找目标">
+                                    <template slot-scope="scope">
+                                        <el-input
+                                                v-model="scope.row.source"
+                                                placeholder="查找目标">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="content"
+                                        label="替换为">
+                                    <template slot-scope="scope">
+                                        <el-input
+                                                v-model="scope.row.content"
+                                                placeholder="替换为">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="order"
+                                        label="操作"
+                                        width="50">
+                                    <template slot-scope="scope">
+                                        <el-button @click="handleReqHeaderDel(scope.row)" type="text" size="small">
+                                            删除
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
 
-                                <el-input
-                                        v-model="scope.row.content"
-                                        placeholder="替换为">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="操作"
-                                width="50">
-                            <template slot-scope="scope">
-                                <el-button @click="handleRespHeaderDel(scope.row)" type="text" size="small">
-                                    删除
-                                </el-button>
-                            </template>
-                        </el-table-column>
-                    </el-table>
+                        </el-tab-pane>
+                        <el-tab-pane label="请求体" name="reqBody">
+                            <el-table stripe
+                                      :data="reqBodyTableData"
+                                      @cell-dblclick="openEditColumn">
+
+                                <el-table-column
+                                        prop="source"
+                                        label="查找目标">
+                                    <template slot-scope="scope">
+
+                                        <el-input
+                                                v-model="scope.row.source"
+                                                placeholder="查找目标">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="content"
+                                        label="替换为">
+                                    <template slot-scope="scope">
+
+                                        <el-input
+                                                v-model="scope.row.content"
+                                                placeholder="替换为">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="order"
+                                        label="排序"
+                                        width="150"
+                                >
+                                    <template slot-scope="scope">
+
+                                        <el-input-number size="small" v-model="scope.row.order" :min="1" :max="100"
+                                                         label="越小优先级越高"></el-input-number>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="order"
+                                        label="操作"
+                                        width="50">
+                                    <template slot-scope="scope">
+                                        <el-button @click="handleReqBodyDel(scope.row)" type="text" size="small">
+                                            删除
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+
+                        </el-tab-pane>
+                        <el-tab-pane label="响应头" name="respHeader">
+                            <el-table stripe
+                                      :data="respHeaderTableData"
+                                      @cell-dblclick="openEditColumn">
+                                <el-table-column
+                                        prop="mode"
+                                        label="模式"
+                                        width="120">
+                                    <template slot-scope="scope">
 
 
-                </el-tab-pane>
-                <el-tab-pane label="响应体" name="respBody">
+                                        <el-select v-model="scope.row.mode" placeholder="请选择模式"
+                                                   size="small" stype="    width: 100px;">
+                                            <el-option
+                                                    v-for="item in respHeaderOptions"
+                                                    :key="item.value"
+                                                    :label="item.label"
+                                                    :value="item.value"
+                                            >
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="headerName"
+                                        label="请求头名称"
+                                        width="180">
+                                    <template slot-scope="scope">
 
-                    <el-table stripe
-                              :data="respBodyTableData"
-                              @cell-dblclick="openEditColumn">
+                                        <el-input
+                                                v-model="scope.row.headerName"
+                                                placeholder="请求头名称">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="source"
+                                        label="查找目标">
+                                    <template slot-scope="scope">
 
-                        <el-table-column
-                                prop="source"
-                                label="查找目标">
-                            <template slot-scope="scope">
+                                        <el-input
+                                                v-model="scope.row.source"
+                                                placeholder="查找目标">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="content"
+                                        label="替换为">
+                                    <template slot-scope="scope">
 
-                                <el-input
-                                        v-model="scope.row.source"
-                                        placeholder="查找目标">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="content"
-                                label="替换为">
-                            <template slot-scope="scope">
-
-                                <el-input
-                                        v-model="scope.row.content"
-                                        placeholder="替换为">
-                                    >
-                                </el-input>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="排序"
-                                width="150"
-                        >
-                            <template slot-scope="scope">
-
-                                <el-input-number size="small" v-model="scope.row.order" :min="1" :max="100"
-                                                 label="越小优先级越高"></el-input-number>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="order"
-                                label="操作"
-                                width="50">
-                            <template slot-scope="scope">
-                                <el-button @click="handleRespBodyDel(scope.row)" type="text" size="small">
-                                    删除
-                                </el-button>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </el-tab-pane>
-            </el-tabs>
+                                        <el-input
+                                                v-model="scope.row.content"
+                                                placeholder="替换为">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="order"
+                                        label="操作"
+                                        width="50">
+                                    <template slot-scope="scope">
+                                        <el-button @click="handleRespHeaderDel(scope.row)" type="text" size="small">
+                                            删除
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
 
 
-            <el-form-item label="备注" :label-width="formLabelWidth">
-                <el-input type="textarea" v-model="form.remark"></el-input>
-            </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-            <el-button @click="closeDialog()">取 消</el-button>
-            <el-button type="primary" @click="handleSave() ">确 定</el-button>
-        </div>
-    </el-dialog>
+                        </el-tab-pane>
+                        <el-tab-pane label="响应体" name="respBody">
+
+                            <el-table stripe
+                                      :data="respBodyTableData"
+                                      @cell-dblclick="openEditColumn">
+
+                                <el-table-column
+                                        prop="source"
+                                        label="查找目标">
+                                    <template slot-scope="scope">
+
+                                        <el-input
+                                                v-model="scope.row.source"
+                                                placeholder="查找目标">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="content"
+                                        label="替换为">
+                                    <template slot-scope="scope">
+
+                                        <el-input
+                                                v-model="scope.row.content"
+                                                placeholder="替换为">
+                                            >
+                                        </el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="order"
+                                        label="排序"
+                                        width="150"
+                                >
+                                    <template slot-scope="scope">
+
+                                        <el-input-number size="small" v-model="scope.row.order" :min="1" :max="100"
+                                                         label="越小优先级越高"></el-input-number>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="order"
+                                        label="操作"
+                                        width="50">
+                                    <template slot-scope="scope">
+                                        <el-button @click="handleRespBodyDel(scope.row)" type="text" size="small">
+                                            删除
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </el-tab-pane>
+                    </el-tabs>
+
+
+                    <el-form-item label="备注" :label-width="formLabelWidth">
+                        <el-input type="textarea" v-model="form.remark"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="closeDialog()">取 消</el-button>
+                    <el-button type="primary" @click="handleSave() ">确 定</el-button>
+                </div>
+            </el-dialog>
+
+
+        </el-tab-pane>
+
+        <el-tab-pane label="正向代理">正向代理</el-tab-pane>
+        <el-tab-pane label="流量">
+            <el-row :gutter="20">
+                <el-col :span="8">
+                    <div>
+                        <el-table
+                                :max-height="trafficTableHeight"
+                                :data="trafficTableData"
+                                stripe
+                                style="width: 100%">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="host"
+                                    label="host"
+                                    width="180">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="url"
+                                    label="url">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="body"
+                                    label="body"
+                                    width="100">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="contentType"
+                                    label="contentType"
+                                    width="180">
+                            </el-table-column>
+                        </el-table>
+
+                    </div>
+                </el-col>
+                <el-col :span="16">
+                    <div>
+                        <div>
+                            请求信息
+                        </div>
+                        <el-tabs v-model="activeName" @tab-click="handleClick">
+                            <el-tab-pane label="headers" name="first">headers</el-tab-pane>
+                            <el-tab-pane label="body" name="second">body</el-tab-pane>
+                            <el-tab-pane label="raw" name="third">raw</el-tab-pane>
+                        </el-tabs>
+                        <div>
+
+                        </div>
+                    </div>
+                    <el-divider></el-divider>
+
+                    <div>
+                        <div>
+                            响应
+                        </div>
+                        <el-tabs v-model="activeName" @tab-click="handleClick">
+                            <el-tab-pane label="headers" name="first">headers</el-tab-pane>
+                            <el-tab-pane label="body" name="second">body</el-tab-pane>
+                            <el-tab-pane label="raw" name="third">raw</el-tab-pane>
+                        </el-tabs>
+                        <div>
+
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+
+        </el-tab-pane>
+
+    </el-tabs>
 
 
 </div>
@@ -376,6 +455,16 @@
                 formLabelWidth: '120px',
                 editMode: "save",
                 showEnhanceOption: false,
+                trafficTableHeight: window.innerHeight - 150,
+                trafficTableData: [
+                    {
+                        "host": "www.baidu.com",
+                        "url": "/dadqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq2222222222222222222222222222222222222222222222222222222222222222222222a",
+                        "body": 234,
+                        "contentType": "text/css; charset=utf-8",
+                    },
+
+                ],
                 reqHeaderOptions: [
                     {
                         value: 10,
@@ -666,8 +755,7 @@
                 var vue = this;
                 fetch("api/getRouteList", {
                     "method": "POST",
-                    body: JSON.stringify({
-                    }),
+                    body: JSON.stringify({}),
                     headers: {
                         'Content-Type': 'application/json'
                     }

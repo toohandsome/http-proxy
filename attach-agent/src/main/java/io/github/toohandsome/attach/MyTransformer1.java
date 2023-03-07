@@ -12,6 +12,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.security.ProtectionDomain;
 
+/**
+ * @author Administrator
+ */
 public class MyTransformer1 implements ClassFileTransformer {
 
 
@@ -49,24 +52,22 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ex.printStackTrace();
             }
         }
-//        else if (className.equals("okhttp3/Route")) {
-//            try {
-//                ClassPool pool = ClassPool.getDefault();
-//                pool.importPackage("java.net");
-//                pool.importPackage("okhttp3.Route");
-//                CtClass cc = pool.get("okhttp3.Route");
-//                if (cc.isFrozen()) {
-//                    cc.defrost();
-//                }
-//                final CtConstructor constructor = cc.getConstructors()[0];
-//                constructor.insertAfter(" this.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(\"127.0.0.1\",9999)); ");
-//
-//                return cc.toBytecode();
-//
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-//        }
+        else if (className.equals("cn/hutool/http/HttpConnection")) {
+            try {
+                ClassPool pool = ClassPool.getDefault();
+                pool.importPackage("java.net");
+                CtClass cc = pool.get("cn.hutool.http.HttpConnection");
+                if (cc.isFrozen()) {
+                    cc.defrost();
+                }
+                CtMethod personFly = cc.getDeclaredMethod("openConnection");
+                personFly.setBody("{ return  url.openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(\"127.0.0.1\",9999))); }");
+                return cc.toBytecode();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         else if (className.equals("okhttp3/OkHttpClient")) {
             try {
                 ClassPool pool = ClassPool.getDefault();
@@ -84,7 +85,6 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         }
         return null;
-
 
     }
 }

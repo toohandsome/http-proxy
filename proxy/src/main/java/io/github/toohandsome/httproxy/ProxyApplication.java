@@ -25,7 +25,7 @@ public class ProxyApplication {
         SpringApplication.run(ProxyApplication.class, args);
         Utils.loadRoutes();
         HttpProxyServerConfig config = new HttpProxyServerConfig();
-        config.setHandleSsl(false);
+        config.setHandleSsl(true);
         new HttpProxyServer()
                 .serverConfig(config)
                 .proxyInterceptInitializer(new HttpProxyInterceptInitializer() {
@@ -42,7 +42,7 @@ public class ProxyApplication {
 //                                System.out.println(httpResponse.toString());
                                 final HttpHeaders headers = httpResponse.headers();
                                 for (Map.Entry<String, String> header : headers) {
-                                    System.out.println("header key: "+ header.getKey() + " -- value: " + header.getKey());
+                                    System.out.println("header key: "+ header.getKey() + " -- value: " + header.getValue());
                                 }
                                 System.out.println(httpResponse.content().toString(Charset.defaultCharset()));
                             }

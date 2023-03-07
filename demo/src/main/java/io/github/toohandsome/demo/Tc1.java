@@ -139,20 +139,23 @@ public class Tc1 {
 //        final ResponseEntity<String> forEntity = restTemplate.getForEntity("http://127.0.0.1/t1", String.class, new HashMap<>());
 //        System.out.println("forEntity: " + forEntity.getBody());
 
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("http://127.0.0.1/t2")
-                .build();
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful())
-                System.out.println("成功");
+//        OkHttpClient client = new OkHttpClient();
+//        Request request = new Request.Builder()
+//                .url("http://127.0.0.1/t2")
+//                .build();
+//        try {
+//            Response response = client.newCall(request).execute();
+//            if (response.isSuccessful())
+//                System.out.println("成功");
+//
+//        } catch ( IOException e) {
+//            e.printStackTrace();
+//        }
 
-        } catch ( IOException e) {
-            e.printStackTrace();
-        }
-
-        HttpUtil.createGet("http://www.baidu.com").execute();
+//        String body = HttpUtil.createGet("http://www.baidu.com").execute().body();
+//        System.out.println(body);
+        String result1= HttpUtil.get("https://www.baidu.com");
+        System.out.println(result1);
 //        CloseableHttpClient httpClient1 = HttpClients.createDefault();
 //        HttpGet httpGet = new HttpGet("http://127.0.0.1/t1");
 //        CloseableHttpResponse response = httpClient1.execute(httpGet);
