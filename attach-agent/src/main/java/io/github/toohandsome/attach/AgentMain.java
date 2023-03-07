@@ -10,14 +10,32 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AgentMain {
 
-    public static void agentmain(String args, Instrumentation ins) throws IOException, UnmodifiableClassException {
-        JarFileHelper.addJarToBootstrap(ins);
+    static List<String> retransformClassList = new ArrayList<>();
+
+    static {
+        retransformClassList.add("java.net.URL");
+        retransformClassList.add("org.apache.http.client.config.RequestConfig");
+//        retransformClassList.add("okhttp3.Route");
+        retransformClassList.add("okhttp3.OkHttpClient");
+    }
+
+    public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {
+        JarFileHelper.addJarToBootstrap(inst);
         System.out.println("agentmain called");
-        ins.addTransformer(new MyTransformer1(), true);
-        ins.retransformClasses(java.net.URL.class);
+        inst.addTransformer(new MyTransformer1(), true);
+
+        final Class[] allLoadedClasses = inst.getAllLoadedClasses();
+        for (Class allLoadedClass : allLoadedClasses) {
+            if (retransformClassList.contains(allLoadedClass.getName())) {
+                System.out.println(allLoadedClass.getName());
+                inst.retransformClasses(allLoadedClass);
+            }
+        }
 
     }
 

@@ -27,10 +27,17 @@
         <dependency>
             <groupId>com.sun</groupId>
             <artifactId>tools</artifactId>
-            <version>1.8.0_172</version>
+            <version>1.8</version>
             <scope>system</scope>
-            <systemPath>d:/jdk1.8.0_172/lib/tools.jar</systemPath>
+            <systemPath>${JAVA_HOME}\lib\tools.jar</systemPath>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.sun</groupId>-->
+<!--            <artifactId>tools</artifactId>-->
+<!--            <version>1.8.0_172</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>d:/jdk1.8.0_172/lib/tools.jar</systemPath>-->
+<!--        </dependency>-->
     </dependencies>
 
 </project>

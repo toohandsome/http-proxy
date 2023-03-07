@@ -9,12 +9,14 @@ import com.github.monkeywie.proxyee.server.HttpProxyServerConfig;
 import com.github.monkeywie.proxyee.util.HttpUtil;
 import io.github.toohandsome.httproxy.util.Utils;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 
 @SpringBootApplication
 public class ProxyApplication {
@@ -37,7 +39,12 @@ public class ProxyApplication {
 
                             @Override
                             public void handleResponse(HttpRequest httpRequest, FullHttpResponse httpResponse, HttpProxyInterceptPipeline pipeline) {
-                                System.out.println(httpResponse.toString());
+//                                System.out.println(httpResponse.toString());
+                                final HttpHeaders headers = httpResponse.headers();
+                                for (Map.Entry<String, String> header : headers) {
+                                    System.out.println("header key: "+ header.getKey() + " -- value: " + header.getKey());
+                                }
+                                System.out.println(httpResponse.content().toString(Charset.defaultCharset()));
                             }
                         });
                     }

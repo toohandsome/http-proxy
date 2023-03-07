@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
     <modules>
-        <module>proxy-patch</module>
         <module>proxy</module>
         <module>demo</module>
         <module>agent</module>

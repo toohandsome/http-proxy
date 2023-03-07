@@ -3,12 +3,19 @@ package io.github.toohandsome.demo;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.util.UUIDUtils;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -106,27 +113,53 @@ public class Tc1 {
 
         return "t1";
     }
+
     @Autowired
     RestTemplate restTemplate;
 
-    @GetMapping("/proxy")
-    public String proxy()  {
-        System.setProperty("http.proxyHost", "127.0.0.1");
-        System.setProperty("http.proxyPort", "9999");
-        return "success";
+    @GetMapping("/tt2")
+    public String tt2() throws Exception {
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet("https://www.baidu.com");
+        //使用代理服务器
+        HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
+        RequestConfig config = RequestConfig.custom().setProxy(httpHost).build();
+        httpGet.setConfig(config);
+        CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet);
+        HttpEntity entity = response.getEntity();
+        //输出网页内容
+        System.out.println("网页内容:");
+        System.out.println(EntityUtils.toString(entity, "utf-8"));
+        response.close();
+        return "";
     }
 
     @GetMapping("/tt1")
     public String tt1() throws Exception {
-        final ResponseEntity<String> forEntity = restTemplate.getForEntity("https://www.baidu.com", String.class, new HashMap<>());
-        System.out.println("forEntity: " +forEntity.getBody());
+//        final ResponseEntity<String> forEntity = restTemplate.getForEntity("http://127.0.0.1/t1", String.class, new HashMap<>());
+//        System.out.println("forEntity: " + forEntity.getBody());
 
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://127.0.0.1/t2")
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful())
+                System.out.println("成功");
+
+        } catch ( IOException e) {
+            e.printStackTrace();
+        }
+
+        HttpUtil.createGet("http://www.baidu.com").execute();
 //        CloseableHttpClient httpClient1 = HttpClients.createDefault();
 //        HttpGet httpGet = new HttpGet("http://127.0.0.1/t1");
 //        CloseableHttpResponse response = httpClient1.execute(httpGet);
 //        HttpEntity entity = response.getEntity();
 //        String ret = EntityUtils.toString(entity, "UTF-8");
 //        System.out.println(ret);
+
 
 //        for (int i = 0; i < 4; i++) {
 //            new Thread(new Runnable() {
