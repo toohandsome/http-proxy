@@ -389,8 +389,8 @@
                                     label="url">
                             </el-table-column>
                             <el-table-column
-                                    prop="body"
-                                    label="body"
+                                    prop="bodyLength"
+                                    label="bodyLength"
                                     width="100">
                             </el-table-column>
                             <el-table-column
@@ -408,7 +408,35 @@
                             请求信息
                         </div>
                         <el-tabs v-model="activeName" @tab-click="handleClick">
-                            <el-tab-pane label="headers" name="first">headers</el-tab-pane>
+                            <el-tab-pane label="headers" name="first">
+                                <div>
+                                    <label style="font-weight: bold ;font-size: large" >Accept: </label>
+
+                                    text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                                </div>
+                                <div>
+                                    <label style="font-weight: bold ;font-size: large" > Accept-Encoding: </label>
+                                    gzip, deflate, br
+                                </div>
+                                <div>
+                                    <label style="font-weight: bold ;font-size: large" > Accept-Language:  </label>
+                                    zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+                                </div>
+                                <div>
+                                    Cache-Control: max-age=0
+                                </div>
+                                <div>
+                                    Connection: keep-alive
+                                </div>
+                                <div>
+                                    DNT: 1
+                                </div>
+                                <div>
+                                    <label style="font-weight: bold ;font-size: large" > User-Agent:   </label>
+                                   Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+                                    like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63
+                                </div>
+                            </el-tab-pane>
                             <el-tab-pane label="body" name="second">body</el-tab-pane>
                             <el-tab-pane label="raw" name="third">raw</el-tab-pane>
                         </el-tabs>
@@ -460,7 +488,7 @@
                     {
                         "host": "www.baidu.com",
                         "url": "/dadqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq2222222222222222222222222222222222222222222222222222222222222222222222a",
-                        "body": 234,
+                        "bodyLength": 234,
                         "contentType": "text/css; charset=utf-8",
                     },
 
