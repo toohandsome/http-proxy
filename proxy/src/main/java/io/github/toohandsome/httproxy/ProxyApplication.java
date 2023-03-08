@@ -7,20 +7,23 @@ import com.github.monkeywie.proxyee.intercept.common.FullRequestIntercept;
 import com.github.monkeywie.proxyee.intercept.common.FullResponseIntercept;
 import com.github.monkeywie.proxyee.server.HttpProxyServer;
 import com.github.monkeywie.proxyee.server.HttpProxyServerConfig;
-import com.github.monkeywie.proxyee.util.HttpUtil;
+import io.github.toohandsome.httproxy.core.TrafficQueueProcess;
+import io.github.toohandsome.httproxy.entity.Traffic;
 import io.github.toohandsome.httproxy.util.Utils;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 @SpringBootApplication
 public class ProxyApplication {
+
 
     public static void main(String[] args) {
         SpringApplication.run(ProxyApplication.class, args);
@@ -41,21 +44,28 @@ public class ProxyApplication {
 
                             @Override
                             public void handleRequest(FullHttpRequest httpRequest, HttpProxyInterceptPipeline pipeline) {
+                                Traffic traffic = new Traffic();
+                                traffic.setDirection("up");
+                                traffic.setReqDate(System.currentTimeMillis());
                                 ByteBuf content = httpRequest.content();
-                                //打印请求信息
                                 final String uri = httpRequest.uri();
-//                                System.out.println("request uri: " + uri);
+                                traffic.setUrl(uri);
+                                traffic.setMethod(httpRequest.method().name());
                                 final HttpHeaders headers = httpRequest.headers();
+                                HashMap<String, String> requestHeaders = new HashMap<>(22);
                                 for (Map.Entry<String, String> header : headers) {
-//                                    System.out.println("request header key: " + header.getKey() + " -- value: " + header.getValue());
-                                    if ("host".equals(header.getKey().toLowerCase(Locale.ROOT))){
+                                    if ("host".equals(header.getKey().toLowerCase(Locale.ROOT))) {
                                         final String host = header.getValue();
+                                        traffic.setHost(host);
                                     }
+                                    requestHeaders.put(header.getKey(), header.getValue());
                                 }
+                                traffic.setRequestHeaders(requestHeaders);
                                 final int hashCode = pipeline.getHttpRequest().hashCode();
                                 headers.add("req_uid", hashCode);
-                                System.out.println("request req_uid :" + hashCode);
-//                                System.out.println(content.toString(Charset.defaultCharset()));
+                                traffic.setKey(hashCode + "");
+                                traffic.setRequestBody(content.toString(Charset.defaultCharset()));
+                                TrafficQueueProcess.trafficQueue.offer(traffic);
                             }
                         });
                         pipeline.addLast(new FullResponseIntercept() {
@@ -66,21 +76,28 @@ public class ProxyApplication {
 
                             @Override
                             public void handleResponse(HttpRequest httpRequest, FullHttpResponse httpResponse, HttpProxyInterceptPipeline pipeline) {
+                                Traffic traffic = new Traffic();
+                                traffic.setRespDate(System.currentTimeMillis());
+                                traffic.setDirection("down");
                                 final HttpHeaders headers = httpResponse.headers();
+                                HashMap<String, String> requestHeaders = new HashMap<>(22);
                                 for (Map.Entry<String, String> header : headers) {
-//                                    System.out.println("response header key: " + header.getKey() + " -- value: " + header.getValue());
+                                    requestHeaders.put(header.getKey(), header.getValue());
                                 }
+                                traffic.setResponseHeaders(requestHeaders);
                                 final String req_uid = pipeline.getHttpRequest().headers().get("req_uid");
-                                System.out.println("response req_uid :" + req_uid);
-                                final int i = httpResponse.content().readableBytes();
-//                                System.out.println("bodyLength : " + i);
+                                traffic.setKey(req_uid);
+                                final int bodyLength = httpResponse.content().readableBytes();
+                                traffic.setBodyLength(bodyLength);
                                 final ByteBuf content = httpResponse.content();
-//                                System.out.println(content.toString(Charset.defaultCharset()));
+                                traffic.setResponseBody(content.toString(Charset.defaultCharset()));
+                                TrafficQueueProcess.trafficQueue.offer(traffic);
                             }
                         });
                     }
                 })
                 .start(9999);
+
 
     }
 }

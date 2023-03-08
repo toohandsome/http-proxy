@@ -377,6 +377,8 @@
                                 :max-height="trafficTableHeight"
                                 :data="trafficTableData"
                                 stripe
+                                highlight-current-row
+                                @current-change="handleTrafficTableDataCurrentChange"
                                 style="width: 100%">
                             </el-table-column>
                             <el-table-column
@@ -394,8 +396,8 @@
                                     width="100">
                             </el-table-column>
                             <el-table-column
-                                    prop="contentType"
-                                    label="contentType"
+                                    prop="method"
+                                    label="method"
                                     width="180">
                             </el-table-column>
                         </el-table>
@@ -407,53 +409,33 @@
                         <div>
                             请求信息
                         </div>
-                        <el-tabs v-model="activeName" @tab-click="handleClick">
-                            <el-tab-pane label="headers" name="first">
-                                <div>
-                                    <label style="font-weight: bold ;font-size: large" >Accept: </label>
+                        <el-tabs v-model="reqTrafficHeaders">
+                            <el-tab-pane label="headers" name="headers">
+                                <div v-for="headerKey in Object.keys(currentReqHeaders)">
+                                    <label style="font-weight: bold ;font-size: large">{{headerKey}}: </label>
+                                    <label style=" ">{{currentReqHeaders[headerKey]}} </label>
+                                </div>
 
-                                    text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-                                </div>
-                                <div>
-                                    <label style="font-weight: bold ;font-size: large" > Accept-Encoding: </label>
-                                    gzip, deflate, br
-                                </div>
-                                <div>
-                                    <label style="font-weight: bold ;font-size: large" > Accept-Language:  </label>
-                                    zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
-                                </div>
-                                <div>
-                                    Cache-Control: max-age=0
-                                </div>
-                                <div>
-                                    Connection: keep-alive
-                                </div>
-                                <div>
-                                    DNT: 1
-                                </div>
-                                <div>
-                                    <label style="font-weight: bold ;font-size: large" > User-Agent:   </label>
-                                   Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
-                                    like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63
-                                </div>
                             </el-tab-pane>
-                            <el-tab-pane label="body" name="second">body</el-tab-pane>
-                            <el-tab-pane label="raw" name="third">raw</el-tab-pane>
+                            <el-tab-pane label="body" name="body">{{currentReqBody}}</el-tab-pane>
+                            <el-tab-pane label="raw" name="raw"> </el-tab-pane>
                         </el-tabs>
                         <div>
 
                         </div>
                     </div>
+
+
                     <el-divider></el-divider>
 
                     <div>
                         <div>
-                            响应
+                            响应信息
                         </div>
-                        <el-tabs v-model="activeName" @tab-click="handleClick">
-                            <el-tab-pane label="headers" name="first">headers</el-tab-pane>
-                            <el-tab-pane label="body" name="second">body</el-tab-pane>
-                            <el-tab-pane label="raw" name="third">raw</el-tab-pane>
+                        <el-tabs v-model="respTrafficHeaders">
+                            <el-tab-pane label="headers" name="headers"> </el-tab-pane>
+                            <el-tab-pane label="body" name="body"> </el-tab-pane>
+                            <el-tab-pane label="raw" name="raw"> </el-tab-pane>
                         </el-tabs>
                         <div>
 
@@ -478,6 +460,12 @@
     const App = {
         data() {
             return {
+                currentReqBody: "",
+                currentRespBody: "",
+                currentReqHeaders: {},
+                currentRespHeaders: {},
+                reqTrafficHeaders: "headers",
+                respTrafficHeaders: "headers",
                 tableData: [],
                 dialogFormVisible: false,
                 formLabelWidth: '120px',
@@ -488,8 +476,8 @@
                     {
                         "host": "www.baidu.com",
                         "url": "/dadqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq2222222222222222222222222222222222222222222222222222222222222222222222a",
-                        "bodyLength": 234,
-                        "contentType": "text/css; charset=utf-8",
+                        "method": "get",
+                        "bodyLength": "text/css; charset=utf-8",
                     },
 
                 ],
@@ -549,6 +537,27 @@
             }
         },
         methods: {
+            handleTrafficTableDataCurrentChange(val) {
+                console.log(val);
+                this.currentReqHeaders = val.requestHeaders;
+                this.currentReqBody = val.requestBody;
+
+            },
+            initWs() {
+                var ws = new WebSocket("ws://127.0.0.1:8080/trafficWebsocket/11");
+                ws.onmessage = this.wsOnmessage;
+            },
+            wsOnmessage(event) {
+                console.log('服务端返回：' + event.data);
+                const trafficArr = JSON.parse(event.data);
+                const upTrafficArr = trafficArr.filter((traffic) => {
+                    return traffic.direction == "up";
+                });
+                const downTrafficArr = trafficArr.filter((traffic) => {
+                    return traffic.direction == "down";
+                });
+                this.trafficTableData.push(...upTrafficArr);
+            },
             filterRule(ruleList, modes) {
                 return ruleList.filter((rule) => {
                     for (let i = 0; i < modes.length; i++) {
@@ -800,6 +809,7 @@
             console.log("页面打开了!");
 
             this.getRouteList();
+            this.initWs();
 
         }
     }
