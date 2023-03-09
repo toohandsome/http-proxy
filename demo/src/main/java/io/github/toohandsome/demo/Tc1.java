@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -73,7 +76,7 @@ public class Tc1 {
         try {
 
 
-            URL url = new URL("http://www.zuanke8.com/");
+            URL url = new URL("http://www.bilibili.com/");
             //得到连接对象
             con = (HttpURLConnection) url.openConnection();
             //设置请求类型
@@ -115,7 +118,11 @@ public class Tc1 {
     }
 
     @Autowired
-    RestTemplate restTemplate;
+    RestTemplate restTemplate1;
+
+
+    @Autowired
+    RestTemplate restTemplate2;
 
     @GetMapping("/tt2")
     public String tt2() throws Exception {
@@ -149,53 +156,29 @@ public class Tc1 {
             Response response = client.newCall(request).execute();
             response.close();
             if (response.isSuccessful())
-                System.out.println("成功");
+                System.out.println("poaohua 完成");
 
-        } catch ( IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         tt();
+        System.out.println("bilibili 完成");
         tt2();
-        final ResponseEntity<String> forEntity = restTemplate.getForEntity("http://help.locoy.com/", String.class);
+        System.out.println("127 完成");
+        final ResponseEntity<String> forEntity = restTemplate1.getForEntity("http://help.locoy.com/", String.class);
         final String body = forEntity.getBody();
-        System.out.println(body);
+        System.out.println("locoy 完成");
 
 //        String body = HttpUtil.createGet("http://www.baidu.com").execute().body();
 //        System.out.println(body);
-        String result1= HttpUtil.get("https://www.baidu.com");
-        System.out.println(result1);
-//        CloseableHttpClient httpClient1 = HttpClients.createDefault();
-//        HttpGet httpGet = new HttpGet("http://127.0.0.1/t1");
-//        CloseableHttpResponse response = httpClient1.execute(httpGet);
-//        HttpEntity entity = response.getEntity();
-//        String ret = EntityUtils.toString(entity, "UTF-8");
-//        System.out.println(ret);
-
-
-//        for (int i = 0; i < 4; i++) {
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    while (true) {
-//                        try {
-//                            CloseableHttpClient httpClient1 = HttpClients.createDefault();
-//                            HttpGet httpPost = new HttpGet("http://127.0.0.1:8080/t1");
-//                            CloseableHttpResponse response = httpClient1.execute(httpPost);
-//                            HttpEntity entity = response.getEntity();
-//                            String ret = EntityUtils.toString(entity, "UTF-8");
-//                            System.out.println(ret);
-//                        } catch (Exception e) {
-//                            System.out.println("1");
-//                        }
-//                    }
-//                }
-//            }).start();
-//        }
+        String result1 = HttpUtil.get("https://www.baidu.com");
+        System.out.println("baidu 完成");
 
         return "t1";
     }
 
+    public static final Proxy PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 9999));
 
     @GetMapping("/t1")
     public String t1(HttpServletRequest request, Integer times) {
@@ -210,26 +193,199 @@ public class Tc1 {
     }
 
     @GetMapping("/t2")
-    public String t2(HttpServletRequest request, String a) {
-        logger.info("t2 : a " + a);
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            System.out.println(headerName + ": " + request.getHeader(headerName));
+    public String t2(String a) {
+
+        try {
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.proxy(PROXY);
+            OkHttpClient client = builder.build();
+            Request.Builder requestBuilder = new Request.Builder();
+            requestBuilder.url("http://www.piaohua.com/");
+            client.newCall(requestBuilder.build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        System.out.println("piaohua 完成");
+        try {
+            HttpClient httpClient = HttpClients.createDefault();
+            HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/routeView/index.html");
+            //使用代理服务器
+            HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
+            RequestConfig config = RequestConfig.custom()
+                    .setProxy(httpHost)
+                    .build();
+            httpGet.setConfig(config);
+            CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet);
+            HttpEntity entity = response.getEntity();
+            //输出网页内容
+//            System.out.println("网页内容:");
+//            System.out.println(EntityUtils.toString(entity, "utf-8"));
+            response.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("127 完成");
+        try {
+
+            HttpURLConnection con = null;
+
+            BufferedReader buffer = null;
+            StringBuffer resultBuffer = null;
+            URL url = new URL("http://www.bilibili.com/");
+            //得到连接对象
+            con = (HttpURLConnection) url.openConnection(PROXY);
+            //设置请求类型
+            con.setRequestMethod("POST");
+            //设置Content-Type，此处根据实际情况确定
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            //允许写出
+            con.setDoOutput(true);
+            //允许读入
+            con.setDoInput(true);
+            //不使用缓存
+            con.setUseCaches(false);
+            OutputStream os = con.getOutputStream();
+            Map paraMap = new HashMap();
+            paraMap.put("type", "wx");
+            paraMap.put("mchid", "10101");
+            //组装入参
+            os.write(("consumerAppId=test&serviceName=queryMerchantService&params=" + JSON.toJSONString(paraMap)).getBytes());
+            //得到响应码
+            int responseCode = con.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                //得到响应流
+                InputStream inputStream = con.getInputStream();
+                //sun.net.www.http.HttpClient.getInputStream
+                //将响应流转换成字符串
+                resultBuffer = new StringBuffer();
+                String line;
+                buffer = new BufferedReader(new InputStreamReader(inputStream, "GBK"));
+                while ((line = buffer.readLine()) != null) {
+                    resultBuffer.append(line);
+                }
+//                System.out.println("result:" + resultBuffer.toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("bilibili 完成");
+        try {
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setProxy(
+                    PROXY
+            );
+            restTemplate1.setRequestFactory(requestFactory);
+            final ResponseEntity<String> forEntity = restTemplate1.getForEntity("http://help.locoy.com/", String.class);
+            final String body = forEntity.getBody();
+            System.out.println("locoy 完成");
+        } catch (Exception E) {
+            E.printStackTrace();
+        }
+
         return "t2";
     }
 
 
-    @PostMapping("/t3")
-    public User t3(HttpServletRequest request, @RequestBody User user) {
-        logger.info("t3: user: " + JSON.toJSON(user));
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            System.out.println(headerName + ": " + request.getHeader(headerName));
+    @GetMapping("/t3")
+    public User t3( ) {
+
+        try {
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+//            builder.proxy(PROXY);
+            OkHttpClient client = builder.build();
+            Request.Builder requestBuilder = new Request.Builder();
+            requestBuilder.url("http://www.piaohua.com/");
+            client.newCall(requestBuilder.build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return user;
+
+        System.out.println("piaohua 完成");
+
+        try {
+            HttpClient httpClient = HttpClients.createDefault();
+            HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/routeView/index.html");
+            //使用代理服务器
+//            HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
+            RequestConfig config = RequestConfig.custom()
+//                    .setProxy(httpHost)
+                    .build();
+            httpGet.setConfig(config);
+            CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet);
+            HttpEntity entity = response.getEntity();
+            //输出网页内容
+
+//            System.out.println(EntityUtils.toString(entity, "utf-8"));
+            response.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("127完成");
+        try {
+
+            HttpURLConnection con = null;
+
+            BufferedReader buffer = null;
+            StringBuffer resultBuffer = null;
+            URL url = new URL("http://www.bilibili.com/");
+            //得到连接对象
+            con = (HttpURLConnection) url.openConnection();
+//            con = (HttpURLConnection) url.openConnection(PROXY);
+            //设置请求类型
+            con.setRequestMethod("POST");
+            //设置Content-Type，此处根据实际情况确定
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            //允许写出
+            con.setDoOutput(true);
+            //允许读入
+            con.setDoInput(true);
+            //不使用缓存
+            con.setUseCaches(false);
+            OutputStream os = con.getOutputStream();
+            Map paraMap = new HashMap();
+            paraMap.put("type", "wx");
+            paraMap.put("mchid", "10101");
+            //组装入参
+            os.write(("consumerAppId=test&serviceName=queryMerchantService&params=" + JSON.toJSONString(paraMap)).getBytes());
+            //得到响应码
+            int responseCode = con.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                //得到响应流
+                InputStream inputStream = con.getInputStream();
+                //sun.net.www.http.HttpClient.getInputStream
+                //将响应流转换成字符串
+                resultBuffer = new StringBuffer();
+                String line;
+                buffer = new BufferedReader(new InputStreamReader(inputStream, "GBK"));
+                while ((line = buffer.readLine()) != null) {
+                    resultBuffer.append(line);
+                }
+//                System.out.println("result:" + resultBuffer.toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("bilibili完成");
+
+        try {
+//            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+//            requestFactory.setProxy(
+//                    PROXY
+//            );
+//            restTemplate.setRequestFactory(requestFactory);
+            final ResponseEntity<String> forEntity = restTemplate2.getForEntity("http://help.locoy.com/", String.class);
+            final String body = forEntity.getBody();
+//            System.out.println(body);
+        } catch (Exception E) {
+            E.printStackTrace();
+        }
+        System.out.println("locoy完成");
+
+        return null;
     }
 
     @PostMapping("/t4")

@@ -9,7 +9,13 @@ import org.springframework.web.client.RestTemplate;
 public class MyConfig {
 
     @Bean
-    public RestTemplate restTemplate(){
+    public RestTemplate restTemplate1(){
+        return new RestTemplate();
+    }
+
+
+    @Bean
+    public RestTemplate restTemplate2(){
         return new RestTemplate();
     }
 

@@ -5,7 +5,7 @@
     <title>路由管理</title>
     <script src="vue.js"></script>
     <script src="index.js"></script>
-    <script src="clipboard.min.js"></script>
+    <!--    <script src="clipboard.min.js"></script>-->
     <link rel="stylesheet" href="index.css"/>
 </head>
 <body>
@@ -394,8 +394,8 @@
                                     label="url">
                             </el-table-column>
                             <el-table-column
-                                    prop="bodyLength"
-                                    label="length"
+                                    prop="cost"
+                                    label="cost"
                                     width="100">
                             </el-table-column>
                             <el-table-column
@@ -409,14 +409,18 @@
                 </el-col>
                 <el-col :span="16">
                     <div style="    box-shadow: 0 2px 4px rgb(0 0 0 / 12%), 0 0 6px rgb(0 0 0 / 4%); padding: 10px; height: 40vh;    overflow-y: auto;">
-                        <el-button type="primary" style="position: absolute; right: 30px;z-index: 1000" @click="copyReqInfo">复制
+                        <el-button type="primary" style="position: absolute; right: 30px;z-index: 1000"
+                                   @click="copyReqInfo">复制
                         </el-button>
                         <div>
                             <div>
                                 <label style="font-weight: bold ;font-size: large">url: </label>
                                 <label style=" ">{{currentTraffic.host+currentTraffic.url}} </label>
                             </div>
-                            <div><label style="font-weight: bold ;font-size: large">请求时间: </label>
+                            <div>
+                                <label style="font-weight: bold ;font-size: large">请求体大小: </label>
+                                <label style=" ">{{currentTraffic.reqBodyLength}} </label>
+                                <label style="font-weight: bold ;font-size: large">请求时间: </label>
                                 <label style=" "> {{formatMsToDate(currentTraffic.reqDate)}} </label>
                             </div>
                         </div>
@@ -440,14 +444,15 @@
 
 
                     <div style="    box-shadow: 0 2px 4px rgb(0 0 0 / 12%), 0 0 6px rgb(0 0 0 / 4%); padding: 10px; height: 47vh;     overflow-y: auto;">
-                        <el-button type="primary" style="position: absolute; right: 30px; z-index: 1000" @click="copyRespInfo">复制
+                        <el-button type="primary" style="position: absolute; right: 30px; z-index: 1000"
+                                   @click="copyRespInfo">复制
                         </el-button>
                         <div>
                             <div>
-                                <label style="font-weight: bold ;font-size: large">耗时: </label>
-                                <label style=" ">{{currentTraffic.respDate-currentTraffic.reqDate}} ms </label>
                                 <label style="font-weight: bold ;font-size: large">响应时间: </label>
                                 <label style=" "> {{formatMsToDate(currentTraffic.respDate)}} </label>
+                                <label style="font-weight: bold ;font-size: large">响应体大小: </label>
+                                <label style=" "> {{ currentTraffic.respBodyLength}} </label>
                             </div>
                             <!--                            <div>-->
                             <!--                            </div>-->
@@ -504,7 +509,7 @@
                 formLabelWidth: '120px',
                 editMode: "save",
                 showEnhanceOption: false,
-                trafficTableHeight: window.innerHeight - 150,
+                trafficTableHeight: "95vh",
                 trafficTableData: [],
                 reqHeaderOptions: [
                     {
@@ -700,7 +705,6 @@
             handleTrafficTableDataCurrentChange(val) {
                 console.log(val);
                 this.currentTraffic = val;
-
             }
             ,
             initWs() {
@@ -725,9 +729,11 @@
 
                         if (tmpDownTraffic.key == tmpUpTraffic.key) {
                             tmpUpTraffic.respDate = tmpDownTraffic.respDate;
-                            tmpUpTraffic.bodyLength = tmpDownTraffic.bodyLength;
+                            tmpUpTraffic.respBodyLength = tmpDownTraffic.respBodyLength;
                             tmpUpTraffic.responseHeaders = tmpDownTraffic.responseHeaders;
                             tmpUpTraffic.responseBody = tmpDownTraffic.responseBody;
+                            tmpUpTraffic.cost = tmpUpTraffic.respDate - tmpUpTraffic.reqDate;
+                            debugger;
                             break;
                         }
                     }

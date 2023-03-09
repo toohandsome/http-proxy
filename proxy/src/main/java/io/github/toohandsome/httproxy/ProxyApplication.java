@@ -48,6 +48,8 @@ public class ProxyApplication {
                                 traffic.setDirection("up");
                                 traffic.setReqDate(System.currentTimeMillis());
                                 ByteBuf content = httpRequest.content();
+                                final int bodyLength = content.readableBytes();
+                                traffic.setReqBodyLength(bodyLength);
                                 final String uri = httpRequest.uri();
                                 traffic.setUrl(uri);
                                 traffic.setMethod(httpRequest.method().name());
@@ -88,7 +90,7 @@ public class ProxyApplication {
                                 final String req_uid = pipeline.getHttpRequest().headers().get("req_uid");
                                 traffic.setKey(req_uid);
                                 final int bodyLength = httpResponse.content().readableBytes();
-                                traffic.setBodyLength(bodyLength);
+                                traffic.setRespBodyLength(bodyLength);
                                 final ByteBuf content = httpResponse.content();
                                 traffic.setResponseBody(content.toString(Charset.defaultCharset()));
                                 TrafficQueueProcess.trafficQueue.offer(traffic);
