@@ -73,7 +73,7 @@ public class Tc1 {
         try {
 
 
-            URL url = new URL("http://www.baidu.com");
+            URL url = new URL("http://www.zuanke8.com/");
             //得到连接对象
             con = (HttpURLConnection) url.openConnection();
             //设置请求类型
@@ -120,10 +120,12 @@ public class Tc1 {
     @GetMapping("/tt2")
     public String tt2() throws Exception {
         HttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("https://www.baidu.com");
+        HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/routeView/index.html");
         //使用代理服务器
-        HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
-        RequestConfig config = RequestConfig.custom().setProxy(httpHost).build();
+//        HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
+        RequestConfig config = RequestConfig.custom()
+//                .setProxy(httpHost)
+                .build();
         httpGet.setConfig(config);
         CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet);
         HttpEntity entity = response.getEntity();
@@ -139,18 +141,25 @@ public class Tc1 {
 //        final ResponseEntity<String> forEntity = restTemplate.getForEntity("http://127.0.0.1/t1", String.class, new HashMap<>());
 //        System.out.println("forEntity: " + forEntity.getBody());
 
-//        OkHttpClient client = new OkHttpClient();
-//        Request request = new Request.Builder()
-//                .url("http://127.0.0.1/t2")
-//                .build();
-//        try {
-//            Response response = client.newCall(request).execute();
-//            if (response.isSuccessful())
-//                System.out.println("成功");
-//
-//        } catch ( IOException e) {
-//            e.printStackTrace();
-//        }
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://www.piaohua.com/")
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            response.close();
+            if (response.isSuccessful())
+                System.out.println("成功");
+
+        } catch ( IOException e) {
+            e.printStackTrace();
+        }
+
+        tt();
+        tt2();
+        final ResponseEntity<String> forEntity = restTemplate.getForEntity("http://help.locoy.com/", String.class);
+        final String body = forEntity.getBody();
+        System.out.println(body);
 
 //        String body = HttpUtil.createGet("http://www.baidu.com").execute().body();
 //        System.out.println(body);

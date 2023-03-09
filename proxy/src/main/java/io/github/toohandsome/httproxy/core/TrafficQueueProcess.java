@@ -11,10 +11,12 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
 @Component
 public class TrafficQueueProcess implements CommandLineRunner {
-    public static LinkedBlockingQueue<Traffic> trafficQueue = new LinkedBlockingQueue(1000);
+    public static ConcurrentLinkedQueue<Traffic> trafficQueue = new ConcurrentLinkedQueue();
 
     public void processTraffice() {
 
@@ -22,7 +24,12 @@ public class TrafficQueueProcess implements CommandLineRunner {
             while (true) {
                 try {
                     ArrayList<Traffic> list = new ArrayList<>();
-                    Queues.drain(trafficQueue, list, 100, Duration.ofMillis(100));
+                    for (int i = 0; i < 100; i++) {
+                        Traffic poll = trafficQueue.poll();
+                        if (poll != null) {
+                            list.add(poll);
+                        }
+                    }
                     if (!list.isEmpty()) {
                         WebSocketServer.sendInfo(JSON.toJSONString(list), null);
                     }

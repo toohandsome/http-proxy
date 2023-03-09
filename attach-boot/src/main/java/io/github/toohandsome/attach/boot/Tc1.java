@@ -23,8 +23,8 @@ public class Tc1 {
                 VirtualMachine virtualMachine = null;
                 try {
                     virtualMachine = VirtualMachine.attach(vmd.id());
-                    virtualMachine.loadAgent("F:\\http-proxy\\attach-agent\\target\\attach-agent-1.0.0.jar");
-//                    virtualMachine.loadAgent("D:\\java\\git\\http-proxy\\attach-agent\\target\\attach-agent-1.0.0.jar");
+//                    virtualMachine.loadAgent("F:\\http-proxy\\attach-agent\\target\\attach-agent-1.0.0.jar");
+                    virtualMachine.loadAgent("D:\\java\\git\\http-proxy\\attach-agent\\target\\attach-agent-1.0.0.jar");
                     virtualMachine.detach();
                 } catch (AttachNotSupportedException e) {
                     e.printStackTrace();

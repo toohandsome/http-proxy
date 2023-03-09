@@ -30,7 +30,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                     cc.defrost();
                 }
                 CtMethod personFly = cc.getDeclaredMethod("openConnection");
-                personFly.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol())) {return this.openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(\"127.0.0.1\",9999)));}else{return handler.openConnection(this);} }");
+                personFly.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol())) {return this.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY);}else{return handler.openConnection(this);} }");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -61,7 +61,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                     cc.defrost();
                 }
                 CtMethod personFly = cc.getDeclaredMethod("openConnection");
-                personFly.setBody("{ return  url.openConnection(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(\"127.0.0.1\",9999))); }");
+                personFly.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY); }");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -77,7 +77,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                     cc.defrost();
                 }
                 CtMethod personFly = cc.getDeclaredMethod("proxy");
-                personFly.setBody(" {  return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(\"127.0.0.1\",9999)); } ");
+                personFly.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
                 return cc.toBytecode();
 
             } catch (Exception ex) {

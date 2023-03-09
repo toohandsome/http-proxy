@@ -29,7 +29,7 @@ public class ProxyApplication {
         SpringApplication.run(ProxyApplication.class, args);
         Utils.loadRoutes();
         HttpProxyServerConfig config = new HttpProxyServerConfig();
-        config.setHandleSsl(true);
+        config.setHandleSsl(false);
         new HttpProxyServer()
                 .serverConfig(config)
                 .proxyInterceptInitializer(new HttpProxyInterceptInitializer() {
