@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%; width: 100%; margin: 0;">
 <head>
     <meta charset="UTF-8">
     <title>路由管理</title>
@@ -8,11 +8,126 @@
     <!--    <script src="clipboard.min.js"></script>-->
     <link rel="stylesheet" href="index.css"/>
 </head>
-<body>
+<body style="height: 100%; width: 100%; margin: 0;">
 
 <div id="app">
 
     <el-tabs type="border-card">
+
+        <el-tab-pane label="流量">
+            <el-row :gutter="20">
+                <el-col :span="8">
+                    <div>
+                        <el-table
+                                :height="trafficTableHeight"
+                                :data="trafficTableData"
+                                stripe
+                                highlight-current-row
+                                @current-change="handleTrafficTableDataCurrentChange"
+                                style="width: 100%">
+                            </el-table-column>
+                            <el-table-column
+                                    show-overflow-tooltip
+                                    prop="host"
+                                    label="host"
+                                    width="180">
+                            </el-table-column>
+                            <el-table-column
+                                    show-overflow-tooltip
+                                    prop="url"
+                                    label="url">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="cost"
+                                    label="cost"
+                                    width="100">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="method"
+                                    label="method"
+                                    width="100">
+                            </el-table-column>
+                        </el-table>
+
+                    </div>
+                </el-col>
+                <el-col :span="16">
+                    <div style="    box-shadow: 0 2px 4px rgb(0 0 0 / 12%), 0 0 6px rgb(0 0 0 / 4%); padding: 10px; height: calc(50vh - 35px);    overflow-y: auto;box-sizing: border-box;">
+                        <el-button type="primary" style="position: absolute; right: 30px;z-index: 1000"
+                                   @click="copyReqInfo">复制
+                        </el-button>
+                        <div>
+                            <div>
+                                <label style="font-weight: bold ;font-size: large">url: </label>
+                                <label style=" ">{{currentTraffic.host+currentTraffic.url}} </label>
+                            </div>
+                            <div>
+                                <label style="font-weight: bold ;font-size: large">请求时间: </label>
+                                <label style=" "> {{formatMsToDate(currentTraffic.reqDate)}} </label>
+                                <label style="font-weight: bold ;font-size: large">请求体大小: </label>
+                                <label style=" ">{{currentTraffic.reqBodyLength}} </label>
+                            </div>
+                        </div>
+                        <el-tabs v-model="reqTrafficShow">
+                            <el-tab-pane label="headers" name="headers">
+
+                                <div v-for="headerKey in Object.keys(currentTraffic.requestHeaders)">
+                                    <label style="font-weight: bold ;font-size: large">{{headerKey}}: </label>
+                                    <label style=" ">{{currentTraffic.requestHeaders[headerKey]}} </label>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="body" name="body">
+                                <pre>{{currentTraffic.requestBody}}</pre>
+                            </el-tab-pane>
+                            <el-tab-pane label="raw" name="raw"></el-tab-pane>
+                        </el-tabs>
+                        <div>
+
+                        </div>
+                    </div>
+
+
+                    <div style="    box-shadow: 0 2px 4px rgb(0 0 0 / 12%), 0 0 6px rgb(0 0 0 / 4%); padding: 10px; height:  calc(50vh - 35px);     overflow-y: auto;box-sizing: border-box;">
+                        <el-button type="primary" style="position: absolute; right: 30px; z-index: 1000"
+                                   @click="copyRespInfo">复制
+                        </el-button>
+                        <div>
+                            <div>
+                                <label style="font-weight: bold ;font-size: large">响应时间: </label>
+                                <label style=" "> {{formatMsToDate(currentTraffic.respDate)}} </label>
+                                <label style="font-weight: bold ;font-size: large">响应体大小: </label>
+                                <label style=" "> {{ currentTraffic.respBodyLength}} </label>
+                            </div>
+                            <!--                            <div>-->
+                            <!--                            </div>-->
+                        </div>
+                        <el-tabs v-model="respTrafficShow">
+                            <el-tab-pane label="headers" name="headers">
+
+                                <div v-for="headerKey in Object.keys(currentTraffic.responseHeaders)">
+                                    <label style="font-weight: bold ;font-size: large">{{headerKey}}: </label>
+                                    <label style=" ">{{currentTraffic.responseHeaders[headerKey]}} </label>
+                                </div>
+
+
+                            </el-tab-pane>
+                            <el-tab-pane label="body" name="body">
+                                <pre>
+                                     {{currentTraffic.responseBody}}
+                                </pre>
+
+                            </el-tab-pane>
+                            <el-tab-pane label="raw" name="raw"></el-tab-pane>
+                        </el-tabs>
+                        <div>
+
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+
+        </el-tab-pane>
+
         <el-tab-pane label="反向代理">
 
 
@@ -370,120 +485,24 @@
         </el-tab-pane>
 
         <el-tab-pane label="正向代理">正向代理</el-tab-pane>
-        <el-tab-pane label="流量">
-            <el-row :gutter="20">
-                <el-col :span="8">
-                    <div>
-                        <el-table
-                                :max-height="trafficTableHeight"
-                                :data="trafficTableData"
-                                stripe
-                                highlight-current-row
-                                @current-change="handleTrafficTableDataCurrentChange"
-                                style="width: 100%">
-                            </el-table-column>
-                            <el-table-column
-                                    show-overflow-tooltip
-                                    prop="host"
-                                    label="host"
-                                    width="180">
-                            </el-table-column>
-                            <el-table-column
-                                    show-overflow-tooltip
-                                    prop="url"
-                                    label="url">
-                            </el-table-column>
-                            <el-table-column
-                                    prop="cost"
-                                    label="cost"
-                                    width="100">
-                            </el-table-column>
-                            <el-table-column
-                                    prop="method"
-                                    label="method"
-                                    width="100">
-                            </el-table-column>
-                        </el-table>
 
-                    </div>
-                </el-col>
-                <el-col :span="16">
-                    <div style="    box-shadow: 0 2px 4px rgb(0 0 0 / 12%), 0 0 6px rgb(0 0 0 / 4%); padding: 10px; height: 40vh;    overflow-y: auto;">
-                        <el-button type="primary" style="position: absolute; right: 30px;z-index: 1000"
-                                   @click="copyReqInfo">复制
-                        </el-button>
-                        <div>
-                            <div>
-                                <label style="font-weight: bold ;font-size: large">url: </label>
-                                <label style=" ">{{currentTraffic.host+currentTraffic.url}} </label>
-                            </div>
-                            <div>
-                                <label style="font-weight: bold ;font-size: large">请求体大小: </label>
-                                <label style=" ">{{currentTraffic.reqBodyLength}} </label>
-                                <label style="font-weight: bold ;font-size: large">请求时间: </label>
-                                <label style=" "> {{formatMsToDate(currentTraffic.reqDate)}} </label>
-                            </div>
-                        </div>
-                        <el-tabs v-model="reqTrafficShow">
-                            <el-tab-pane label="headers" name="headers">
-
-                                <div v-for="headerKey in Object.keys(currentTraffic.requestHeaders)">
-                                    <label style="font-weight: bold ;font-size: large">{{headerKey}}: </label>
-                                    <label style=" ">{{currentTraffic.requestHeaders[headerKey]}} </label>
-                                </div>
-                            </el-tab-pane>
-                            <el-tab-pane label="body" name="body">
-                                <pre>{{currentTraffic.requestBody}}</pre>
-                            </el-tab-pane>
-                            <el-tab-pane label="raw" name="raw"></el-tab-pane>
-                        </el-tabs>
-                        <div>
-
-                        </div>
-                    </div>
-
-
-                    <div style="    box-shadow: 0 2px 4px rgb(0 0 0 / 12%), 0 0 6px rgb(0 0 0 / 4%); padding: 10px; height: 47vh;     overflow-y: auto;">
-                        <el-button type="primary" style="position: absolute; right: 30px; z-index: 1000"
-                                   @click="copyRespInfo">复制
-                        </el-button>
-                        <div>
-                            <div>
-                                <label style="font-weight: bold ;font-size: large">响应时间: </label>
-                                <label style=" "> {{formatMsToDate(currentTraffic.respDate)}} </label>
-                                <label style="font-weight: bold ;font-size: large">响应体大小: </label>
-                                <label style=" "> {{ currentTraffic.respBodyLength}} </label>
-                            </div>
-                            <!--                            <div>-->
-                            <!--                            </div>-->
-                        </div>
-                        <el-tabs v-model="respTrafficShow">
-                            <el-tab-pane label="headers" name="headers">
-
-                                <div v-for="headerKey in Object.keys(currentTraffic.responseHeaders)">
-                                    <label style="font-weight: bold ;font-size: large">{{headerKey}}: </label>
-                                    <label style=" ">{{currentTraffic.responseHeaders[headerKey]}} </label>
-                                </div>
-
-
-                            </el-tab-pane>
-                            <el-tab-pane label="body" name="body">
-                                <pre>
-                                     {{currentTraffic.responseBody}}
-                                </pre>
-
-                            </el-tab-pane>
-                            <el-tab-pane label="raw" name="raw"></el-tab-pane>
-                        </el-tabs>
-                        <div>
-
-                        </div>
-                    </div>
-                </el-col>
-            </el-row>
+        <el-tab-pane label="agent">
+            <div style="width: 50%">
+                <el-form :inline="true" :model="agentFormInline" class="demo-form-inline">
+                    <el-form-item label="进程名">
+                        <el-input v-model="agentFormInline.prcessName" placeholder="进程名(包含即可)"></el-input>
+                    </el-form-item>
+                    <el-form-item label="进程id">
+                        <el-input v-model="agentFormInline.prcessId" placeholder="进程id"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="agentOpt('attach')">注入</el-button>
+                        <el-button type="primary" @click="agentOpt('reset')">重置</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
 
         </el-tab-pane>
-
     </el-tabs>
 
 
@@ -498,6 +517,10 @@
     const App = {
         data() {
             return {
+                agentFormInline: {
+                    processName: "demo",
+                    processId: 1234
+                },
                 currentTraffic: {
                     requestHeaders: {},
                     responseHeaders: {}
@@ -509,7 +532,7 @@
                 formLabelWidth: '120px',
                 editMode: "save",
                 showEnhanceOption: false,
-                trafficTableHeight: "95vh",
+                trafficTableHeight: "calc(100vh - 70px)",
                 trafficTableData: [],
                 reqHeaderOptions: [
                     {
@@ -551,7 +574,8 @@
                     mode: 'transparent',
                     order: 1
 
-                }, rules: {
+                },
+                rules: {
                     name: [
                         {required: true, message: '请输入唯一名称', trigger: 'blur'}
                     ],
@@ -567,6 +591,48 @@
             }
         },
         methods: {
+            agentOpt(opt) {
+                console.log(this.agentFormInline);
+
+                let url = "agentApi/attach";
+                if (opt == "reset") {
+                    url = "agentApi/reset";
+                }
+                let val = this.agentFormInline.processId;
+                let type = "processId";
+                if (this.agentFormInline.processName) {
+                    type = "processName";
+                    val = this.agentFormInline.processName
+                }
+
+                fetch(url, {
+                    method: 'post',
+                    body: JSON.stringify({
+                        type: type,
+                        val: val,
+                        opt: opt
+                    }),
+                    headers: {
+                        'Content-Type': 'x-www-form-urlencoded;charset=UTF-8'
+                    }
+                }).then(res => {
+                    let resdata = res.text();
+                    return resdata;
+                }).then(res => {
+                    //console.log("res:", res);
+                    if (res == "true") {
+                        this.$message({
+                            message: '操作成功',
+                            type: 'success'
+                        });
+                        this.getRouteList();
+                    } else {
+                        this.$message.error('操作失败');
+                    }
+
+                });
+            },
+
             copyText(val) {
                 const tmpTextElement = document.createElement('textarea');
                 document.body.appendChild(tmpTextElement);
@@ -703,7 +769,7 @@
             }
             ,
             handleTrafficTableDataCurrentChange(val) {
-                console.log(val);
+                //console.log(val);
                 this.currentTraffic = val;
             }
             ,
@@ -713,7 +779,7 @@
             }
             ,
             wsOnmessage(event) {
-                console.log('服务端返回：' + event.data);
+                //console.log('服务端返回：' + event.data);
                 const trafficArr = JSON.parse(event.data);
                 const upTrafficArr = trafficArr.filter((traffic) => {
                     return traffic.direction == "up";
@@ -733,7 +799,6 @@
                             tmpUpTraffic.responseHeaders = tmpDownTraffic.responseHeaders;
                             tmpUpTraffic.responseBody = tmpDownTraffic.responseBody;
                             tmpUpTraffic.cost = tmpUpTraffic.respDate - tmpUpTraffic.reqDate;
-                            debugger;
                             break;
                         }
                     }
@@ -774,7 +839,7 @@
             ,
 
             handleRespHeaderDel(row) {
-                console.log(row);
+                //console.log(row);
                 for (let i = 0; i < this.respHeaderTableData.length; i++) {
                     if (this.respHeaderTableData[i].key == row.key) {
                         this.respHeaderTableData.splice(i, 1);
@@ -795,7 +860,7 @@
             }
             ,
             handleRespBodyDel(row) {
-                console.log(row);
+                //console.log(row);
                 for (let i = 0; i < this.respBodyTableData.length; i++) {
                     if (this.respBodyTableData[i].key == row.key) {
                         this.respBodyTableData.splice(i, 1);
@@ -816,7 +881,7 @@
             }
             ,
             handleReqHeaderDel(row) {
-                console.log(row);
+                //console.log(row);
                 for (let i = 0; i < this.reqHeaderTableData.length; i++) {
                     if (this.reqHeaderTableData[i].key == row.key) {
                         this.reqHeaderTableData.splice(i, 1);
@@ -837,7 +902,7 @@
             }
             ,
             handleReqBodyDel(row) {
-                console.log(row)
+                //console.log(row)
                 for (let i = 0; i < this.reqBodyTableData.length; i++) {
                     if (this.reqBodyTableData[i].key == row.key) {
                         this.reqBodyTableData.splice(i, 1);
@@ -858,22 +923,22 @@
             }
             ,
             openEditColumn(row, column, cell, event) {
-                console.log(row, cell);
+                //console.log(row, cell);
                 row.edit = true;
             }
             ,
             // 表格数据编辑保存并关闭编辑
             editColumnData(row, column) {
                 // 关闭表格编辑
-                console.log(row, column)
+                //console.log(row, column)
             }
             ,
             handleEnhanceTabClick(tab, event) {
-                console.log(tab, event);
+                //console.log(tab, event);
             }
             ,
             changeMode(value) {
-                console.log(value);
+                //console.log(value);
                 if (value == "enhance") {
                     this.showEnhanceOption = true;
                 } else {
@@ -915,10 +980,10 @@
                     this.reqBodyTableData = this.filterRule(row.ruleList, [1]);
                     this.respHeaderTableData = this.filterRule(row.ruleList, [2, 12, -12]);
                     this.respBodyTableData = this.filterRule(row.ruleList, [3]);
-                    console.log(this.reqHeaderTableData);
-                    console.log(this.reqBodyTableData);
-                    console.log(this.respHeaderTableData);
-                    console.log(this.respBodyTableData);
+                    //console.log(this.reqHeaderTableData);
+                    //console.log(this.reqBodyTableData);
+                    //console.log(this.respHeaderTableData);
+                    //console.log(this.respBodyTableData);
                 }
             }
             ,
@@ -930,12 +995,12 @@
                 var mode = this.form.mode;
                 var remark = this.form.remark;
                 if (this.editMode == "add") {
-                    url = "api/addProxy"
+                    url = "routeApi/addProxy"
                 } else {
-                    url = "api/editProxy"
+                    url = "routeApi/editProxy"
                 }
                 var rules = this.reqHeaderTableData.concat(this.reqBodyTableData).concat(this.respHeaderTableData).concat(this.respBodyTableData);
-                console.log()
+                //console.log()
                 fetch(url, {
                     method: 'post',
                     body: JSON.stringify({
@@ -953,7 +1018,7 @@
                     let resdata = res.text();
                     return resdata;
                 }).then(res => {
-                    console.log("res:", res);
+                    //console.log("res:", res);
                     if (res == "true") {
                         this.$message({
                             message: '操作成功',
@@ -970,9 +1035,9 @@
             }
             ,
             handleDel(row) {
-                console.log("row:", row);
+                //console.log("row:", row);
 
-                fetch("api/delProxy", {
+                fetch("routeApi/delProxy", {
                     method: 'post',
                     body: JSON.stringify({
                         name: row.name
@@ -984,14 +1049,14 @@
                     let resdata = res.text();
                     return resdata;
                 }).then(res => {
-                    console.log("res:", res);
+                    //console.log("res:", res);
                     this.getRouteList();
                 });
             }
             ,
             getRouteList() {
                 var vue = this;
-                fetch("api/getRouteList", {
+                fetch("routeApi/getRouteList", {
                     "method": "POST",
                     body: JSON.stringify({}),
                     headers: {
@@ -1001,13 +1066,13 @@
                     let resdata = res.json();
                     return resdata;
                 }).then(res => {
-                    console.log("res:", res);
+                    //console.log("res:", res);
                     vue.tableData = res;
                 });
             }
         },
         mounted: function () {
-            console.log("页面打开了!");
+            //console.log("页面打开了!");
 
             this.getRouteList();
             this.initWs();

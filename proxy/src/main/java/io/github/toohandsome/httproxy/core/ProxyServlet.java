@@ -17,7 +17,9 @@
 package io.github.toohandsome.httproxy.core;
 
 import com.alibaba.fastjson2.JSON;
+import io.github.toohandsome.httproxy.controller.AgentController;
 import io.github.toohandsome.httproxy.controller.RouteController;
+import io.github.toohandsome.httproxy.entity.AgentOpt;
 import io.github.toohandsome.httproxy.entity.Route;
 import io.github.toohandsome.httproxy.entity.Rule;
 import io.github.toohandsome.httproxy.util.SpringUtil;
@@ -40,9 +42,15 @@ import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.util.EntityUtils;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.support.ServletContextResourceLoader;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -425,16 +433,16 @@ public class ProxyServlet extends HttpServlet {
                 break;
             }
         }
-        if (!routrMatch){
+        if (!routrMatch) {
 //            currentRoute = Route.
         }
 
         //  优先处理 页面请求,不然在全部转发情况下 无法访问页面
         String pathInfo = servletRequest.getPathInfo();
-        if (pathInfo != null && (pathInfo.startsWith("/routeView/") || "/favicon.ico".equals(pathInfo) || "/error".equals(pathInfo))) {
+        if (pathInfo != null && (pathInfo.startsWith("/httpProxy/") || "/favicon.ico".equals(pathInfo) || "/error".equals(pathInfo))) {
             if ("/error".equals(pathInfo)) {
                 servletResponse.getOutputStream().write("error".getBytes(StandardCharsets.UTF_8));
-            } else if (pathInfo.contains("/api")) {
+            } else if (pathInfo.contains("/routeApi")) {
                 try {
                     RouteController routeController = SpringUtil.getBean(RouteController.class);
                     String methodName = pathInfo.split("/")[3];
@@ -448,9 +456,27 @@ public class ProxyServlet extends HttpServlet {
                     e.printStackTrace();
                 }
 
+            } else if (pathInfo.contains("/agentApi")) {
+                try {
+                    AgentController agentController = SpringUtil.getBean(AgentController.class);
+                    String methodName = pathInfo.split("/")[3];
+                    Method method = agentController.getClass().getDeclaredMethod(methodName, AgentOpt.class);
+                    String reqStr = ServletUtil.readRequestBodyFromStream(servletRequest);
+                    AgentOpt route = JSON.parseObject(reqStr, AgentOpt.class);
+                    Object invoke = method.invoke(agentController, route);
+                    servletResponse.setContentType("application/json; charset=utf-8");
+                    servletResponse.getOutputStream().write(JSON.toJSONString(invoke).getBytes(StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             } else {
-                File file = ResourceUtils.getFile("classpath:static/" + pathInfo);
-                byte[] data = Files.readAllBytes(file.toPath());
+
+                final ResourceLoader resourceLoader = SpringUtil.getBean(DefaultResourceLoader.class);
+                Resource resource = resourceLoader.getResource("classpath:static" + pathInfo);
+                final InputStream inputStream = resource.getInputStream();
+                byte[] data = Utils.toByteArray(inputStream);
+
                 if (pathInfo.endsWith("html")) {
                     servletResponse.setContentType("text/html; charset=utf-8");
                 } else if (pathInfo.endsWith("css")) {

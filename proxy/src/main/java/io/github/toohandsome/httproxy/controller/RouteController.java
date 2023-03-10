@@ -12,7 +12,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/routeView/api")
+@RequestMapping("/httpProxy/routeApi")
 @Slf4j
 public class RouteController {
 

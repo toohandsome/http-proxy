@@ -8,6 +8,7 @@ import java.util.Map;
 @Data
 public class Traffic {
     private String key;
+    private long cost;
     private long reqDate;
     private long respDate;
     private String direction;

@@ -39,10 +39,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class Tc1 {
         try {
 
 
-            URL url = new URL("http://www.bilibili.com/");
+            URL url = new URL("http://blog.csdn.net/");
             //得到连接对象
             con = (HttpURLConnection) url.openConnection();
             //设置请求类型
@@ -163,7 +162,7 @@ public class Tc1 {
         }
 
         tt();
-        System.out.println("bilibili 完成");
+        System.out.println("zuanke8 完成");
         tt2();
         System.out.println("127 完成");
         final ResponseEntity<String> forEntity = restTemplate1.getForEntity("http://help.locoy.com/", String.class);
@@ -233,7 +232,7 @@ public class Tc1 {
 
             BufferedReader buffer = null;
             StringBuffer resultBuffer = null;
-            URL url = new URL("http://www.bilibili.com/");
+            URL url = new URL("http://blog.csdn.net/");
             //得到连接对象
             con = (HttpURLConnection) url.openConnection(PROXY);
             //设置请求类型
@@ -270,7 +269,7 @@ public class Tc1 {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("bilibili 完成");
+        System.out.println("zuanke8 完成");
         try {
             SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
             requestFactory.setProxy(
@@ -289,7 +288,7 @@ public class Tc1 {
 
 
     @GetMapping("/t3")
-    public User t3( ) {
+    public User t3() {
 
         try {
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -331,7 +330,7 @@ public class Tc1 {
 
             BufferedReader buffer = null;
             StringBuffer resultBuffer = null;
-            URL url = new URL("http://www.bilibili.com/");
+            URL url = new URL("http://blog.csdn.net/");
             //得到连接对象
             con = (HttpURLConnection) url.openConnection();
 //            con = (HttpURLConnection) url.openConnection(PROXY);
@@ -369,7 +368,7 @@ public class Tc1 {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("bilibili完成");
+        System.out.println("zuanke8完成");
 
         try {
 //            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
@@ -388,20 +387,24 @@ public class Tc1 {
         return null;
     }
 
-    @PostMapping("/t4")
-    public String t4(HttpServletRequest request, @RequestBody User user) {
-        logger.info("t4: user: " + JSON.toJSON(user));
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            System.out.println(headerName + ": " + request.getHeader(headerName));
-        }
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < 20000; i++) {
-            sb.append("a");
-        }
-        return sb.toString();
+    @GetMapping("/reset")
+    public String reset(HttpServletRequest request) throws Exception {
+
+        //创建发送端Socket对象（创建连接）
+        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"),10086);
+        //获取输出流对象
+        OutputStream os = socket.getOutputStream();
+        //发送数据
+        String str = "Hi,TCP!";
+        os.write(str.getBytes());
+        //释放资源
+        //os.close();
+        socket.close();
+
+
+        return "";
     }
+
 
 
     @PostMapping("/t5")
@@ -491,6 +494,8 @@ public class Tc1 {
     }
 
     public static void main(String[] args) {
+        Class<Object> objectClass = Object.class;
+        ClassLoader objectClassLoader = objectClass.getClassLoader();
         String messageid = UUID.randomUUID().toString().replace("-", "");
         System.out.println(messageid.length());
     }
