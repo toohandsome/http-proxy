@@ -1,12 +1,18 @@
 package io.github.toohandsome.attach.util;
 
+import sun.net.www.http.ChunkedInputStream;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.nio.charset.StandardCharsets;
 
 public class InputStreamUtil {
 
-    public static List<InputStream> cloneInputStream(InputStream input, Integer count) throws Exception {
+    public static InputStream cloneInputStream(InputStream input) throws Exception {
+        if (input instanceof ChunkedInputStream) {
+//            input = new GZIPInputStream(input);
+            return input;
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int len;
@@ -14,13 +20,37 @@ public class InputStreamUtil {
             baos.write(buffer, 0, len);
         }
         baos.flush();
-        InputStream byteArrayInputStream = new ByteArrayInputStream(baos.toByteArray());
-        List<InputStream> inputStreamList = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            inputStreamList.add(new ByteArrayInputStream(baos.toByteArray()));
-        }
-        return inputStreamList;
+        System.out.println(new String(baos.toByteArray(), StandardCharsets.UTF_8));
+        return new ByteArrayInputStream(baos.toByteArray());
+
     }
+
+    public static InputStream cloneInputStream(InputStream input, InputStream input2) throws Exception {
+
+        if (!(input2 instanceof ChunkedInputStream)) {
+            return input;
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = input.read(buffer)) > -1) {
+            baos.write(buffer, 0, len);
+        }
+        baos.flush();
+
+        InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(baos.toByteArray()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input1, "utf-8"));
+        StringBuffer sb = new StringBuffer();
+        String line = "";
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        System.out.println(sb);
+        return new ByteArrayInputStream(baos.toByteArray());
+
+    }
+
 
     public static void readInputStream(InputStream inputStream) throws IOException {
         inputStream.mark(0);

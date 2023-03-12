@@ -8,9 +8,8 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.util.UUIDUtils;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
+import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -35,17 +34,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -56,10 +51,11 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
-import java.io.File;
+import java.util.zip.GZIPInputStream;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
+import sun.net.www.http.ChunkedInputStream;
 
 @RestController
 @Slf4j
@@ -67,55 +63,49 @@ public class Tc1 {
 
     @GetMapping("/tt")
     public String tt() {
-        HttpURLConnection con = null;
-
-        BufferedReader buffer = null;
-        StringBuffer resultBuffer = null;
-
+        HttpURLConnection connection = null;
         try {
+            URL url = new URL("https://www.baidu.com");
+            connection =(HttpURLConnection)url.openConnection();
+            //通过此方法创建的HttpURLConnection对象，并没有真正执行连接操作，只是创建了一个新的实例，在正式连接前，往往还需要设置一些属性，如连接超时和请求方式等
+            connection.setRequestMethod("GET"); //设置请求方式
+            connection.setConnectTimeout(8000);//设置连接超时时间
+            connection.setReadTimeout(8000);//设置读取超时时间
+            connection.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+            connection.setRequestProperty("Accept-Encoding","gzip, deflate, br");
+            connection.setRequestProperty("Accept-Language","max-age=0");
+            connection.setRequestProperty("Connection","keep-alive");
+            //connection.setRequestProperty("Cookie","BIDUPSID=76A98B766DD25BE686350B0D000BEE53; PSTM=1661787931; BAIDUID=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; MCITY=-75%3A; BDUSS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BDUSS_BFESS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BD_UPN=12314753; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; BD_HOME=1; delPer=0; BD_CK_SAM=1; BAIDUID_BFESS=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; BA_HECTOR=81858h84ak04ak0g840101991i0p3tg1n; ZFY=kUFN3X8c6l5IEOwq8GSflhCg9O:B95feKsZlRj0fRNeE:C; channel=baidusearch; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; PSINO=6; sug=3; sugstore=0; ORIGIN=2; bdime=0; B64_BOT=1; ab_sr=1.0.1_NDZmNzJlMWI1ZWExMzgzOTY0NTEzM2I2NDgxNWUwY2Y4ZGZhZDNiOWY0ZmNjYTliM2UyOWFlYWVhYTRlM2E0MTg1ZmIyZjJmZWYyMjE3ZDVmNTM5NGYzMzk2ZjE3ODQ3YzM1NmFkYzk1MmFhYmJkODEwYTQ3ZjFhM2E0MTNiNmFiZWJhNjIxZDQ0ZTRlOTZkYjk2YTI4Y2FhYTBhNDQxY2Y2NDk2YWRlOTViMGJmZDgzNjgyNjQ0MDY4ZGE0OGI3; RT=\"z=1&dm=baidu.com&si=5f6451a5-172d-4749-9a02-ea3141f12300&ss=lf46hzd5&sl=2&tt=1no&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf&ld=61f\"; H_PS_PSSID=38185_36550_37513_37862_38174_38290_38254_36803_37936_38315_26350_37957_38283_37881; H_PS_645EC=59614vW%2BR0AUnPTbDvzFlSR3gGA07JHWnLYJNGCowbnjSHmwOo2SFp8eS90; baikeVisitId=0ca9639e-656f-4074-9378-80367e69cc26; BDSVRTM=0");
+            connection.setRequestProperty("DNT","1");
+            connection.setRequestProperty("Host","www.baidu.com");
+            connection.setRequestProperty("sec-ch-ua","\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\"110\"");
+            connection.setRequestProperty("sec-ch-ua-mobile","?0");
+            connection.setRequestProperty("Upgrade-Insecure-Requests","1");
+            connection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
+            connection.setRequestProperty("Sec-Fetch-Mode","navigate");
 
+            connection.connect();//连接远程资源
 
-            URL url = new URL("http://blog.csdn.net/");
-            //得到连接对象
-            con = (HttpURLConnection) url.openConnection();
-            //设置请求类型
-            con.setRequestMethod("POST");
-            //设置Content-Type，此处根据实际情况确定
-            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            //允许写出
-            con.setDoOutput(true);
-            //允许读入
-            con.setDoInput(true);
-            //不使用缓存
-            con.setUseCaches(false);
-            OutputStream os = con.getOutputStream();
-            Map paraMap = new HashMap();
-            paraMap.put("type", "wx");
-            paraMap.put("mchid", "10101");
-            //组装入参
-            os.write(("consumerAppId=test&serviceName=queryMerchantService&params=" + JSON.toJSONString(paraMap)).getBytes());
-            //得到响应码
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                //得到响应流
-                InputStream inputStream = con.getInputStream();
-                //sun.net.www.http.HttpClient.getInputStream
-                //将响应流转换成字符串
-                resultBuffer = new StringBuffer();
-                String line;
-                buffer = new BufferedReader(new InputStreamReader(inputStream, "GBK"));
-                while ((line = buffer.readLine()) != null) {
-                    resultBuffer.append(line);
-                }
-                System.out.println("result:" + resultBuffer.toString());
+            InputStream input = connection.getInputStream();//获取到服务器返回的响应流
+            InputStream stream = new GZIPInputStream(input);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream,"utf-8"));
+            StringBuffer sb = new StringBuffer();
+            String line = "";
+            while ((line = reader.readLine()) != null){
+                sb.append(line);
             }
-        } catch (Exception e) {
+            System.out.println(sb.toString());
+
+        } catch (MalformedURLException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            connection.disconnect(); //关闭该http
         }
 
         return "t1";
     }
-
     @Autowired
     RestTemplate restTemplate1;
 
@@ -126,9 +116,9 @@ public class Tc1 {
     @GetMapping("/tt2")
     public String tt2() throws Exception {
         HttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/routeView/index.html");
+        HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/httpProxy/index.html");
         //使用代理服务器
-//        HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
+//        HttpHost httpHost = new HttpHost("127.0.0.1", 9658);
         RequestConfig config = RequestConfig.custom()
 //                .setProxy(httpHost)
                 .build();
@@ -152,7 +142,19 @@ public class Tc1 {
                 .url("http://www.piaohua.com/")
                 .build();
         try {
+
+            Headers headers = request.headers();
+            Set<String> names = headers.names();
+            for (int i = 0; i < names.size(); i++) {
+
+            }
+
             Response response = client.newCall(request).execute();
+
+            ResponseBody body = response.body();
+
+            String string = body.string();
+            System.out.println(string);
             response.close();
             if (response.isSuccessful())
                 System.out.println("poaohua 完成");
@@ -160,24 +162,24 @@ public class Tc1 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        tt();
-        System.out.println("zuanke8 完成");
-        tt2();
-        System.out.println("127 完成");
-        final ResponseEntity<String> forEntity = restTemplate1.getForEntity("http://help.locoy.com/", String.class);
-        final String body = forEntity.getBody();
-        System.out.println("locoy 完成");
+//
+//        tt();
+//        System.out.println("zuanke8 完成");
+//        tt2();
+//        System.out.println("127 完成");
+//        final ResponseEntity<String> forEntity = restTemplate1.getForEntity("http://help.locoy.com/", String.class);
+//        final String body = forEntity.getBody();
+//        System.out.println("locoy 完成");
 
 //        String body = HttpUtil.createGet("http://www.baidu.com").execute().body();
 //        System.out.println(body);
-        String result1 = HttpUtil.get("https://www.baidu.com");
-        System.out.println("baidu 完成");
+//        String result1 = HttpUtil.get("https://www.baidu.com");
+//        System.out.println("baidu 完成");
 
         return "t1";
     }
 
-    public static final Proxy PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 9999));
+    public static final Proxy PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 9658));
 
     @GetMapping("/t1")
     public String t1(HttpServletRequest request, Integer times) {
@@ -208,9 +210,9 @@ public class Tc1 {
         System.out.println("piaohua 完成");
         try {
             HttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/routeView/index.html");
+            HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/httpProxy/index.html");
             //使用代理服务器
-            HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
+            HttpHost httpHost = new HttpHost("127.0.0.1", 9658);
             RequestConfig config = RequestConfig.custom()
                     .setProxy(httpHost)
                     .build();
@@ -305,25 +307,52 @@ public class Tc1 {
         System.out.println("piaohua 完成");
 
         try {
-            HttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/routeView/index.html");
-            //使用代理服务器
-//            HttpHost httpHost = new HttpHost("127.0.0.1", 9999);
-            RequestConfig config = RequestConfig.custom()
-//                    .setProxy(httpHost)
-                    .build();
-            httpGet.setConfig(config);
-            CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet);
-            HttpEntity entity = response.getEntity();
-            //输出网页内容
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL("https://www.baidu.com");
+                connection =(HttpURLConnection)url.openConnection();
+                //通过此方法创建的HttpURLConnection对象，并没有真正执行连接操作，只是创建了一个新的实例，在正式连接前，往往还需要设置一些属性，如连接超时和请求方式等
+                connection.setRequestMethod("GET"); //设置请求方式
+                connection.setConnectTimeout(8000);//设置连接超时时间
+                connection.setReadTimeout(8000);//设置读取超时时间
+                connection.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+                connection.setRequestProperty("Accept-Encoding","gzip, deflate, br");
+                connection.setRequestProperty("Accept-Language","max-age=0");
+                connection.setRequestProperty("Connection","keep-alive");
+                connection.setRequestProperty("Cookie","BIDUPSID=76A98B766DD25BE686350B0D000BEE53; PSTM=1661787931; BAIDUID=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; MCITY=-75%3A; BDUSS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BDUSS_BFESS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BD_UPN=12314753; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; BD_HOME=1; delPer=0; BD_CK_SAM=1; BAIDUID_BFESS=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; BA_HECTOR=81858h84ak04ak0g840101991i0p3tg1n; ZFY=kUFN3X8c6l5IEOwq8GSflhCg9O:B95feKsZlRj0fRNeE:C; channel=baidusearch; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; PSINO=6; sug=3; sugstore=0; ORIGIN=2; bdime=0; B64_BOT=1; ab_sr=1.0.1_NDZmNzJlMWI1ZWExMzgzOTY0NTEzM2I2NDgxNWUwY2Y4ZGZhZDNiOWY0ZmNjYTliM2UyOWFlYWVhYTRlM2E0MTg1ZmIyZjJmZWYyMjE3ZDVmNTM5NGYzMzk2ZjE3ODQ3YzM1NmFkYzk1MmFhYmJkODEwYTQ3ZjFhM2E0MTNiNmFiZWJhNjIxZDQ0ZTRlOTZkYjk2YTI4Y2FhYTBhNDQxY2Y2NDk2YWRlOTViMGJmZDgzNjgyNjQ0MDY4ZGE0OGI3; RT=\"z=1&dm=baidu.com&si=5f6451a5-172d-4749-9a02-ea3141f12300&ss=lf46hzd5&sl=2&tt=1no&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf&ld=61f\"; H_PS_PSSID=38185_36550_37513_37862_38174_38290_38254_36803_37936_38315_26350_37957_38283_37881; H_PS_645EC=59614vW%2BR0AUnPTbDvzFlSR3gGA07JHWnLYJNGCowbnjSHmwOo2SFp8eS90; baikeVisitId=0ca9639e-656f-4074-9378-80367e69cc26; BDSVRTM=0");
+                connection.setRequestProperty("DNT","1");
+                connection.setRequestProperty("Host","www.baidu.com");
+                connection.setRequestProperty("sec-ch-ua","\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\"110\"");
+                connection.setRequestProperty("sec-ch-ua-mobile","?0");
+                connection.setRequestProperty("Upgrade-Insecure-Requests","1");
+                connection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
+                connection.setRequestProperty("Sec-Fetch-Mode","navigate");
 
-//            System.out.println(EntityUtils.toString(entity, "utf-8"));
-            response.close();
+                connection.connect();//连接远程资源
+
+                InputStream input = connection.getInputStream();//获取到服务器返回的响应流
+                InputStream stream = new GZIPInputStream(input);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream,"utf-8"));
+                StringBuffer sb = new StringBuffer();
+                String line = "";
+                while ((line = reader.readLine()) != null){
+                    sb.append(line);
+                }
+//                System.out.println(sb.toString());
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }finally {
+                connection.disconnect(); //关闭该http
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("127完成");
+        System.out.println("baidu完成");
         try {
 
             HttpURLConnection con = null;
@@ -391,7 +420,7 @@ public class Tc1 {
     public String reset(HttpServletRequest request) throws Exception {
 
         //创建发送端Socket对象（创建连接）
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"),10086);
+        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 10086);
         //获取输出流对象
         OutputStream os = socket.getOutputStream();
         //发送数据
@@ -404,7 +433,6 @@ public class Tc1 {
 
         return "";
     }
-
 
 
     @PostMapping("/t5")
@@ -493,11 +521,16 @@ public class Tc1 {
         return "";
     }
 
-    public static void main(String[] args) {
-        Class<Object> objectClass = Object.class;
-        ClassLoader objectClassLoader = objectClass.getClassLoader();
-        String messageid = UUID.randomUUID().toString().replace("-", "");
-        System.out.println(messageid.length());
+    public static void main(String[] args) throws Exception {
+//        URL url = new URL("http://example.com/");
+//        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//        InputStream input = new ChunkedInputStream(conn.getInputStream());
+//        BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+//        String line;
+//        while ((line = reader.readLine()) != null) {
+//            System.out.println(line);
+//            // 处理读取到的数据
+//        }
     }
 
     @GetMapping("/t9")

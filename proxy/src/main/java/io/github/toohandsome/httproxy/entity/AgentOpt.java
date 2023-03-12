@@ -8,4 +8,5 @@ public class AgentOpt {
     private String type;
     private String val;
     private String opt;
+    private String port;
 }

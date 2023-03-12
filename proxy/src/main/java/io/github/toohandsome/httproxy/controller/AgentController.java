@@ -42,7 +42,7 @@ public class AgentController {
                 try {
                     if (vmd.id().equals(agentOpt.getVal())) {
                         VirtualMachine virtualMachine = VirtualMachine.attach(vmd.id());
-                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar");
+                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", agentOpt.getPort());
                         virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
                         break;
@@ -56,7 +56,7 @@ public class AgentController {
                     VirtualMachine virtualMachine = null;
                     try {
                         virtualMachine = VirtualMachine.attach(vmd.id());
-                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar ");
+                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", agentOpt.getPort());
                         virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
                         break;
