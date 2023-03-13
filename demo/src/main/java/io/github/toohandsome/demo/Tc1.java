@@ -56,6 +56,7 @@ import java.util.zip.GZIPInputStream;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 import sun.net.www.http.ChunkedInputStream;
+import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 
 @RestController
 @Slf4j
@@ -66,7 +67,7 @@ public class Tc1 {
         HttpURLConnection connection = null;
         try {
             URL url = new URL("https://www.baidu.com");
-            connection =(HttpURLConnection)url.openConnection();
+            connection =(HttpsURLConnectionImpl)url.openConnection();
             //通过此方法创建的HttpURLConnection对象，并没有真正执行连接操作，只是创建了一个新的实例，在正式连接前，往往还需要设置一些属性，如连接超时和请求方式等
             connection.setRequestMethod("GET"); //设置请求方式
             connection.setConnectTimeout(8000);//设置连接超时时间
@@ -75,7 +76,7 @@ public class Tc1 {
             connection.setRequestProperty("Accept-Encoding","gzip, deflate, br");
             connection.setRequestProperty("Accept-Language","max-age=0");
             connection.setRequestProperty("Connection","keep-alive");
-            //connection.setRequestProperty("Cookie","BIDUPSID=76A98B766DD25BE686350B0D000BEE53; PSTM=1661787931; BAIDUID=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; MCITY=-75%3A; BDUSS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BDUSS_BFESS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BD_UPN=12314753; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; BD_HOME=1; delPer=0; BD_CK_SAM=1; BAIDUID_BFESS=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; BA_HECTOR=81858h84ak04ak0g840101991i0p3tg1n; ZFY=kUFN3X8c6l5IEOwq8GSflhCg9O:B95feKsZlRj0fRNeE:C; channel=baidusearch; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; PSINO=6; sug=3; sugstore=0; ORIGIN=2; bdime=0; B64_BOT=1; ab_sr=1.0.1_NDZmNzJlMWI1ZWExMzgzOTY0NTEzM2I2NDgxNWUwY2Y4ZGZhZDNiOWY0ZmNjYTliM2UyOWFlYWVhYTRlM2E0MTg1ZmIyZjJmZWYyMjE3ZDVmNTM5NGYzMzk2ZjE3ODQ3YzM1NmFkYzk1MmFhYmJkODEwYTQ3ZjFhM2E0MTNiNmFiZWJhNjIxZDQ0ZTRlOTZkYjk2YTI4Y2FhYTBhNDQxY2Y2NDk2YWRlOTViMGJmZDgzNjgyNjQ0MDY4ZGE0OGI3; RT=\"z=1&dm=baidu.com&si=5f6451a5-172d-4749-9a02-ea3141f12300&ss=lf46hzd5&sl=2&tt=1no&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf&ld=61f\"; H_PS_PSSID=38185_36550_37513_37862_38174_38290_38254_36803_37936_38315_26350_37957_38283_37881; H_PS_645EC=59614vW%2BR0AUnPTbDvzFlSR3gGA07JHWnLYJNGCowbnjSHmwOo2SFp8eS90; baikeVisitId=0ca9639e-656f-4074-9378-80367e69cc26; BDSVRTM=0");
+            connection.setRequestProperty("Cookie","BIDUPSID=76A98B766DD25BE686350B0D000BEE53; PSTM=1661787931; BAIDUID=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; MCITY=-75%3A; BDUSS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BDUSS_BFESS=ltajg4cVNycHZKcmdLMzF1WGo0ZzBOSkxyaHNBWFRINlVob356N3RsRGU3NmRqSVFBQUFBJCQAAAAAAAAAAAEAAACwPBIYz8TStrLdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5igGPeYoBjVX; BD_UPN=12314753; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; BD_HOME=1; delPer=0; BD_CK_SAM=1; BAIDUID_BFESS=76A98B766DD25BE686350B0D000BEE53:SL=0:NR=10:FG=1; BA_HECTOR=81858h84ak04ak0g840101991i0p3tg1n; ZFY=kUFN3X8c6l5IEOwq8GSflhCg9O:B95feKsZlRj0fRNeE:C; channel=baidusearch; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; PSINO=6; sug=3; sugstore=0; ORIGIN=2; bdime=0; B64_BOT=1; ab_sr=1.0.1_NDZmNzJlMWI1ZWExMzgzOTY0NTEzM2I2NDgxNWUwY2Y4ZGZhZDNiOWY0ZmNjYTliM2UyOWFlYWVhYTRlM2E0MTg1ZmIyZjJmZWYyMjE3ZDVmNTM5NGYzMzk2ZjE3ODQ3YzM1NmFkYzk1MmFhYmJkODEwYTQ3ZjFhM2E0MTNiNmFiZWJhNjIxZDQ0ZTRlOTZkYjk2YTI4Y2FhYTBhNDQxY2Y2NDk2YWRlOTViMGJmZDgzNjgyNjQ0MDY4ZGE0OGI3; RT=\"z=1&dm=baidu.com&si=5f6451a5-172d-4749-9a02-ea3141f12300&ss=lf46hzd5&sl=2&tt=1no&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf&ld=61f\"; H_PS_PSSID=38185_36550_37513_37862_38174_38290_38254_36803_37936_38315_26350_37957_38283_37881; H_PS_645EC=59614vW%2BR0AUnPTbDvzFlSR3gGA07JHWnLYJNGCowbnjSHmwOo2SFp8eS90; baikeVisitId=0ca9639e-656f-4074-9378-80367e69cc26; BDSVRTM=0");
             connection.setRequestProperty("DNT","1");
             connection.setRequestProperty("Host","www.baidu.com");
             connection.setRequestProperty("sec-ch-ua","\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\"110\"");
@@ -87,8 +88,8 @@ public class Tc1 {
             connection.connect();//连接远程资源
 
             InputStream input = connection.getInputStream();//获取到服务器返回的响应流
-            InputStream stream = new GZIPInputStream(input);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream,"utf-8"));
+            input = new GZIPInputStream(input);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input,"utf-8"));
             StringBuffer sb = new StringBuffer();
             String line = "";
             while ((line = reader.readLine()) != null){

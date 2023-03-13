@@ -30,21 +30,26 @@ public class AgentMain {
     public static Instrumentation inst1;
 
     static {
-        retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
-        retransformClassList.add("okhttp3.internal.http.CallServerInterceptor");
-//        retransformClassList.add("java.net.URL");
-//        retransformClassList.add("org.apache.http.client.config.RequestConfig");
-//        retransformClassList.add("okhttp3.OkHttpClient");
-//        retransformClassList.add("cn.hutool.http.HttpConnection");
+        // inner
+//        retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
+//        retransformClassList.add("okhttp3.internal.http.CallServerInterceptor");
+//        retransformClassList.add("okhttp3.internal.http.BridgeInterceptor");
+
+        // proxy
+        retransformClassList.add("java.net.URL");
+        retransformClassList.add("org.apache.http.client.config.RequestConfig");
+        retransformClassList.add("okhttp3.OkHttpClient");
+        retransformClassList.add("cn.hutool.http.HttpConnection");
     }
+
 
     public static List<Class> classList = new ArrayList<>();
     public static MyTransformer1 transformer1;
 
     public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {
         System.out.println("agentmain called");
-        SocketAddress address = ProxyIns.PROXY.address();
-        address = new InetSocketAddress("127.0.0.1",Integer.valueOf(args));
+        ProxyIns.PROXY = null;
+        ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1",Integer.valueOf(args)));
         inst1 = inst;
         JarFileHelper.addJarToBootstrap(inst);
         final MyTransformer1 transformer = new MyTransformer1(args);

@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 public class InputStreamUtil {
 
-    public static InputStream cloneInputStream(InputStream input) throws Exception {
+    public static InputStream cloneInputStream(InputStream input,Object o1,Object o2) throws Exception {
         if (input instanceof ChunkedInputStream) {
 //            input = new GZIPInputStream(input);
             return input;
