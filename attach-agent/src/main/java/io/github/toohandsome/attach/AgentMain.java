@@ -31,15 +31,16 @@ public class AgentMain {
 
     static {
         // inner
-//        retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
-//        retransformClassList.add("okhttp3.internal.http.CallServerInterceptor");
-//        retransformClassList.add("okhttp3.internal.http.BridgeInterceptor");
+        retransformClassList.add("sun.net.www.http.HttpClient");
+        retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
+        retransformClassList.add("okhttp3.internal.http.CallServerInterceptor");
+        retransformClassList.add("okhttp3.internal.http.BridgeInterceptor");
 
         // proxy
-        retransformClassList.add("java.net.URL");
-        retransformClassList.add("org.apache.http.client.config.RequestConfig");
-        retransformClassList.add("okhttp3.OkHttpClient");
-        retransformClassList.add("cn.hutool.http.HttpConnection");
+//        retransformClassList.add("java.net.URL");
+//        retransformClassList.add("org.apache.http.client.config.RequestConfig");
+//        retransformClassList.add("okhttp3.OkHttpClient");
+//        retransformClassList.add("cn.hutool.http.HttpConnection");
     }
 
 

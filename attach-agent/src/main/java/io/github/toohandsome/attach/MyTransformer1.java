@@ -47,6 +47,26 @@ public class MyTransformer1 implements ClassFileTransformer {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+        } else if (className.equals("sun/net/www/http/HttpClient")) {
+            try {
+                ClassPool pool = ClassPool.getDefault();
+                pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
+                CtClass cc = pool.get("sun.net.www.http.HttpClient");
+                if (cc.isFrozen()) {
+                    cc.defrost();
+                }
+                CtClass cc1 =    pool.get("sun.net.www.MessageHeader");
+                CtClass cc2 =    pool.get("sun.net.www.http.PosterOutputStream");
+                CtClass[] ctClasses = new CtClass[2];
+                ctClasses[0] = cc1;
+                ctClasses[1] = cc2;
+                CtMethod personFly = cc.getDeclaredMethod("writeRequests",ctClasses);
+                personFly.insertBefore(" InputStreamUtil.getRequestInfo($1,$2);  ");
+                return cc.toBytecode();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
             try {
                 ClassPool pool = ClassPool.getDefault();

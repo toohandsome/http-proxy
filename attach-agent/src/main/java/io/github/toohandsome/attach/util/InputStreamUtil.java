@@ -1,16 +1,40 @@
 package io.github.toohandsome.attach.util;
 
+import sun.net.www.MessageHeader;
 import sun.net.www.http.ChunkedInputStream;
+import sun.net.www.http.PosterOutputStream;
+import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.nio.charset.StandardCharsets;
 
 public class InputStreamUtil {
 
-    public static InputStream cloneInputStream(InputStream input,Object o1,Object o2) throws Exception {
+    public static void getRequestInfo(MessageHeader header, PosterOutputStream var2) throws Exception {
+        Field keys = header.getClass().getDeclaredField("keys");
+        Field values = header.getClass().getDeclaredField("values");
+        keys.setAccessible(true);
+        values.setAccessible(true);
+        String[] keysArr = (String[]) keys.get(header);
+        String[] valuesArr = (String[]) values.get(header);
+        for (int i = 0; i < keysArr.length; i++) {
+            if (keysArr[i] == null && valuesArr[i] == null) {
+                continue;
+            }
+            System.out.println("req key: " + keysArr[i] + "  --  value: " + valuesArr[i]);
+        }
+        System.out.println("req body: " + var2.toString());
+    }
+
+    public static InputStream cloneInputStream(InputStream input, Object o1, Object o2) throws Exception {
+
         if (input instanceof ChunkedInputStream) {
-//            input = new GZIPInputStream(input);
             return input;
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
