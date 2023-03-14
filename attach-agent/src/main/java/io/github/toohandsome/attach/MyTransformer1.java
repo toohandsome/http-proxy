@@ -1,9 +1,6 @@
 package io.github.toohandsome.attach;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtMethod;
+import javassist.*;
 import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.InputStream;
@@ -26,20 +23,26 @@ public class MyTransformer1 implements ClassFileTransformer {
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-
-
+        ClassPool pool = ClassPool.getDefault();
+        CtClass cc = null;
+        try {
+            cc = pool.get(className.replace("/", "."));
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+        }
+        if (cc.isFrozen()) {
+            cc.defrost();
+        }
         if (className.equals("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
-                CtClass cc = pool.get("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
+                pool.importPackage("sun.net.www.http.ChunkedInputStream");
+
                 CtConstructor[] declaredConstructors = cc.getDeclaredConstructors();
                 for (CtConstructor declaredConstructor : declaredConstructors) {
                     declaredConstructor.insertBefore("$2 = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($2,$0,$1);");
-                    declaredConstructor.insertAfter("$0.in = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($0,$2);");
+                    declaredConstructor.insertAfter("if ($0 instanceof ChunkedInputStream){$0.in = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($0,$2);}");
                 }
 
                 return cc.toBytecode();
@@ -49,19 +52,16 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         } else if (className.equals("sun/net/www/http/HttpClient")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
-                CtClass cc = pool.get("sun.net.www.http.HttpClient");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
-                CtClass cc1 =    pool.get("sun.net.www.MessageHeader");
-                CtClass cc2 =    pool.get("sun.net.www.http.PosterOutputStream");
+
+                CtClass cc1 = pool.get("sun.net.www.MessageHeader");
+                CtClass cc2 = pool.get("sun.net.www.http.PosterOutputStream");
                 CtClass[] ctClasses = new CtClass[2];
                 ctClasses[0] = cc1;
                 ctClasses[1] = cc2;
-                CtMethod personFly = cc.getDeclaredMethod("writeRequests",ctClasses);
-                personFly.insertBefore(" InputStreamUtil.getRequestInfo($1,$2);  ");
+                CtMethod ctMethod = cc.getDeclaredMethod("writeRequests", ctClasses);
+                ctMethod.insertBefore(" InputStreamUtil.getRequestInfo($1,$2);  ");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -69,7 +69,7 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("okhttp3.Headers");
                 pool.importPackage("java.util.Set");
                 pool.importPackage("java.util.List");
@@ -77,14 +77,11 @@ public class MyTransformer1 implements ClassFileTransformer {
                 pool.importPackage("okhttp3.ResponseBody");
                 pool.importPackage("okhttp3.Request");
                 pool.importPackage("okhttp3.internal.http.RealInterceptorChain");
-                CtClass cc = pool.get("okhttp3.internal.http.CallServerInterceptor");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
 
-                CtMethod personFly = cc.getDeclaredMethod("intercept");
 
-                personFly.insertBefore(" RealInterceptorChain realChain_uid_123_abc_uid = (RealInterceptorChain) $1;\n" +
+                CtMethod ctMethod = cc.getDeclaredMethod("intercept");
+
+                ctMethod.insertBefore(" RealInterceptorChain realChain_uid_123_abc_uid = (RealInterceptorChain) $1;\n" +
                         " Request request_uid_123_abc_uid = realChain_uid_123_abc_uid.request(); \n"
                         +
                         " Headers headers1_uid_123_abc_uid = request_uid_123_abc_uid.headers(); \n"
@@ -105,7 +102,7 @@ public class MyTransformer1 implements ClassFileTransformer {
 
         } else if (className.equals("okhttp3/internal/http/BridgeInterceptor")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("okhttp3.Headers");
                 pool.importPackage("java.util.Set");
                 pool.importPackage("java.util.List");
@@ -116,14 +113,9 @@ public class MyTransformer1 implements ClassFileTransformer {
                 pool.importPackage("okio.BufferedSource");
                 pool.importPackage("okio.Buffer");
                 pool.importPackage("java.nio.charset.Charset");
-                CtClass cc = pool.get("okhttp3.internal.http.BridgeInterceptor");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
 
-                CtMethod personFly = cc.getDeclaredMethod("intercept");
-
-                personFly.insertAfter("  Headers headers_uid_abc_123_uid = $_.headers();\n" +
+                CtMethod ctMethod = cc.getDeclaredMethod("intercept");
+                ctMethod.insertAfter("  Headers headers_uid_abc_123_uid = $_.headers();\n" +
                         "            java.util.Collections.UnmodifiableSet respNames_uid_abc_123_uid = headers_uid_abc_123_uid.names();\n" +
                         "            List respHeaderList_uid_123 = new ArrayList(respNames_uid_abc_123_uid);\n " +
                         " for (int i = 0; i < respHeaderList_uid_123.size(); i++){  \n" +
@@ -139,7 +131,66 @@ public class MyTransformer1 implements ClassFileTransformer {
 
                         "");
 
+                return cc.toBytecode();
 
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } else if (className.equals("org/apache/http/protocol/HttpRequestExecutor")) {
+            try {
+
+                pool.importPackage("java.lang.reflect.Field");
+                pool.importPackage("org.apache.http.HttpEntity");
+                pool.importPackage("java.io.InputStream");
+                pool.importPackage("org.apache.http.Header");
+                pool.importPackage("org.apache.http.util.EntityUtils");
+                pool.importPackage("org.apache.http.entity.BufferedHttpEntity");
+
+                CtMethod ctMethod = cc.getDeclaredMethod("execute");
+                ctMethod.insertBefore(" Header[]  tempHttpMessageArr =  $1.getAllHeaders();  \n" +
+                        " for (int i = 0; i < tempHttpMessageArr.length; i++){  \n" +
+                        " Header tempHeader =  tempHttpMessageArr[i]; \n" +
+                        "               System.out.println(\"req key:  \" + tempHeader.getName() + \" -- value: \" + tempHeader.getValue());\n" +
+                        "            }\n" +
+                        "   \n" +
+
+                        "  try{ " +
+                        "   Field tempEntity =  $1.getClass().getDeclaredField(\"entity\");    \n" +
+                        "    tempEntity.setAccessible(true);   \n" +
+                        "   HttpEntity tempEntityObj = (HttpEntity)  tempEntity.get(request);  \n" +
+                        "  if(tempEntityObj!=null){  " +
+                        "   InputStream tempStream =   tempEntityObj.getContent()  ;   \n" +
+                        "  if(tempStream!=null){   " +
+                        "   tempStream =  io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream(tempStream,null, null ) ;  \n" +
+                        "    }" +
+                        " }" +
+                        "   }catch (Exception e1) {\n" +
+                        "            e1.printStackTrace();\n" +
+                        "        }  \n" +
+                        "       \n" +
+                        "       \n" +
+                        "");
+                ctMethod.insertAfter(" Header[]  tempHttpMessageArr1 =  $_.getAllHeaders();  \n" +
+                        " for (int i = 0; i < tempHttpMessageArr1.length; i++){  \n" +
+                        " Header tempHeader =  tempHttpMessageArr1[i]; \n" +
+                        "               System.out.println(\"resp key:  \" + tempHeader.getName() + \" -- value: \" + tempHeader.getValue());\n" +
+                        "            }\n" +
+                        "   \n" +
+
+                        "  try{ " +
+
+                        "   HttpEntity tempEntityObj1 =  $_.getEntity();  \n" +
+                        "  if(tempEntityObj1 != null){  " +
+                        "  $_.setEntity( new BufferedHttpEntity(tempEntityObj1));  \n" +
+                        "    System.out.println(\"respBody: \"+EntityUtils.toString( $_.getEntity()));   \n" +
+                        "       \n" +
+                        " }" +
+                        "   }catch (Exception e2) {\n" +
+                        "            e2.printStackTrace();\n" +
+                        "        }  \n" +
+                        "       \n" +
+                        "       \n" +
+                        "");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -147,17 +198,15 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         }
 
+
         // proxy
         if (className.equals("java/net/URL")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("java.net");
-                CtClass cc = pool.get("java.net.URL");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
-                CtMethod personFly = cc.getDeclaredMethod("openConnection");
-                personFly.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol()) || \"https\".equals(this.getProtocol())) {return this.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY);}else{return handler.openConnection(this);} }");
+
+                CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
+                ctMethod.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol()) || \"https\".equals(this.getProtocol())) {return this.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY);}else{return handler.openConnection(this);} }");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -165,14 +214,11 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         } else if (className.equals("org/apache/http/client/config/RequestConfig")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("org.apache.http");
-                CtClass cc = pool.get("org.apache.http.client.config.RequestConfig");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
-                CtMethod personFly = cc.getDeclaredMethod("getProxy");
-                personFly.setBody(" {return new HttpHost(\"127.0.0.1\"," + port + ");}");
+
+                CtMethod ctMethod = cc.getDeclaredMethod("getProxy");
+                ctMethod.setBody(" {return new HttpHost(\"127.0.0.1\"," + port + ");}");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -180,14 +226,11 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         } else if (className.equals("cn/hutool/http/HttpConnection")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("java.net");
-                CtClass cc = pool.get("cn.hutool.http.HttpConnection");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
-                CtMethod personFly = cc.getDeclaredMethod("openConnection");
-                personFly.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY); }");
+
+                CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
+                ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY); }");
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -195,14 +238,11 @@ public class MyTransformer1 implements ClassFileTransformer {
             }
         } else if (className.equals("okhttp3/OkHttpClient")) {
             try {
-                ClassPool pool = ClassPool.getDefault();
+
                 pool.importPackage("java.net");
-                CtClass cc = pool.get("okhttp3.OkHttpClient");
-                if (cc.isFrozen()) {
-                    cc.defrost();
-                }
-                CtMethod personFly = cc.getDeclaredMethod("proxy");
-                personFly.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
+
+                CtMethod ctMethod = cc.getDeclaredMethod("proxy");
+                ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
                 return cc.toBytecode();
 
             } catch (Exception ex) {

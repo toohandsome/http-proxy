@@ -7,6 +7,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.util.UUIDUtils;
+import io.github.toohandsome.demo.config.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.codec.CharEncoding;
@@ -127,20 +128,23 @@ public class Tc1 {
 
     @GetMapping("/tt2")
     public String tt2() throws Exception {
-        HttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://127.0.0.1:8080/httpProxy/index.html");
-        //使用代理服务器
-//        HttpHost httpHost = new HttpHost("127.0.0.1", 9658);
-        RequestConfig config = RequestConfig.custom()
-//                .setProxy(httpHost)
-                .build();
-        httpGet.setConfig(config);
-        CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet);
-        HttpEntity entity = response.getEntity();
-        //输出网页内容
-        System.out.println("网页内容:");
-        System.out.println(EntityUtils.toString(entity, "utf-8"));
-        response.close();
+
+        HttpPost httpPost = new HttpPost("http://127.0.0.1/t8");
+        JSONObject json = new JSONObject();
+        json.put("name","yxd");
+        json.put("big",true);
+        json.put("address","xxxx");
+        json.put("age",232);
+        httpPost.addHeader("Content-type", "application/json;charset=UTF-8");
+        httpPost.setEntity(new StringEntity(json.toString(),"UTF-8"));
+        for (int i = 0; i < 5; i++) {
+            final CloseableHttpResponse response = HttpUtils.getHttpClient().execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            //
+            System.out.println("输出网页内容: "+ EntityUtils.toString(entity, "utf-8"));
+            response.close();
+        }
+
         return "";
     }
 

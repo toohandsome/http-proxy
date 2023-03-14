@@ -1,27 +1,15 @@
 package io.github.toohandsome.attach;
 
-import io.github.toohandsome.attach.util.ClassByteCache;
-import io.github.toohandsome.attach.util.InputStreamUtil;
-import io.github.toohandsome.attach.util.ProxyIns;
-import io.github.toohandsome.attach.util.Reset;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.NotFoundException;
-import org.objectweb.asm.*;
+import io.github.toohandsome.attach.util.*;
 //import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.*;
-import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class AgentMain {
 
@@ -35,6 +23,7 @@ public class AgentMain {
         retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
         retransformClassList.add("okhttp3.internal.http.CallServerInterceptor");
         retransformClassList.add("okhttp3.internal.http.BridgeInterceptor");
+        retransformClassList.add("org.apache.http.protocol.HttpRequestExecutor");
 
         // proxy
 //        retransformClassList.add("java.net.URL");

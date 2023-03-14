@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package io.github.toohandsome.attach;
+package io.github.toohandsome.attach.util;
+
+import io.github.toohandsome.attach.AgentMain;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
