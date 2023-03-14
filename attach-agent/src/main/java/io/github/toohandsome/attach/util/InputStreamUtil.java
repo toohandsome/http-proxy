@@ -1,7 +1,11 @@
 package io.github.toohandsome.attach.util;
 
+import io.github.toohandsome.attach.entity.MyMap;
+import io.github.toohandsome.attach.entity.Traffic;
+import sun.net.NetworkClient;
 import sun.net.www.MessageHeader;
 import sun.net.www.http.ChunkedInputStream;
+import sun.net.www.http.HttpClient;
 import sun.net.www.http.PosterOutputStream;
 import sun.net.www.protocol.http.HttpURLConnection;
 
@@ -12,12 +16,38 @@ import java.nio.charset.StandardCharsets;
 
 public class InputStreamUtil {
 
-    public static void getRequestInfo(MessageHeader header, PosterOutputStream var2) throws Exception {
-        printHeader(header, "req");
-        System.out.println("reqBody: " + var2.toString());
+    public static void getRequestInfo(HttpClient client, MessageHeader header, PosterOutputStream var2) {
+        try {
+
+
+            Class httpClientClass = null;
+            if ("sun.net.www.protocol.https.HttpsClient".equals(client.getClass().getCanonicalName())) {
+                httpClientClass = client.getClass().getSuperclass();
+            } else {
+                httpClientClass = client.getClass();
+            }
+            Field host = httpClientClass.getDeclaredField("host");
+            host.setAccessible(true);
+            MyMap myMap = printHeader(header, "req");
+            Traffic traffic = new Traffic();
+            traffic.setUrl(client.getURLFile());
+            if (var2 != null) {
+                traffic.setReqBodyLength(var2.toByteArray().length);
+                traffic.setRequestBody(var2.toString());
+                System.out.println("reqBody: " + var2.toString());
+            }
+            traffic.setReqDate(System.currentTimeMillis());
+            traffic.setHost(host.get(client) + "");
+            traffic.setDirection("up");
+            traffic.setKey(client.hashCode() + "");
+            traffic.setRequestHeaders(myMap);
+            TrafficSendUtil.send(traffic);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static InputStream cloneInputStream(InputStream input, Object o1, HttpURLConnection o2) throws Exception {
+    public static InputStream cloneInputStream(InputStream input, HttpURLConnection httpURLConnection) throws Exception {
 
         if (input instanceof ChunkedInputStream) {
             return input;
@@ -29,37 +59,61 @@ public class InputStreamUtil {
             baos.write(buffer, 0, len);
         }
         baos.flush();
-        System.out.println("respBody: " + new String(baos.toByteArray(), StandardCharsets.UTF_8));
-        if (o2 != null) {
-            final Field responses = o2.getClass().getDeclaredField("responses");
-            responses.setAccessible(true);
-            final MessageHeader header = (MessageHeader) responses.get(o2);
-            printHeader(header, "resp");
+        Traffic traffic = new Traffic();
+        byte[] bytes = baos.toByteArray();
+        String respBody = new String(bytes, StandardCharsets.UTF_8);
+        System.out.println("respBody: " + respBody);
+
+        Class httpURLConnectionClass = null;
+        if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+            httpURLConnectionClass = httpURLConnection.getClass().getSuperclass().getSuperclass();
+        } else if ("sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+            httpURLConnectionClass = httpURLConnection.getClass().getSuperclass();
+        } else {
+            httpURLConnectionClass = httpURLConnection.getClass();
         }
+
+        if (httpURLConnection != null) {
+            final Field responses = httpURLConnectionClass.getDeclaredField("responses");
+            responses.setAccessible(true);
+            final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
+            MyMap myMap = printHeader(header, "resp");
+            traffic.setResponseHeaders(myMap);
+        }
+
+        Field httpClient = httpURLConnectionClass.getDeclaredField("http");
+        httpClient.setAccessible(true);
+        if (bytes != null) {
+            traffic.setRespBodyLength(bytes.length);
+        }
+        traffic.setRespDate(System.currentTimeMillis());
+        traffic.setDirection("down");
+        traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
+        traffic.setResponseBody(respBody);
+        TrafficSendUtil.send(traffic);
         return new ByteArrayInputStream(baos.toByteArray());
 
     }
 
-    private static void printHeader(MessageHeader header, String type) throws NoSuchFieldException, IllegalAccessException {
+    private static MyMap printHeader(MessageHeader header, String type) throws NoSuchFieldException, IllegalAccessException {
         Field keys = header.getClass().getDeclaredField("keys");
         Field values = header.getClass().getDeclaredField("values");
         keys.setAccessible(true);
         values.setAccessible(true);
         String[] keysArr = (String[]) keys.get(header);
         String[] valuesArr = (String[]) values.get(header);
+        MyMap myMap = new MyMap();
         for (int i = 0; i < keysArr.length; i++) {
             if (keysArr[i] == null && valuesArr[i] == null) {
                 continue;
             }
             System.out.println(type + "Key: " + keysArr[i] + "  --  value: " + valuesArr[i]);
+            myMap.put(keysArr[i], valuesArr[i]);
         }
+        return myMap;
     }
 
-    public static InputStream cloneInputStream(InputStream input, InputStream input2) throws Exception {
-
-//        if (!(input2 instanceof ChunkedInputStream)) {
-//            return input;
-//        }
+    public static InputStream cloneInputStream(InputStream input, InputStream input2, HttpURLConnection httpURLConnection) throws Exception {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
@@ -68,16 +122,42 @@ public class InputStreamUtil {
             baos.write(buffer, 0, len);
         }
         baos.flush();
-
-        InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(baos.toByteArray()));
+        Traffic traffic = new Traffic();
+        byte[] bytes = baos.toByteArray();
+        InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(bytes));
         BufferedReader reader = new BufferedReader(new InputStreamReader(input1, "utf-8"));
-        StringBuffer sb = new StringBuffer();
+        StringBuffer respBody = new StringBuffer();
         String line = "";
         while ((line = reader.readLine()) != null) {
-            sb.append(line);
+            respBody.append(line);
         }
-        System.out.println("respBody: " + sb);
-        return new ByteArrayInputStream(baos.toByteArray());
+        System.out.println("respBody: " + respBody);
+        Class httpURLConnectionClass = null;
+        if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+            httpURLConnectionClass = httpURLConnection.getClass().getSuperclass().getSuperclass();
+        } else if ("sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+            httpURLConnectionClass = httpURLConnection.getClass().getSuperclass();
+        } else {
+            httpURLConnectionClass = httpURLConnection.getClass();
+        }
+        if (httpURLConnection != null) {
+            final Field responses = httpURLConnectionClass.getDeclaredField("responses");
+            responses.setAccessible(true);
+            final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
+            MyMap myMap = printHeader(header, "resp");
+            traffic.setResponseHeaders(myMap);
+        }
+        Field httpClient = httpURLConnectionClass.getDeclaredField("http");
+        httpClient.setAccessible(true);
+        if (bytes != null) {
+            traffic.setRespBodyLength(bytes.length);
+        }
+        traffic.setRespDate(System.currentTimeMillis());
+        traffic.setDirection("down");
+        traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
+        traffic.setResponseBody(respBody.toString());
+        TrafficSendUtil.send(traffic);
+        return new ByteArrayInputStream(bytes);
 
     }
 

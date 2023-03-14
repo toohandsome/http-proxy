@@ -41,8 +41,8 @@ public class MyTransformer1 implements ClassFileTransformer {
 
                 CtConstructor[] declaredConstructors = cc.getDeclaredConstructors();
                 for (CtConstructor declaredConstructor : declaredConstructors) {
-                    declaredConstructor.insertBefore("$2 = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($2,$0,$1);");
-                    declaredConstructor.insertAfter("if ($0 instanceof ChunkedInputStream){$0.in = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($0,$2);}");
+                    declaredConstructor.insertBefore("$2 = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($2,$1);");
+                    declaredConstructor.insertAfter("if ($0 instanceof ChunkedInputStream){$0.in = io.github.toohandsome.attach.util.InputStreamUtil.cloneInputStream($0,$2,$1);}");
                 }
 
                 return cc.toBytecode();
@@ -61,7 +61,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctClasses[0] = cc1;
                 ctClasses[1] = cc2;
                 CtMethod ctMethod = cc.getDeclaredMethod("writeRequests", ctClasses);
-                ctMethod.insertBefore(" InputStreamUtil.getRequestInfo($1,$2);  ");
+                ctMethod.insertBefore(" InputStreamUtil.getRequestInfo($0,$1,$2);  ");
                 return cc.toBytecode();
 
             } catch (Exception ex) {

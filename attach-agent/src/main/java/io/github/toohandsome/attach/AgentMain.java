@@ -19,10 +19,15 @@ public class AgentMain {
 
     static {
         // inner
+        // 请求信息
         retransformClassList.add("sun.net.www.http.HttpClient");
+        // 响应信息
         retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
+        // 请求信息
         retransformClassList.add("okhttp3.internal.http.CallServerInterceptor");
+        // 响应信息
         retransformClassList.add("okhttp3.internal.http.BridgeInterceptor");
+        // 请求和响应信息
         retransformClassList.add("org.apache.http.protocol.HttpRequestExecutor");
 
         // proxy

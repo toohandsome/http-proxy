@@ -38,9 +38,16 @@ public class ProxyApplication {
         SpringApplication.run(ProxyApplication.class, args);
         Utils.loadRoutes();
 
+        int port = 8009;
+        if (args != null && args.length > 0) {
+            try {
+                port = Integer.valueOf(args[0]);
+            } catch (Exception e) {
+            }
+        }
         try {
             final DiscardServer discardServer = new DiscardServer();
-            discardServer.run();
+            discardServer.run(port);
         } catch (Exception e) {
             e.printStackTrace();
         }

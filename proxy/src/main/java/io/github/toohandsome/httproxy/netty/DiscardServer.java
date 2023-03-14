@@ -19,13 +19,12 @@ import io.netty.handler.logging.LogLevel;
    * Discards any incoming data.
    */
   public final class DiscardServer {
+
   
-      static final int PORT = Integer.parseInt(System.getProperty("port", "8009"));
+      public void run(int port) throws Exception {
   
-      public void run() throws Exception {
-  
-          EventLoopGroup bossGroup = new NioEventLoopGroup(4);
-          EventLoopGroup workerGroup = new NioEventLoopGroup();
+          EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+          EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
           try {
               ServerBootstrap b = new ServerBootstrap();
               b.group(bossGroup, workerGroup)
@@ -36,13 +35,14 @@ import io.netty.handler.logging.LogLevel;
                    public void initChannel(SocketChannel ch) {
                        ChannelPipeline p = ch.pipeline();
                        ByteBuf buf = Unpooled.copiedBuffer("$_httpProxy_$".getBytes());
-                       p.addLast(new DelimiterBasedFrameDecoder(10240, buf));
+                       //1MB
+                       p.addLast(new DelimiterBasedFrameDecoder(1048576,true,false, buf));
                        p.addLast(new DiscardServerHandler());
                    }
                });
   
               // Bind and start to accept incoming connections.
-              ChannelFuture f = b.bind(PORT).sync();
+              ChannelFuture f = b.bind(port).sync();
   
               // Wait until the server socket is closed.
               // In this example, this does not happen, but you can do that to gracefully

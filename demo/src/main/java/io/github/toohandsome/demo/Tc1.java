@@ -6,7 +6,6 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.util.UUIDUtils;
 import io.github.toohandsome.demo.config.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -67,7 +66,7 @@ public class Tc1 {
     public String tt() {
         HttpURLConnection connection = null;
         try {
-//            URL url = new URL("http://hackinglab.cn/index.php");
+//            URL url = new URL("https://www.baidu.com");
             URL url = new URL("http://127.0.0.1/t8");
             connection = (HttpURLConnection) url.openConnection();
             //通过此方法创建的HttpURLConnection对象，并没有真正执行连接操作，只是创建了一个新的实例，在正式连接前，往往还需要设置一些属性，如连接超时和请求方式等
