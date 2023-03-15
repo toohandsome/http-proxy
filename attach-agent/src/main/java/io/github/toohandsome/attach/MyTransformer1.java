@@ -83,27 +83,40 @@ public class MyTransformer1 implements ClassFileTransformer {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+            //
         } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
             try {
 
-                pool.importPackage("okhttp3.Headers");
+
                 pool.importPackage("java.util.Set");
                 pool.importPackage("java.net.URL");
                 pool.importPackage("java.util.List");
                 pool.importPackage("java.util.ArrayList");
-                pool.importPackage("okhttp3.ResponseBody");
+                pool.importPackage("java.io.ByteArrayOutputStream");
+                pool.importPackage("okhttp3.RequestBody");
                 pool.importPackage("okhttp3.Request");
+                pool.importPackage("okhttp3.Call");
                 pool.importPackage("okhttp3.HttpUrl");
+                pool.importPackage("okhttp3.ResponseBody");
+                pool.importPackage("okhttp3.Headers");
                 pool.importPackage("okhttp3.internal.http.RealInterceptorChain");
                 pool.importPackage("io.github.toohandsome.attach.entity.MyMap");
                 pool.importPackage("io.github.toohandsome.attach.util.TrafficSendUtil");
                 pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
-//                pool.importPackage("java.lang.reflect.Field");
-//                pool.importPackage("java.lang.reflect.Method");
                 pool.importPackage("okio.BufferedSource");
                 pool.importPackage("okio.Buffer");
+                pool.importPackage("okio.Okio");
+                pool.importPackage("okio.GzipSource");
+                pool.importPackage("okio.BufferedSink");
                 pool.importPackage("java.nio.charset.Charset");
+                pool.importPackage("java.nio.charset.StandardCharsets");
+                pool.importPackage("java.util.zip.GZIPInputStream");
+                pool.importPackage("java.io.InputStream");
+                pool.importPackage("java.io.InputStreamReader");
+                pool.importPackage("java.io.BufferedReader");
+                pool.importPackage("java.lang.StringBuffer");
+                pool.importPackage("java.io.ByteArrayInputStream");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("intercept");
                 ctMethod.insertBefore("try{ \n" +
@@ -118,8 +131,8 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "   HttpUrl tempUrlObj =  request_123.url();  \n" +
                         "  traffic.setUrl(tempUrlObj.url().toString());  \n" +
                         "  traffic.setHost(tempUrlObj.host()); \n" +
-                        "   ResponseBody reqBody_123 = request_123.body();\n" +
-                        "  traffic.setReqBodyLength(realChain_123.call().request().body().contentLength() ); \n" +
+                        "  Call call123 =  realChain_123.call().clone();\n" +
+
                         " Headers headers_123 = request_123.headers(); \n" +
                         " java.util.Collections.UnmodifiableSet headerSet_123 = headers_123.names(); \n" +
                         " List headerList_123 = new ArrayList(headerSet_123);\n " +
@@ -128,62 +141,85 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "  System.out.println(\"req key: \"+ tempKey_123+\"  --  value: \" +headers_123.get(tempKey_123) ); \n" +
                         "        myMap.put(tempKey_123, headers_123.get(tempKey_123)); \n" +
                         "  }\n" +
-//                        "  BufferedSource  source_123 = reqBody_123.source();\n" +
-//                        "  source_123.request(Long.MAX_VALUE);  \n" +
-//                        "  Buffer buffer_123 = source_123.buffer();  \n" +
-//                        "  String reqBody2Str_123 = buffer_123.clone().readString(Charset.forName(\"UTF-8\"));  \n" +
-//                        "  System.out.println(reqBody2Str_123); \n" +
-//                        "  traffic.setRequestBody(reqBody2Str_123 ); \n" +
+                        "  RequestBody  body_123 = call123.request().body();\n" +
+                        "  String reqBody2Str_123 =\"\";\n" +
+                        "  if(body_123!=null){\n" +
+
+                        "  ByteArrayOutputStream byteArrayOutputStream123 = new ByteArrayOutputStream(); \n" +
+                        "  BufferedSink bufferedSink123 = Okio.buffer(Okio.sink(byteArrayOutputStream123));   \n" +
+                        "        body_123.writeTo(bufferedSink123); \n" +
+                        "        bufferedSink123.flush();  \n" +
+                        "        bufferedSink123.close();  \n" +
+                        "        byte[] bytes123 = byteArrayOutputStream123.toByteArray();\n" +
+                        "        reqBody2Str_123 = new String(bytes123, StandardCharsets.UTF_8);\n" +
+                        "        System.out.println(\"reqBody: \" + reqBody2Str_123);  \n" +
+                        "  traffic.setReqBodyLength(body_123.contentLength() ); \n" +
+                        "     }  \n" +
+                        "  System.out.println(reqBody2Str_123); \n" +
+                        "  traffic.setRequestBody(reqBody2Str_123 ); \n" +
                         "   TrafficSendUtil.send(traffic); \n" +
                         " } catch (Exception e123){ \n" +
                         "   e123.printStackTrace(); \n" +
                         "}");
-                return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-        } else if (className.equals("okhttp3/internal/http/BridgeInterceptor")) {
-            try {
-                pool.importPackage("java.lang.reflect.Field");
-                pool.importPackage("okhttp3.Headers");
-                pool.importPackage("java.util.Set");
-                pool.importPackage("java.util.List");
-                pool.importPackage("java.util.ArrayList");
-                pool.importPackage("okhttp3.ResponseBody");
-                pool.importPackage("okhttp3.Request");
-                pool.importPackage("okhttp3.internal.http.RealInterceptorChain");
-                pool.importPackage("okio.BufferedSource");
-                pool.importPackage("okio.Buffer");
-                pool.importPackage("java.nio.charset.Charset");
-                pool.importPackage("io.github.toohandsome.attach.entity.MyMap");
-                pool.importPackage("io.github.toohandsome.attach.util.TrafficSendUtil");
-                pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
-                pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
-
-                CtMethod ctMethod = cc.getDeclaredMethod("intercept");
                 ctMethod.insertAfter("  Headers headers_123 = $_.headers();\n" +
+                        " Traffic traffic = new Traffic();\n" +
+                        "   MyMap myMap = new MyMap(); \n" +
+                        "   String zipType = \"\"; \n" +
+                        "  traffic.setRespDate(System.currentTimeMillis()); \n" +
+                        "   traffic.setDirection(\"down\"); \n" +
+                        "   traffic.setResponseHeaders(myMap); \n" +
+                        "  traffic.setKey($1.request().hashCode() + \"\"); \n" +
                         "            java.util.Collections.UnmodifiableSet respNames_123 = headers_123.names();\n" +
                         "            List respHeaderList_123 = new ArrayList(respNames_123);\n " +
                         " for (int i = 0; i < respHeaderList_123.size(); i++){  \n" +
                         " String tempKey_123 = (String) respHeaderList_123.get(i); \n" +
+                        "  if(\"Content-Encoding\".equalsIgnoreCase(tempKey_123)){ \n" +
+                        " zipType = respHeaderList_123.get(i);   " +
+                        "} \n" +
                         "                System.out.println(\"resp key: \" + tempKey_123 + \" -- value: \" + headers_123.get(tempKey_123));\n" +
+                        "        myMap.put(tempKey_123, headers_123.get(tempKey_123)); \n" +
                         "            }\n" +
                         "   ResponseBody respBody_123 = $_.body();\n" +
+                        "    String respBody2Str_123 = \"\";\n" +
                         "            BufferedSource  source_123 = respBody_123.source();\n" +
-                        "            source_123.request(Long.MAX_VALUE);  \n" +
                         "           Buffer buffer_123 = source_123.buffer();  \n" +
-                        "           String respBody2Str_123 = buffer_123.clone().readString(Charset.forName(\"UTF-8\"));  \n" +
+                        "     traffic.setRespBodyLength(buffer_123.size()); \n" +
+                        " if(\"gzip\".equalsIgnoreCase(zipType)){ \n" +
+
+                        "  ByteArrayOutputStream byteArrayOutputStream123 = new ByteArrayOutputStream(); \n" +
+                        "   byte[] orgBytes = respBody_123.bytes(); \n"+
+                        "       byteArrayOutputStream123.write(orgBytes, 0, orgBytes.length); \n" +
+                        "       orgBytes =  byteArrayOutputStream123.toByteArray(); \n" +
+                        "        byte[] bytes123 = byteArrayOutputStream123.toByteArray();\n" +
+                        "      InputStream input123 = new GZIPInputStream(new ByteArrayInputStream(bytes123));\n" +
+                        "                BufferedReader reader123 = new BufferedReader(new InputStreamReader(input123, \"utf-8\"));\n" +
+                        "                StringBuffer respBodyBuffer = new StringBuffer();\n" +
+                        "                String line123 = \"\";\n" +
+                        "                while ((line123 = reader123.readLine()) != null) {\n" +
+                        "                    respBodyBuffer.append(line123+\"\\r\\n\");\n" +
+                        "                }\n" +
+                        "                respBody2Str_123 = respBodyBuffer.toString(); \n" +
+                        "       \n" +
+                        "    } else{   \n" +
+
+                        "            source_123.request(Long.MAX_VALUE);  \n" +
+
+
+                        "    \n" +
+                        "           respBody2Str_123 = buffer_123.clone().readString(Charset.forName(\"UTF-8\"));  \n" +
+                        " } \n" +
+                        "       traffic.setResponseBody(respBody2Str_123);\n" +
                         "            System.out.println(\"respBody: \"+respBody2Str_123); \n" +
+                        "   TrafficSendUtil.send(traffic); \n" +
 
                         "");
-
                 return cc.toBytecode();
 
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+
         } else if (className.equals("org/apache/http/protocol/HttpRequestExecutor")) {
             try {
 

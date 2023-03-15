@@ -9,6 +9,8 @@ import com.alibaba.fastjson2.JSONObject;
 import io.github.toohandsome.demo.config.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import okio.BufferedSink;
+import okio.Okio;
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpEntity;
@@ -163,8 +165,8 @@ public class Tc1 {
         okhttp3.RequestBody  requestBody = okhttp3.RequestBody.create( json.toJSONString() ,JSON);
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("https://www.baidu.com/abdasd?dasd=11")
-                .post(requestBody)
+                .url("https://www.baidu.com/")
+//                .post(requestBody)
                 .build();
         try {
 
@@ -547,15 +549,18 @@ public class Tc1 {
     }
 
     public static void main(String[] args) throws Exception {
-//        URL url = new URL("http://example.com/");
-//        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        InputStream input = new ChunkedInputStream(conn.getInputStream());
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-//        String line;
-//        while ((line = reader.readLine()) != null) {
-//            System.out.println(line);
-//            // 处理读取到的数据
-//        }
+//        okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(MediaType.parse("text/plain"), "Hello, world!");
+//
+//        ByteArrayOutputStream byteArrayOutputStream123 = new ByteArrayOutputStream();
+//        BufferedSink bufferedSink = Okio.buffer(Okio.sink(byteArrayOutputStream123));
+//        requestBody.writeTo(bufferedSink);
+//        bufferedSink.flush();
+//        bufferedSink.close();
+//
+//        byte[] bytes = byteArrayOutputStream123.toByteArray();
+//        String respBody = new String(bytes, StandardCharsets.UTF_8);
+//        System.out.println("respBody: " + respBody);
+
     }
 
     @GetMapping("/t9")
