@@ -66,8 +66,8 @@ public class Tc1 {
     public String tt() {
         HttpURLConnection connection = null;
         try {
-//            URL url = new URL("https://www.baidu.com");
-            URL url = new URL("http://127.0.0.1/t8");
+            URL url = new URL("https://www.baidu.com");
+//            URL url = new URL("http://127.0.0.1/t8");
             connection = (HttpURLConnection) url.openConnection();
             //通过此方法创建的HttpURLConnection对象，并没有真正执行连接操作，只是创建了一个新的实例，在正式连接前，往往还需要设置一些属性，如连接超时和请求方式等
             connection.setRequestMethod("POST"); //设置请求方式
@@ -92,10 +92,10 @@ public class Tc1 {
             connection.connect();//连接远程资源
             DataOutputStream out = new DataOutputStream(connection.getOutputStream());
             JSONObject obj = new JSONObject();
-            obj.put("name","yxd");
-            obj.put("big",true);
-            obj.put("address","xxxx");
-            obj.put("age",232);
+            obj.put("name", "yxd");
+            obj.put("big", true);
+            obj.put("address", "xxxx");
+            obj.put("age", 232);
             out.writeBytes(obj.toJSONString());
             out.flush();
             out.close();
@@ -121,26 +121,29 @@ public class Tc1 {
     @Autowired
     RestTemplate restTemplate1;
 
-
     @Autowired
     RestTemplate restTemplate2;
 
     @GetMapping("/tt2")
     public String tt2() throws Exception {
 
-        HttpPost httpPost = new HttpPost("http://127.0.0.1/t8");
+        HttpPost httpPost = new HttpPost("https://www.baidu.com");
         JSONObject json = new JSONObject();
-        json.put("name","yxd");
-        json.put("big",true);
-        json.put("address","xxxx");
-        json.put("age",232);
+        json.put("name", "yxd");
+        json.put("big", true);
+        json.put("address", "xxxx");
+        json.put("age", 232);
         httpPost.addHeader("Content-type", "application/json;charset=UTF-8");
-        httpPost.setEntity(new StringEntity(json.toString(),"UTF-8"));
+        httpPost.addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+        httpPost.addHeader("Accept-Encoding", "gzip, deflate, br");
+        httpPost.addHeader("Accept-Language", "max-age=0");
+        httpPost.addHeader("Connection", "keep-alive");
+        httpPost.setEntity(new StringEntity(json.toString(), "UTF-8"));
         for (int i = 0; i < 5; i++) {
             final CloseableHttpResponse response = HttpUtils.getHttpClient().execute(httpPost);
             HttpEntity entity = response.getEntity();
             //
-            System.out.println("输出网页内容: "+ EntityUtils.toString(entity, "utf-8"));
+            System.out.println("输出网页内容: " + EntityUtils.toString(entity, "utf-8"));
             response.close();
         }
 
@@ -151,10 +154,17 @@ public class Tc1 {
     public String tt1() throws Exception {
 //        final ResponseEntity<String> forEntity = restTemplate.getForEntity("http://127.0.0.1/t1", String.class, new HashMap<>());
 //        System.out.println("forEntity: " + forEntity.getBody());
-
+        JSONObject json = new JSONObject();
+        json.put("name", "yxd");
+        json.put("big", true);
+        json.put("address", "xxxx");
+        json.put("age", 232);
+        MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+        okhttp3.RequestBody  requestBody = okhttp3.RequestBody.create( json.toJSONString() ,JSON);
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("http://www.piaohua.com/")
+                .url("https://www.baidu.com/abdasd?dasd=11")
+                .post(requestBody)
                 .build();
         try {
 
@@ -598,6 +608,7 @@ public class Tc1 {
 
             // 获取返回的信息
             ret = EntityUtils.toString(entity, "UTF-8");
+
             System.out.println(ret);
         } else {
             System.out.println("删除失败，请重试！！！");

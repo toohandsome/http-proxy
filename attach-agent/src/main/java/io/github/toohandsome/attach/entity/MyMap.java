@@ -18,11 +18,11 @@ public class MyMap extends HashMap {
         return s;
     }
 
-//    public static void main(String[] args) {
-//        String us = "\" Chromiu\r\nm \";\rv=\" 1\n10 \", \" Not A(B";
-//        System.out.println(us);
-//        System.out.println("----------------");
-//        String s = us.replace("\"", "\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n");
-//        System.out.println(s);
-//    }
+    public static void main(String[] args) {
+        String us = "\" Chr\\omiu\r\nm \";\rv=\" 1\n10 \", \" N\\ot A(B";
+        System.out.println(us);
+        System.out.println("----------------");
+        String s = us.replace("\\", "\\u000").replace("\"", "\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n");
+        System.out.println(s);
+    }
 }

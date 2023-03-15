@@ -9,6 +9,7 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -18,13 +19,14 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
 import java.nio.charset.CodingErrorAction;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 /**
  * @description：<br>
@@ -65,32 +67,37 @@ public class HttpUtils {
         try {
             //添加对https的支持，该sslContext没有加载客户端证书
             // 如果需要加载客户端证书，请使用如下sslContext,其中KEYSTORE_FILE和KEYSTORE_PASSWORD分别是你的证书路径和证书密码
-            //KeyStore keyStore  =  KeyStore.getInstance(KeyStore.getDefaultType()
-            //FileInputStream instream =   new FileInputStream(new File(KEYSTORE_FILE));
-            //keyStore.load(instream, KEYSTORE_PASSWORD.toCharArray());
-            //SSLContext sslContext = SSLContexts.custom().loadKeyMaterial(keyStore,KEYSTORE_PASSWORD.toCharArray())
-            // .loadTrustMaterial(null, new TrustSelfSignedStrategy())
-            //.build();
+//            KeyStore keyStore  =  KeyStore.getInstance(KeyStore.getDefaultType());
+//            FileInputStream instream =   new FileInputStream(new File(KEYSTORE_FILE));
+//            keyStore.load(instream, KEYSTORE_PASSWORD.toCharArray());
 
-            //这里设置信任所有证书
-//            SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustStrategy() {
-//                // 信任所有
-//                public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-//                    return true;
-//                }
-//            }).build();
-//            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+            SSLContext sslContext = SSLContext.getInstance("SSL");
 
+             X509TrustManager  tm = new X509TrustManager () {
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain,
+                                               String authType) throws CertificateException {
+                }
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain,
+                                               String authType) throws CertificateException {
+                }
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            };
+            sslContext.init(null, new TrustManager []{tm}, null);
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
             Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-//                    .register("https", sslsf)
+                    .register("https", sslsf)
                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
                     .build();
-            //配置连接池
             clientConnectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
             //最大连接
-            clientConnectionManager.setMaxTotal(50);
+            clientConnectionManager.setMaxTotal(10);
             //默认的每个路由的最大连接数
-            clientConnectionManager.setDefaultMaxPerRoute(25);
+            clientConnectionManager.setDefaultMaxPerRoute(5);
             //设置到某个路由的最大连接数，会覆盖defaultMaxPerRoute
 //            clientConnectionManager.setMaxPerRoute(new HttpRoute(new HttpHost("127.0.0.1", 80)), 150);
 

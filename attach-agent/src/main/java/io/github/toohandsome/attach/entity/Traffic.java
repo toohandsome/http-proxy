@@ -10,8 +10,8 @@ public class Traffic {
     private String direction;
     private String host;
     private String url;
-    private int reqBodyLength;
-    private int respBodyLength;
+    private long reqBodyLength;
+    private long respBodyLength;
     private String method;
     private MyMap requestHeaders = new MyMap();
     private MyMap responseHeaders = new MyMap();
@@ -64,12 +64,12 @@ public class Traffic {
         }
         if (requestBody != null) {
             stringBuilder.append("\"requestBody\":\"");
-            stringBuilder.append(requestBody.replace("\"","\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n"));
+            stringBuilder.append(requestBody.replace("\\", "\\\\").replace("\"","\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n"));
             stringBuilder.append("\",");
         }
         if (responseBody != null) {
             stringBuilder.append("\"responseBody\":\"");
-            stringBuilder.append(responseBody.replace("\"","\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n"));
+            stringBuilder.append(responseBody.replace("\\", "\\\\").replace("\"","\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n"));
             stringBuilder.append("\",");
         }
         if (requestHeaders != null) {
@@ -181,19 +181,19 @@ public class Traffic {
         this.url = url;
     }
 
-    public int getReqBodyLength() {
+    public long getReqBodyLength() {
         return reqBodyLength;
     }
 
-    public void setReqBodyLength(int reqBodyLength) {
+    public void setReqBodyLength(long reqBodyLength) {
         this.reqBodyLength = reqBodyLength;
     }
 
-    public int getRespBodyLength() {
+    public long getRespBodyLength() {
         return respBodyLength;
     }
 
-    public void setRespBodyLength(int respBodyLength) {
+    public void setRespBodyLength(long respBodyLength) {
         this.respBodyLength = respBodyLength;
     }
 

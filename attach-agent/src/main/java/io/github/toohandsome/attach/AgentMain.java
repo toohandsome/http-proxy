@@ -21,6 +21,8 @@ public class AgentMain {
         // inner
         // 请求信息
         retransformClassList.add("sun.net.www.http.HttpClient");
+        // 301,302 等
+        retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection");
         // 响应信息
         retransformClassList.add("sun.net.www.protocol.http.HttpURLConnection$HttpInputStream");
         // 请求信息
