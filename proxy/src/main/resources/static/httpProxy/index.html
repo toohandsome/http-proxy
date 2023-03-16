@@ -490,10 +490,10 @@
             <div style="width: 50%">
                 <el-form :inline="true" :model="agentFormInline" class="demo-form-inline">
                     <el-form-item label="进程名">
-                        <el-input v-model="agentFormInline.prcessName" placeholder="进程名(包含即可,优先匹配)"></el-input>
+                        <el-input v-model="agentFormInline.processName" placeholder="进程名(包含即可,优先匹配)"></el-input>
                     </el-form-item>
                     <el-form-item label="进程id">
-                        <el-input v-model="agentFormInline.prcessId" placeholder="进程id(优先匹配进程名)"></el-input>
+                        <el-input v-model="agentFormInline.processId" placeholder="进程id(优先匹配进程名)"></el-input>
                     </el-form-item>
                     <el-form-item label="监听端口">
                         <el-input v-model="agentFormInline.listenPort" placeholder="监听端口"></el-input>
@@ -780,7 +780,7 @@
             }
             ,
             initWs() {
-                var ws = new WebSocket("ws://127.0.0.1:8080/trafficWebsocket/11");
+                var ws = new WebSocket("ws://"+window.location.host+"/trafficWebsocket/11");
                 ws.onmessage = this.wsOnmessage;
             }
             ,
