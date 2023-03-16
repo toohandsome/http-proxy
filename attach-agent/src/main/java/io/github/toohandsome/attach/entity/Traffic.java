@@ -1,9 +1,8 @@
 package io.github.toohandsome.attach.entity;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class Traffic {
+public class Traffic extends AgentEntity {
     private String key;
     private long reqDate;
     private long respDate;
@@ -49,7 +48,7 @@ public class Traffic {
         stringBuilder.append("\",");
         if (host != null) {
             stringBuilder.append("\"host\":\"");
-            stringBuilder.append(host.replace("\"","\\\""));
+            stringBuilder.append(host.replace("\"", "\\\""));
             stringBuilder.append("\",");
         }
         if (url != null) {
@@ -64,12 +63,12 @@ public class Traffic {
         }
         if (requestBody != null) {
             stringBuilder.append("\"requestBody\":\"");
-            stringBuilder.append(requestBody.replace("\\", "\\\\").replace("\"","\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n"));
+            stringBuilder.append(requestBody.replace("\\", "\\\\").replace("\"", "\\\"").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n"));
             stringBuilder.append("\",");
         }
         if (responseBody != null) {
             stringBuilder.append("\"responseBody\":\"");
-            stringBuilder.append(responseBody.replace("\\", "\\\\").replace("\"","\\\"").replaceAll("\r","\\\\r").replaceAll("\n","\\\\n"));
+            stringBuilder.append(responseBody.replace("\\", "\\\\").replace("\"", "\\\"").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n"));
             stringBuilder.append("\",");
         }
         if (requestHeaders != null) {
@@ -86,7 +85,6 @@ public class Traffic {
         stringBuilder.append(key);
         stringBuilder.append("\"");
         stringBuilder.append("}");
-        stringBuilder.append("$_httpProxy_$");
 
         return stringBuilder.toString();
     }

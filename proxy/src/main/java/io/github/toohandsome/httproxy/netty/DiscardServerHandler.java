@@ -2,6 +2,7 @@ package io.github.toohandsome.httproxy.netty;
 
 import com.alibaba.fastjson2.JSON;
 import io.github.toohandsome.httproxy.core.TrafficQueueProcess;
+import io.github.toohandsome.httproxy.entity.AgentEntity;
 import io.github.toohandsome.httproxy.entity.Traffic;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,9 +19,12 @@ public class DiscardServerHandler extends SimpleChannelInboundHandler<Object> {
         byte[] req = new byte[buf.readableBytes()];
         buf.readBytes(req);
         String body = new String(req, "UTF-8");
-        System.out.println("req: " + body);
-        Traffic traffic = JSON.parseObject(body, Traffic.class);
-        TrafficQueueProcess.trafficQueue.offer(traffic);
+        System.out.println("netty receive : " + body);
+        AgentEntity agentEntity = JSON.parseObject(body, AgentEntity.class);
+        if (Traffic.class.getSimpleName().equals(agentEntity.getBussType())) {
+            Traffic traffic = JSON.parseObject(body, Traffic.class);
+            TrafficQueueProcess.trafficQueue.offer(traffic);
+        }
     }
 
     @Override

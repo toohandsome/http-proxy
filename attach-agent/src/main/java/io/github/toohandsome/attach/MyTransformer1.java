@@ -1,5 +1,6 @@
 package io.github.toohandsome.attach;
 
+import io.github.toohandsome.attach.entity.ExcepInfo;
 import javassist.*;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -19,26 +20,26 @@ public class MyTransformer1 implements ClassFileTransformer {
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        String replaceClassName = "";
-        if (className != null) {
-            replaceClassName = className.replace("/", ".");
-            if (!AgentMain.retransformClassList.contains(replaceClassName)) {
+        try {
+            String replaceClassName = "";
+            if (className != null) {
+                replaceClassName = className.replace("/", ".");
+                if (!AgentMain.retransformClassList.contains(replaceClassName)) {
+                    return null;
+                }
+            }
+            ClassPool pool = ClassPool.getDefault();
+            CtClass cc = null;
+            try {
+                cc = pool.get(replaceClassName);
+            } catch (NotFoundException e) {
+                e.printStackTrace();
                 return null;
             }
-        }
-        ClassPool pool = ClassPool.getDefault();
-        CtClass cc = null;
-        try {
-            cc = pool.get(replaceClassName);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-        if (cc.isFrozen()) {
-            cc.defrost();
-        }
-        if (className.equals("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream")) {
-            try {
+            if (cc.isFrozen()) {
+                cc.defrost();
+            }
+            if (className.equals("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream")) {
 
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
                 pool.importPackage("sun.net.www.http.ChunkedInputStream");
@@ -51,11 +52,7 @@ public class MyTransformer1 implements ClassFileTransformer {
 
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } else if (className.equals("sun/net/www/http/HttpClient")) {
-            try {
+            } else if (className.equals("sun/net/www/http/HttpClient")) {
 
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
 
@@ -68,11 +65,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctMethod.insertBefore(" InputStreamUtil.getHttpConnectionRequestInfo($0,$1,$2);  ");
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } else if (className.equals("sun/net/www/protocol/http/HttpURLConnection")) {
-            try {
+            } else if (className.equals("sun/net/www/protocol/http/HttpURLConnection")) {
 
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
 
@@ -80,12 +73,8 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctMethod.insertBefore("  InputStreamUtil.getHttpConnectionRedirectRespInfo($0);  ");
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            //
-        } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
-            try {
+                //
+            } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
                 pool.importPackage("java.util.Set");
                 pool.importPackage("java.net.URL");
                 pool.importPackage("java.util.List");
@@ -99,7 +88,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 pool.importPackage("okhttp3.Headers");
                 pool.importPackage("okhttp3.internal.http.RealInterceptorChain");
                 pool.importPackage("io.github.toohandsome.attach.entity.MyMap");
-                pool.importPackage("io.github.toohandsome.attach.util.TrafficSendUtil");
+                pool.importPackage("io.github.toohandsome.attach.util.AgentInfoSendUtil");
                 pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
                 pool.importPackage("okio.BufferedSource");
@@ -155,7 +144,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "     }  \n" +
                         "  System.out.println(reqBody2Str_123); \n" +
                         "  traffic.setRequestBody(reqBody2Str_123 ); \n" +
-                        "   TrafficSendUtil.send(traffic); \n" +
+                        "   AgentInfoSendUtil.send(traffic); \n" +
                         " } catch (Exception e123){ \n" +
                         "   e123.printStackTrace(); \n" +
                         "}");
@@ -211,7 +200,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         " } \n" +
 
 
-                        "   TrafficSendUtil.send(traffic); \n" +
+                        "   AgentInfoSendUtil.send(traffic); \n" +
 
                         " } catch (Exception e123){ \n" +
                         "   e123.printStackTrace(); \n" +
@@ -219,12 +208,7 @@ public class MyTransformer1 implements ClassFileTransformer {
 
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-        } else if (className.equals("org/apache/http/protocol/HttpRequestExecutor")) {
-            try {
+            } else if (className.equals("org/apache/http/protocol/HttpRequestExecutor")) {
 
                 pool.importPackage("java.lang.reflect.Field");
                 pool.importPackage("org.apache.http.HttpEntity");
@@ -233,7 +217,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 pool.importPackage("org.apache.http.util.EntityUtils");
                 pool.importPackage("org.apache.http.entity.BufferedHttpEntity");
                 pool.importPackage("io.github.toohandsome.attach.entity.MyMap");
-                pool.importPackage("io.github.toohandsome.attach.util.TrafficSendUtil");
+                pool.importPackage("io.github.toohandsome.attach.util.AgentInfoSendUtil");
                 pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
                 pool.importPackage("org.apache.http.client.methods.HttpRequestWrapper");
@@ -270,7 +254,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "   tempStream =  InputStreamUtil.cloneHttpClientInputStream(tempStream,traffic ) ;  \n" +
                         "    } \n" +
                         " }\n" +
-                        "   TrafficSendUtil.send(traffic); \n" +
+                        "   AgentInfoSendUtil.send(traffic); \n" +
                         "   }catch (Exception e1) {\n" +
                         "            e1.printStackTrace();\n" +
                         "        }  \n" +
@@ -307,7 +291,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "  HttpEntity tempEntityObj2 = $_.getEntity();   \n" +
                         "  InputStream tmpInputStream1 =   tempEntityObj2.getContent();   \n" +
                         "  tmpInputStream1=   InputStreamUtil.cloneHttpClientInputStream1(tmpInputStream1,traffic,zipType);   \n" +
-                        "   TrafficSendUtil.send(traffic);    \n" +
+                        "   AgentInfoSendUtil.send(traffic);    \n" +
 
                         "       \n" +
 
@@ -324,15 +308,11 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "}");
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
-        }
 
 
-        // proxy
-        if (className.equals("java/net/URL")) {
-            try {
+            // proxy
+            if (className.equals("java/net/URL")) {
 
                 pool.importPackage("java.net");
 
@@ -340,11 +320,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctMethod.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol()) || \"https\".equals(this.getProtocol())) {return this.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY);}else{return handler.openConnection(this);} }");
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } else if (className.equals("org/apache/http/client/config/RequestConfig")) {
-            try {
+            } else if (className.equals("org/apache/http/client/config/RequestConfig")) {
 
                 pool.importPackage("org.apache.http");
 
@@ -352,11 +328,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctMethod.setBody(" {return new HttpHost(\"127.0.0.1\"," + port + ");}");
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } else if (className.equals("cn/hutool/http/HttpConnection")) {
-            try {
+            } else if (className.equals("cn/hutool/http/HttpConnection")) {
 
                 pool.importPackage("java.net");
 
@@ -364,23 +336,29 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY); }");
                 return cc.toBytecode();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } else if (className.equals("okhttp3/OkHttpClient")) {
-            try {
+            } else if (className.equals("okhttp3/OkHttpClient")) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("proxy");
                 ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
                 return cc.toBytecode();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            ExcepInfo excepInfo = new ExcepInfo();
+            String message = ex.getMessage();
+            StringBuilder stringBuilder = new StringBuilder(message);
+            stringBuilder.append("\r\n");
+            StackTraceElement[] stackTrace = ex.getStackTrace();
+            for (int i = 0; i < stackTrace.length; i++) {
+                stringBuilder.append("\t" + stackTrace[i].toString() + "\r\n");
+            }
+            excepInfo.setMsg(stringBuilder.toString());
+            excepInfo.setType("transformer");
         }
         return null;
-
     }
 }

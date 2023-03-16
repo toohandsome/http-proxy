@@ -1,22 +1,17 @@
 package io.github.toohandsome.httproxy.core;
 
 import com.alibaba.fastjson2.JSON;
-import com.google.common.collect.Queues;
 import io.github.toohandsome.httproxy.controller.WebSocketServer;
 import io.github.toohandsome.httproxy.entity.Traffic;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Component
 public class TrafficQueueProcess implements CommandLineRunner {
-    public static ConcurrentLinkedQueue<Traffic> trafficQueue = new ConcurrentLinkedQueue();
+    public static LinkedBlockingQueue<Traffic> trafficQueue = new LinkedBlockingQueue(1000);
 
     public void processTraffice() {
 

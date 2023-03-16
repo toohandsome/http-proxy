@@ -53,7 +53,7 @@ public class InputStreamUtil {
                 traffic.setDirection("down");
                 traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
                 traffic.setResponseBody(respBody);
-                TrafficSendUtil.send(traffic);
+                AgentInfoSendUtil.send(traffic);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,7 +85,7 @@ public class InputStreamUtil {
             traffic.setDirection("up");
             traffic.setKey(client.hashCode() + "");
             traffic.setRequestHeaders(myMap);
-            TrafficSendUtil.send(traffic);
+            AgentInfoSendUtil.send(traffic);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +132,7 @@ public class InputStreamUtil {
                 traffic.setDirection("down");
                 traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
                 traffic.setResponseBody(respBody);
-                TrafficSendUtil.send(traffic);
+                AgentInfoSendUtil.send(traffic);
             }
 
 
@@ -302,7 +302,7 @@ public class InputStreamUtil {
             traffic.setRespDate(System.currentTimeMillis());
             traffic.setDirection("down");
             traffic.setResponseBody(respBody.toString());
-            TrafficSendUtil.send(traffic);
+            AgentInfoSendUtil.send(traffic);
             return new ByteArrayInputStream(bytes);
         } catch (Exception e) {
             e.printStackTrace();
