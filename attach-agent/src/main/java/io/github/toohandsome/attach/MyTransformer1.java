@@ -86,8 +86,6 @@ public class MyTransformer1 implements ClassFileTransformer {
             //
         } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
             try {
-
-
                 pool.importPackage("java.util.Set");
                 pool.importPackage("java.net.URL");
                 pool.importPackage("java.util.List");
@@ -162,7 +160,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "   e123.printStackTrace(); \n" +
                         "}");
 
-                ctMethod.insertAfter("  Headers headers_123 = $_.headers();\n" +
+                ctMethod.insertAfter("try{ \n" + "  Headers headers_123 = $_.headers();\n" +
                         " Traffic traffic = new Traffic();\n" +
                         "   MyMap myMap = new MyMap(); \n" +
                         "   String zipType = \"\"; \n" +
@@ -175,45 +173,50 @@ public class MyTransformer1 implements ClassFileTransformer {
                         " for (int i = 0; i < respHeaderList_123.size(); i++){  \n" +
                         " String tempKey_123 = (String) respHeaderList_123.get(i); \n" +
                         "  if(\"Content-Encoding\".equalsIgnoreCase(tempKey_123)){ \n" +
-                        " zipType = respHeaderList_123.get(i);   " +
+                        " zipType = headers_123.get(tempKey_123);   " +
                         "} \n" +
                         "                System.out.println(\"resp key: \" + tempKey_123 + \" -- value: \" + headers_123.get(tempKey_123));\n" +
                         "        myMap.put(tempKey_123, headers_123.get(tempKey_123)); \n" +
                         "            }\n" +
-                        "   ResponseBody respBody_123 = $_.body();\n" +
+                        "   ResponseBody respBody_123 = $_.peekBody(Long.MAX_VALUE);\n" +
                         "    String respBody2Str_123 = \"\";\n" +
-                        "            BufferedSource  source_123 = respBody_123.source();\n" +
-                        "           Buffer buffer_123 = source_123.buffer();  \n" +
-                        "     traffic.setRespBodyLength(buffer_123.size()); \n" +
+
+                        "          System.out.println(\" gzip: \"+ zipType);\n" +
                         " if(\"gzip\".equalsIgnoreCase(zipType)){ \n" +
 
-                        "  ByteArrayOutputStream byteArrayOutputStream123 = new ByteArrayOutputStream(); \n" +
-                        "   byte[] orgBytes = respBody_123.bytes(); \n"+
-                        "       byteArrayOutputStream123.write(orgBytes, 0, orgBytes.length); \n" +
-                        "       orgBytes =  byteArrayOutputStream123.toByteArray(); \n" +
-                        "        byte[] bytes123 = byteArrayOutputStream123.toByteArray();\n" +
-                        "      InputStream input123 = new GZIPInputStream(new ByteArrayInputStream(bytes123));\n" +
-                        "                BufferedReader reader123 = new BufferedReader(new InputStreamReader(input123, \"utf-8\"));\n" +
-                        "                StringBuffer respBodyBuffer = new StringBuffer();\n" +
-                        "                String line123 = \"\";\n" +
-                        "                while ((line123 = reader123.readLine()) != null) {\n" +
-                        "                    respBodyBuffer.append(line123+\"\\r\\n\");\n" +
-                        "                }\n" +
-                        "                respBody2Str_123 = respBodyBuffer.toString(); \n" +
+//                        "  ByteArrayOutputStream byteArrayOutputStream123 = new ByteArrayOutputStream(); \n" +
+                        "   InputStream orgInputStream = respBody_123.byteStream(); \n" +
+                        "   orgInputStream = InputStreamUtil.cloneOkHttpInputStream(orgInputStream,traffic); \n" +
+//                        "       orgBytes =  byteArrayOutputStream123.toByteArray(); \n" +
+//                        "        byte[] bytes123 = buffer_123.clone().readByteString();\n" +
+
+//                        "      InputStream input123 = new GZIPInputStream(new ByteArrayInputStream(bytes123));\n" +
+//                        "                BufferedReader reader123 = new BufferedReader(new InputStreamReader(input123, \"utf-8\"));\n" +
+//                        "                StringBuffer respBodyBuffer = new StringBuffer();\n" +
+//                        "                String line123 = \"\";\n" +
+//                        "                while ((line123 = reader123.readLine()) != null) {\n" +
+//                        "                    respBodyBuffer.append(line123+\"\\r\\n\");\n" +
+//                        "                }\n" +
+//                        "                respBody2Str_123 = respBodyBuffer.toString(); \n" +
                         "       \n" +
                         "    } else{   \n" +
-
-                        "            source_123.request(Long.MAX_VALUE);  \n" +
-
-
-                        "    \n" +
-                        "           respBody2Str_123 = buffer_123.clone().readString(Charset.forName(\"UTF-8\"));  \n" +
-                        " } \n" +
-                        "       traffic.setResponseBody(respBody2Str_123);\n" +
+//                        "            BufferedSource  source_123 = respBody_123.source();\n" +
+//                        "           Buffer buffer_123 = source_123.buffer();  \n" +
+                        "     traffic.setRespBodyLength(respBody_123.source().buffer().size()); \n" +
+//                        "            source_123.request(Long.MAX_VALUE);  \n" +
+//                        "           respBody2Str_123 = buffer_123.clone().readString(Charset.forName(\"UTF-8\"));  \n" +
+                        "           respBody2Str_123 = respBody_123.string();  \n" +
                         "            System.out.println(\"respBody: \"+respBody2Str_123); \n" +
+                        "       traffic.setResponseBody(respBody2Str_123);\n" +
+                        " } \n" +
+
+
                         "   TrafficSendUtil.send(traffic); \n" +
 
-                        "");
+                        " } catch (Exception e123){ \n" +
+                        "   e123.printStackTrace(); \n" +
+                        "}");
+
                 return cc.toBytecode();
 
             } catch (Exception ex) {
@@ -236,7 +239,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 pool.importPackage("org.apache.http.client.methods.HttpRequestWrapper");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
-                ctMethod.insertBefore(" Traffic traffic = new Traffic();\n" +
+                ctMethod.insertBefore("try{ \n" + " Traffic traffic = new Traffic();\n" +
                         "   MyMap myMap = new MyMap(); \n" +
                         "    myMap.put($1.getRequestLine().toString(), \"null\");  \n" +
                         " //traffic.setUrl(client.getURLFile()); \n" +
@@ -273,8 +276,10 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "        }  \n" +
                         "       \n" +
                         "       \n" +
-                        "");
-                ctMethod.insertAfter(" Traffic traffic = new Traffic();\n" +
+                        " } catch (Exception e123){ \n" +
+                        "   e123.printStackTrace(); \n" +
+                        "}");
+                ctMethod.insertAfter("try{ \n" + " Traffic traffic = new Traffic();\n" +
                         "   MyMap myMap = new MyMap(); \n" +
                         "  traffic.setResponseHeaders(myMap); \n" +
                         "  traffic.setRespDate(System.currentTimeMillis());\n" +
@@ -314,7 +319,9 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "        }  \n" +
                         "       \n" +
                         "       \n" +
-                        "");
+                        " } catch (Exception e123){ \n" +
+                        "   e123.printStackTrace(); \n" +
+                        "}");
                 return cc.toBytecode();
 
             } catch (Exception ex) {

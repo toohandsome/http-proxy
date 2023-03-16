@@ -92,52 +92,55 @@ public class InputStreamUtil {
     }
 
     public static InputStream cloneHttpConnectionInputStream(InputStream input, HttpURLConnection httpURLConnection) throws Exception {
+        try {
+            if (input instanceof ChunkedInputStream) {
+                return input;
+            }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = input.read(buffer)) > -1) {
+                baos.write(buffer, 0, len);
+            }
+            baos.flush();
+            Traffic traffic = new Traffic();
+            byte[] bytes = baos.toByteArray();
+            String respBody = new String(bytes, StandardCharsets.UTF_8);
+            System.out.println("respBody: " + respBody);
+            if (httpURLConnection != null) {
+                Class httpURLConnectionClass = null;
+                if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+                    httpURLConnectionClass = httpURLConnection.getClass().getSuperclass().getSuperclass();
+                } else if ("sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+                    httpURLConnectionClass = httpURLConnection.getClass().getSuperclass();
+                } else {
+                    httpURLConnectionClass = httpURLConnection.getClass();
+                }
 
-        if (input instanceof ChunkedInputStream) {
-            return input;
-        }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = input.read(buffer)) > -1) {
-            baos.write(buffer, 0, len);
-        }
-        baos.flush();
-        Traffic traffic = new Traffic();
-        byte[] bytes = baos.toByteArray();
-        String respBody = new String(bytes, StandardCharsets.UTF_8);
-        System.out.println("respBody: " + respBody);
-        if (httpURLConnection != null) {
-            Class httpURLConnectionClass = null;
-            if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
-                httpURLConnectionClass = httpURLConnection.getClass().getSuperclass().getSuperclass();
-            } else if ("sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
-                httpURLConnectionClass = httpURLConnection.getClass().getSuperclass();
-            } else {
-                httpURLConnectionClass = httpURLConnection.getClass();
+
+                final Field responses = httpURLConnectionClass.getDeclaredField("responses");
+                responses.setAccessible(true);
+                final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
+                MyMap myMap = printHeader(header, "resp");
+                traffic.setResponseHeaders(myMap);
+                Field httpClient = httpURLConnectionClass.getDeclaredField("http");
+                httpClient.setAccessible(true);
+                if (bytes != null) {
+                    traffic.setRespBodyLength(bytes.length);
+                }
+                traffic.setRespDate(System.currentTimeMillis());
+                traffic.setDirection("down");
+                traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
+                traffic.setResponseBody(respBody);
+                TrafficSendUtil.send(traffic);
             }
 
 
-            final Field responses = httpURLConnectionClass.getDeclaredField("responses");
-            responses.setAccessible(true);
-            final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
-            MyMap myMap = printHeader(header, "resp");
-            traffic.setResponseHeaders(myMap);
-            Field httpClient = httpURLConnectionClass.getDeclaredField("http");
-            httpClient.setAccessible(true);
-            if (bytes != null) {
-                traffic.setRespBodyLength(bytes.length);
-            }
-            traffic.setRespDate(System.currentTimeMillis());
-            traffic.setDirection("down");
-            traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
-            traffic.setResponseBody(respBody);
-            TrafficSendUtil.send(traffic);
+            return new ByteArrayInputStream(baos.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
-        return new ByteArrayInputStream(baos.toByteArray());
-
+        return input;
     }
 
     public static InputStream cloneHttpClientInputStream(InputStream input, Traffic traffic) throws Exception {
@@ -185,12 +188,46 @@ public class InputStreamUtil {
                 StringBuffer respBodyBuffer = new StringBuffer();
                 String line = "";
                 while ((line = reader.readLine()) != null) {
-                    respBodyBuffer.append(line+"\r\n");
+                    respBodyBuffer.append(line + "\r\n");
                 }
                 respBody = respBodyBuffer.toString();
             } else {
                 respBody = new String(bytes, StandardCharsets.UTF_8);
             }
+
+            System.out.println("respBody: " + respBody);
+            traffic.setResponseBody(respBody);
+            return new ByteArrayInputStream(baos.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return input;
+    }
+
+    public static InputStream cloneOkHttpInputStream(InputStream input, Traffic traffic) throws Exception {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = input.read(buffer)) > -1) {
+                baos.write(buffer, 0, len);
+            }
+            baos.flush();
+            byte[] bytes = baos.toByteArray();
+            String respBody = "";
+            if (bytes != null) {
+                traffic.setRespBodyLength(bytes.length);
+            }
+
+            GZIPInputStream input1 = new GZIPInputStream(new ByteArrayInputStream(bytes));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input1, "utf-8"));
+            StringBuffer respBodyBuffer = new StringBuffer();
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                respBodyBuffer.append(line + "\r\n");
+            }
+            respBody = respBodyBuffer.toString();
+
 
             System.out.println("respBody: " + respBody);
             traffic.setResponseBody(respBody);
@@ -221,50 +258,56 @@ public class InputStreamUtil {
 
     public static InputStream cloneHttpConnectionInputStream1(InputStream input, InputStream input2, HttpURLConnection httpURLConnection) throws Exception {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = input.read(buffer)) > -1) {
-            baos.write(buffer, 0, len);
-        }
-        baos.flush();
-        Traffic traffic = new Traffic();
-        byte[] bytes = baos.toByteArray();
-        InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(bytes));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input1, "utf-8"));
-        StringBuffer respBody = new StringBuffer();
-        String line = "";
-        while ((line = reader.readLine()) != null) {
-            respBody.append(line+"\r\n");
-        }
-        System.out.println("respBody: " + respBody);
-        Class httpURLConnectionClass = null;
-        if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
-            httpURLConnectionClass = httpURLConnection.getClass().getSuperclass().getSuperclass();
-        } else if ("sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
-            httpURLConnectionClass = httpURLConnection.getClass().getSuperclass();
-        } else {
-            httpURLConnectionClass = httpURLConnection.getClass();
-        }
-        if (httpURLConnection != null) {
-            final Field responses = httpURLConnectionClass.getDeclaredField("responses");
-            responses.setAccessible(true);
-            final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
-            MyMap myMap = printHeader(header, "resp");
-            traffic.setResponseHeaders(myMap);
-        }
-        Field httpClient = httpURLConnectionClass.getDeclaredField("http");
-        httpClient.setAccessible(true);
-        if (bytes != null) {
-            traffic.setRespBodyLength(bytes.length);
-        }
-        traffic.setRespDate(System.currentTimeMillis());
-        traffic.setDirection("down");
-        traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
-        traffic.setResponseBody(respBody.toString());
-        TrafficSendUtil.send(traffic);
-        return new ByteArrayInputStream(bytes);
+        try {
 
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = input.read(buffer)) > -1) {
+                baos.write(buffer, 0, len);
+            }
+            baos.flush();
+            Traffic traffic = new Traffic();
+            byte[] bytes = baos.toByteArray();
+            InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(bytes));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input1, "utf-8"));
+            StringBuffer respBody = new StringBuffer();
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                respBody.append(line + "\r\n");
+            }
+            System.out.println("respBody: " + respBody);
+            if (httpURLConnection != null) {
+                Class httpURLConnectionClass = null;
+                if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+                    httpURLConnectionClass = httpURLConnection.getClass().getSuperclass().getSuperclass();
+                } else if ("sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
+                    httpURLConnectionClass = httpURLConnection.getClass().getSuperclass();
+                } else {
+                    httpURLConnectionClass = httpURLConnection.getClass();
+                }
+
+                final Field responses = httpURLConnectionClass.getDeclaredField("responses");
+                responses.setAccessible(true);
+                final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
+                MyMap myMap = printHeader(header, "resp");
+                traffic.setResponseHeaders(myMap);
+                Field httpClient = httpURLConnectionClass.getDeclaredField("http");
+                httpClient.setAccessible(true);
+                if (bytes != null) {
+                    traffic.setRespBodyLength(bytes.length);
+                }
+                traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
+            }
+            traffic.setRespDate(System.currentTimeMillis());
+            traffic.setDirection("down");
+            traffic.setResponseBody(respBody.toString());
+            TrafficSendUtil.send(traffic);
+            return new ByteArrayInputStream(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return input;
     }
 
 
@@ -274,7 +317,7 @@ public class InputStreamUtil {
         String line;
         BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
         while ((line = buffer.readLine()) != null) {
-            resultBuffer.append(line+"\r\n");
+            resultBuffer.append(line + "\r\n");
         }
         System.out.println("respBody:" + resultBuffer.toString());
         inputStream.reset();

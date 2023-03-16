@@ -166,6 +166,7 @@ public class Tc1 {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url("https://www.baidu.com/")
+//                .url("http://127.0.0.1/t8")
 //                .post(requestBody)
                 .build();
         try {
