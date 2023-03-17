@@ -27,6 +27,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +65,13 @@ import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 @RestController
 @Slf4j
 public class Tc1 {
+
+    @Value("${a}")
+    private String a ;
+    @GetMapping("/a")
+    public String a() {
+        return a;
+    }
 
     @GetMapping("/tt")
     public String tt() {

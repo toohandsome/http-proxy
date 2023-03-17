@@ -2,7 +2,6 @@ package io.github.toohandsome.attach.util;
 
 import io.github.toohandsome.attach.entity.MyMap;
 import io.github.toohandsome.attach.entity.Traffic;
-import sun.net.NetworkClient;
 import sun.net.www.MessageHeader;
 import sun.net.www.http.ChunkedInputStream;
 import sun.net.www.http.HttpClient;
@@ -86,7 +85,8 @@ public class InputStreamUtil {
             traffic.setReqDate(System.currentTimeMillis());
             traffic.setHost(host.get(client) + "");
             traffic.setDirection("up");
-            traffic.setKey(client.hashCode() + "");
+            traffic.setKey(header.hashCode() + "");
+            traffic.setMethod("");
             traffic.setRequestHeaders(myMap);
             AgentInfoSendUtil.send(traffic);
         } catch (Exception e) {
@@ -98,6 +98,10 @@ public class InputStreamUtil {
         try {
             if (input instanceof ChunkedInputStream) {
                 return input;
+            }
+            boolean empty = false;
+            if ("sun.net.www.protocol.http.EmptyInputStream".equals(input.getClass().getCanonicalName())) {
+                empty = true;
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
@@ -127,7 +131,7 @@ public class InputStreamUtil {
                 final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
                 MyMap myMap = printHeader(header, "resp");
                 traffic.setResponseHeaders(myMap);
-                Field httpClient = httpURLConnectionClass.getDeclaredField("http");
+                Field httpClient = httpURLConnectionClass.getDeclaredField("requests");
                 httpClient.setAccessible(true);
                 if (bytes != null) {
                     traffic.setRespBodyLength(bytes.length);
