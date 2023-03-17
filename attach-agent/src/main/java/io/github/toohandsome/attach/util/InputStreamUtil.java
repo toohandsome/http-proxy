@@ -11,6 +11,7 @@ import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -37,7 +38,7 @@ public class InputStreamUtil {
                 Traffic traffic = new Traffic();
                 traffic.setFrom("getHttpConnectionRedirectRespInfo");
                 String respBody = "";
-                System.out.println("respBody: " + respBody);
+                //System.out.println("respBody: " + respBody);
 
                 if (httpURLConnection != null) {
                     final Field responses = httpURLConnectionClass.getDeclaredField("responses");
@@ -80,7 +81,7 @@ public class InputStreamUtil {
             if (var2 != null) {
                 traffic.setReqBodyLength(var2.toByteArray().length);
                 traffic.setRequestBody(var2.toString());
-                System.out.println("reqBody: " + var2.toString());
+                // System.out.println("reqBody: " + var2.toString());
             }
             traffic.setReqDate(System.currentTimeMillis());
             traffic.setHost(host.get(client) + "");
@@ -109,7 +110,7 @@ public class InputStreamUtil {
             traffic.setFrom("cloneHttpConnectionInputStream");
             byte[] bytes = baos.toByteArray();
             String respBody = new String(bytes, StandardCharsets.UTF_8);
-            System.out.println("respBody: " + respBody);
+//            System.out.println("respBody: " + respBody);
             if (httpURLConnection != null) {
                 Class httpURLConnectionClass = null;
                 if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
@@ -133,9 +134,6 @@ public class InputStreamUtil {
                 }
                 traffic.setRespDate(System.currentTimeMillis());
                 traffic.setDirection("down");
-                System.out.println("httpClient: "+ httpClient);
-                System.out.println("httpURLConnection: "+ httpURLConnection);
-                System.out.println("httpClient.get(httpURLConnection): "+ httpClient.get(httpURLConnection));
                 traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
                 traffic.setResponseBody(respBody);
                 AgentInfoSendUtil.send(traffic);
@@ -165,7 +163,7 @@ public class InputStreamUtil {
             }
 
             respBody = new String(bytes, StandardCharsets.UTF_8);
-            System.out.println("reqBody: " + respBody);
+            //   System.out.println("reqBody: " + respBody);
             traffic.setRequestBody(respBody);
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
@@ -201,7 +199,7 @@ public class InputStreamUtil {
                 respBody = new String(bytes, StandardCharsets.UTF_8);
             }
 
-            System.out.println("respBody: " + respBody);
+            //System.out.println("respBody: " + respBody);
             traffic.setResponseBody(respBody);
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
@@ -235,7 +233,7 @@ public class InputStreamUtil {
             respBody = respBodyBuffer.toString();
 
 
-            System.out.println("respBody: " + respBody);
+            //System.out.println("respBody: " + respBody);
             traffic.setResponseBody(respBody);
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
@@ -256,7 +254,7 @@ public class InputStreamUtil {
             if (keysArr[i] == null && valuesArr[i] == null) {
                 continue;
             }
-            System.out.println(type + "Key: " + keysArr[i] + "  --  value: " + valuesArr[i]);
+            // System.out.println(type + "Key: " + keysArr[i] + "  --  value: " + valuesArr[i]);
             myMap.put(keysArr[i], valuesArr[i]);
         }
         return myMap;
@@ -283,7 +281,7 @@ public class InputStreamUtil {
             while ((line = reader.readLine()) != null) {
                 respBody.append(line + "\r\n");
             }
-            System.out.println("respBody: " + respBody);
+            // System.out.println("respBody: " + respBody);
             if (httpURLConnection != null) {
                 Class httpURLConnectionClass = null;
                 if ("sun.net.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName()) || "com.sun.net.ssl.internal.www.protocol.https.DelegateHttpsURLConnection".equals(httpURLConnection.getClass().getCanonicalName())) {
@@ -304,6 +302,21 @@ public class InputStreamUtil {
                 if (bytes != null) {
                     traffic.setRespBodyLength(bytes.length);
                 }
+
+                Arrays.stream(httpURLConnection.getClass().getDeclaredFields()).forEach(f -> {
+                    f.setAccessible(true);
+                    try {
+                        Object o = f.get(httpURLConnection);
+                        if (o != null) {
+                            System.out.println(f.getName() + " ---  " + o.hashCode());
+                        } else {
+                            System.out.println(f.getName() + " ---  null");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
                 traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
             }
             traffic.setRespDate(System.currentTimeMillis());
@@ -326,7 +339,7 @@ public class InputStreamUtil {
         while ((line = buffer.readLine()) != null) {
             resultBuffer.append(line + "\r\n");
         }
-        System.out.println("respBody:" + resultBuffer.toString());
+        //System.out.println("respBody:" + resultBuffer.toString());
         inputStream.reset();
 
     }

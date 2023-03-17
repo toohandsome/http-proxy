@@ -129,7 +129,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         " List headerList_123 = new ArrayList(headerSet_123);\n " +
                         " for (int i = 0; i < headerList_123.size(); i++){  \n" +
                         " String tempKey_123 = (String) headerList_123.get(i); \n" +
-                        "  System.out.println(\"req key: \"+ tempKey_123+\"  --  value: \" +headers_123.get(tempKey_123) ); \n" +
+                        " // System.out.println(\"req key: \"+ tempKey_123+\"  --  value: \" +headers_123.get(tempKey_123) ); \n" +
                         "        myMap.put(tempKey_123, headers_123.get(tempKey_123)); \n" +
                         "  }\n" +
                         "  RequestBody  body_123 = call123.request().body();\n" +
@@ -143,10 +143,10 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "        bufferedSink123.close();  \n" +
                         "        byte[] bytes123 = byteArrayOutputStream123.toByteArray();\n" +
                         "        reqBody2Str_123 = new String(bytes123, StandardCharsets.UTF_8);\n" +
-                        "        System.out.println(\"reqBody: \" + reqBody2Str_123);  \n" +
+                        "     //   System.out.println(\"reqBody: \" + reqBody2Str_123);  \n" +
                         "  traffic.setReqBodyLength(body_123.contentLength() ); \n" +
                         "     }  \n" +
-                        "  System.out.println(reqBody2Str_123); \n" +
+                        "  // System.out.println(reqBody2Str_123); \n" +
                         "  traffic.setRequestBody(reqBody2Str_123 ); \n" +
                         "   AgentInfoSendUtil.send(traffic); \n" +
                         " } catch (Exception e123){ \n" +
@@ -169,7 +169,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "  if(\"Content-Encoding\".equalsIgnoreCase(tempKey_123)){ \n" +
                         " zipType = headers_123.get(tempKey_123);   " +
                         "} \n" +
-                        "                System.out.println(\"resp key: \" + tempKey_123 + \" -- value: \" + headers_123.get(tempKey_123));\n" +
+                        "    //            System.out.println(\"resp key: \" + tempKey_123 + \" -- value: \" + headers_123.get(tempKey_123));\n" +
                         "        myMap.put(tempKey_123, headers_123.get(tempKey_123)); \n" +
                         "            }\n" +
                         "   ResponseBody respBody_123 = $_.peekBody(Long.MAX_VALUE);\n" +
@@ -200,7 +200,7 @@ public class MyTransformer1 implements ClassFileTransformer {
 //                        "            source_123.request(Long.MAX_VALUE);  \n" +
 //                        "           respBody2Str_123 = buffer_123.clone().readString(Charset.forName(\"UTF-8\"));  \n" +
                         "           respBody2Str_123 = respBody_123.string();  \n" +
-                        "            System.out.println(\"respBody: \"+respBody2Str_123); \n" +
+                        "          //  System.out.println(\"respBody: \"+respBody2Str_123); \n" +
                         "       traffic.setResponseBody(respBody2Str_123);\n" +
                         " } \n" +
 
@@ -226,6 +226,10 @@ public class MyTransformer1 implements ClassFileTransformer {
                 pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
                 pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
                 pool.importPackage("org.apache.http.client.methods.HttpRequestWrapper");
+                pool.importPackage("org.apache.http.client.methods.HttpUriRequest");
+                pool.importPackage("org.apache.http.HttpRequest");
+                pool.importPackage("org.apache.http.client.methods.HttpRequestBase");
+                pool.importPackage("io.github.toohandsome.attach.util.ReUtil");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
                 ctMethod.insertBefore("try{ \n" + " Traffic traffic = new Traffic();\n" +
@@ -237,29 +241,42 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "  traffic.setReqDate(System.currentTimeMillis()); \n" +
                         "   traffic.setDirection(\"up\"); \n" +
                         "  traffic.setRequestHeaders(myMap); \n" +
-                        " HttpRequestWrapper request1 = (HttpRequestWrapper) $1; \n" +
+                        " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
                         "  traffic.setUrl(request1.getURI().toString());  \n" +
-                        "  traffic.setHost(request1.getTarget().toString()   ); \n" +
+
                         "    \n" +
                         "   \n" +
                         "   Header[]  tempHttpMessageArr =  $1.getAllHeaders();  \n" +
                         " for (int i = 0; i < tempHttpMessageArr.length; i++){  \n" +
                         " Header tempHeader =  tempHttpMessageArr[i]; \n" +
-                        "               System.out.println(\"req key:  \" + tempHeader.getName() + \" -- value: \" + tempHeader.getValue());\n" +
+                        "    //           System.out.println(\"req key:  \" + tempHeader.getName() + \" -- value: \" + tempHeader.getValue());\n" +
                         "        myMap.put(tempHeader.getName(), tempHeader.getValue()); \n" +
                         "            }\n" +
                         "   \n" +
 
                         "  try{ " +
-                        "   Field tempEntity =  $1.getClass().getDeclaredField(\"entity\");    \n" +
+                        "   Field tempEntity = ReUtil.getField($1.getClass(),\"entity\") ;    \n" +
+                        "  if(tempEntity!=null){  \n" +
                         "    tempEntity.setAccessible(true);   \n" +
-                        "   HttpEntity tempEntityObj = (HttpEntity)  tempEntity.get(request);  \n" +
+                        "   HttpEntity tempEntityObj = (HttpEntity)  tempEntity.get($1);  \n" +
                         "  if(tempEntityObj!=null){  \n" +
                         "   InputStream tempStream =   tempEntityObj.getContent()  ;   \n" +
                         "  if(tempStream!=null){   \n" +
                         "   tempStream =  InputStreamUtil.cloneHttpClientInputStream(tempStream,traffic ) ;  \n" +
                         "    } \n" +
                         " }\n" +
+                        " }\n" +
+                        "   Field originalField = ReUtil.getField($1.getClass(),\"original\") ;    \n" +
+                        "  if(originalField!=null){  \n" +
+                        "   originalField.setAccessible(true);   \n" +
+                        "   HttpRequest tempRequestObj = (HttpRequest) originalField.get($1);  \n" +
+                        "  if(tempRequestObj!=null){  \n" +
+                        "     if( tempRequestObj  instanceof  HttpRequestBase ) {\n" +
+                        "  HttpRequestBase  tempRequestObj1  =  (HttpRequestBase)  tempRequestObj; \n" +
+                        "  traffic.setHost(tempRequestObj1.getURI().toString()   ); \n" +
+                        "    } \n" +
+                        "    } else{  System.out.println(\"tempRequestObj not instanceof  HttpRequestBase  \" + tempRequestObj); } \n" +
+                        "    } \n" +
                         "   AgentInfoSendUtil.send(traffic); \n" +
                         "   }catch (Exception e1) {\n" +
                         "            e1.printStackTrace();\n" +
@@ -269,6 +286,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         " } catch (Exception e123){ \n" +
                         "   e123.printStackTrace(); \n" +
                         "}");
+
                 ctMethod.insertAfter("try{ \n" + " Traffic traffic = new Traffic();\n" +
                         "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.after\"); \n" +
                         "   MyMap myMap = new MyMap(); \n" +
@@ -284,7 +302,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "  if(\"Content-Encoding\".equalsIgnoreCase(tempHeader.getName())){ \n" +
                         " zipType = tempHeader.getValue();   " +
                         "} \n" +
-                        "               System.out.println(\"resp key:  \" + tempHeader.getName() + \" -- value: \" + tempHeader.getValue());\n" +
+                        "   //            System.out.println(\"resp key:  \" + tempHeader.getName() + \" -- value: \" + tempHeader.getValue());\n" +
                         "        myMap.put(tempHeader.getName(), tempHeader.getValue()); \n" +
                         "            }\n" +
                         "   \n" +

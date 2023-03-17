@@ -16,7 +16,7 @@
 
 package io.github.toohandsome.httproxy.core;
 
-import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson.JSON;
 import io.github.toohandsome.httproxy.controller.AgentController;
 import io.github.toohandsome.httproxy.controller.RouteController;
 import io.github.toohandsome.httproxy.entity.AgentOpt;

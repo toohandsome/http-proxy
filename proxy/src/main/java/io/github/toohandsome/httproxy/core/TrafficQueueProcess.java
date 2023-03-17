@@ -1,6 +1,7 @@
 package io.github.toohandsome.httproxy.core;
 
-import com.alibaba.fastjson2.JSON;
+
+import com.alibaba.fastjson.JSON;
 import io.github.toohandsome.httproxy.controller.WebSocketServer;
 import io.github.toohandsome.httproxy.entity.Traffic;
 import org.springframework.boot.CommandLineRunner;

@@ -4,8 +4,9 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.github.toohandsome.demo.config.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
