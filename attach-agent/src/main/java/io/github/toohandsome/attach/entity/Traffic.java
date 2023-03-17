@@ -8,6 +8,7 @@ public class Traffic extends AgentEntity {
     private long respDate;
     private String direction;
     private String host;
+    private String from;
     private String url;
     private long reqBodyLength;
     private long respBodyLength;
@@ -59,6 +60,11 @@ public class Traffic extends AgentEntity {
         if (method != null) {
             stringBuilder.append("\"method\":\"");
             stringBuilder.append(method);
+            stringBuilder.append("\",");
+        }
+        if (from != null) {
+            stringBuilder.append("\"from\":\"");
+            stringBuilder.append(from);
             stringBuilder.append("\",");
         }
         if (requestBody != null) {
@@ -115,6 +121,14 @@ public class Traffic extends AgentEntity {
         m2.put("keyd", "valued");
         traffic.setResponseHeaders(m2);
         System.out.println(traffic.toString());
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public void setRequestHeaders(MyMap requestHeaders) {

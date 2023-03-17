@@ -27,13 +27,16 @@ public class MyTransformer1 implements ClassFileTransformer {
                 if (!AgentMain.retransformClassList.contains(replaceClassName)) {
                     return null;
                 }
+            } else {
+                return null;
             }
             ClassPool pool = ClassPool.getDefault();
             CtClass cc = null;
             try {
                 cc = pool.get(replaceClassName);
-            } catch (NotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                System.err.println("className: " + className);
                 return null;
             }
             if (cc.isFrozen()) {
@@ -109,6 +112,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                 ctMethod.insertBefore("try{ \n" +
                         " Traffic traffic = new Traffic();\n" +
                         "   MyMap myMap = new MyMap(); \n" +
+                        "   traffic.setFrom(\"okhttp3.internal.http.CallServerInterceptor.intercept.before\"); \n" +
                         " RealInterceptorChain realChain_123 = (RealInterceptorChain) $1;\n" +
                         " Request request_123 = realChain_123.request(); \n" +
                         " traffic.setKey(request_123.hashCode() + \"\"); \n" +
@@ -151,6 +155,7 @@ public class MyTransformer1 implements ClassFileTransformer {
 
                 ctMethod.insertAfter("try{ \n" + "  Headers headers_123 = $_.headers();\n" +
                         " Traffic traffic = new Traffic();\n" +
+                        "   traffic.setFrom(\"okhttp3.internal.http.CallServerInterceptor.intercept.after\"); \n" +
                         "   MyMap myMap = new MyMap(); \n" +
                         "   String zipType = \"\"; \n" +
                         "  traffic.setRespDate(System.currentTimeMillis()); \n" +
@@ -224,6 +229,7 @@ public class MyTransformer1 implements ClassFileTransformer {
 
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
                 ctMethod.insertBefore("try{ \n" + " Traffic traffic = new Traffic();\n" +
+                        "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.before\"); \n" +
                         "   MyMap myMap = new MyMap(); \n" +
                         "    myMap.put($1.getRequestLine().toString(), \"null\");  \n" +
                         " //traffic.setUrl(client.getURLFile()); \n" +
@@ -264,6 +270,7 @@ public class MyTransformer1 implements ClassFileTransformer {
                         "   e123.printStackTrace(); \n" +
                         "}");
                 ctMethod.insertAfter("try{ \n" + " Traffic traffic = new Traffic();\n" +
+                        "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.after\"); \n" +
                         "   MyMap myMap = new MyMap(); \n" +
                         "  traffic.setResponseHeaders(myMap); \n" +
                         "  traffic.setRespDate(System.currentTimeMillis());\n" +

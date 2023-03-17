@@ -35,6 +35,7 @@ public class InputStreamUtil {
                     httpURLConnectionClass = httpURLConnection.getClass();
                 }
                 Traffic traffic = new Traffic();
+                traffic.setFrom("getHttpConnectionRedirectRespInfo");
                 String respBody = "";
                 System.out.println("respBody: " + respBody);
 
@@ -74,6 +75,7 @@ public class InputStreamUtil {
             host.setAccessible(true);
             MyMap myMap = printHeader(header, "req");
             Traffic traffic = new Traffic();
+            traffic.setFrom("getHttpConnectionRequestInfo");
             traffic.setUrl(client.getURLFile());
             if (var2 != null) {
                 traffic.setReqBodyLength(var2.toByteArray().length);
@@ -104,6 +106,7 @@ public class InputStreamUtil {
             }
             baos.flush();
             Traffic traffic = new Traffic();
+            traffic.setFrom("cloneHttpConnectionInputStream");
             byte[] bytes = baos.toByteArray();
             String respBody = new String(bytes, StandardCharsets.UTF_8);
             System.out.println("respBody: " + respBody);
@@ -130,6 +133,9 @@ public class InputStreamUtil {
                 }
                 traffic.setRespDate(System.currentTimeMillis());
                 traffic.setDirection("down");
+                System.out.println("httpClient: "+ httpClient);
+                System.out.println("httpURLConnection: "+ httpURLConnection);
+                System.out.println("httpClient.get(httpURLConnection): "+ httpClient.get(httpURLConnection));
                 traffic.setKey(httpClient.get(httpURLConnection).hashCode() + "");
                 traffic.setResponseBody(respBody);
                 AgentInfoSendUtil.send(traffic);
@@ -268,6 +274,7 @@ public class InputStreamUtil {
             }
             baos.flush();
             Traffic traffic = new Traffic();
+            traffic.setFrom("cloneHttpConnectionInputStream1");
             byte[] bytes = baos.toByteArray();
             InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(bytes));
             BufferedReader reader = new BufferedReader(new InputStreamReader(input1, "utf-8"));
