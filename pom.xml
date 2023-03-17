@@ -16,10 +16,10 @@
     <modules>
         <module>proxy</module>
         <module>demo</module>
-        <module>agent</module>
-        <module>arthas-demo</module>
+<!--        <module>agent</module>-->
+<!--        <module>arthas-demo</module>-->
         <module>attach-agent</module>
-        <module>attach-boot</module>
+<!--        <module>attach-boot</module>-->
 
     </modules>
 
