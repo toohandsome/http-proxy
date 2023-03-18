@@ -66,7 +66,7 @@ import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 @Slf4j
 public class Tc1 {
 
-    @Value("${a}")
+    @Value("${a:aaa}")
     private String a ;
     @GetMapping("/a")
     public String a() {
@@ -171,12 +171,13 @@ public class Tc1 {
         json.put("address", "xxxx");
         json.put("age", 232);
         MediaType JSON = MediaType.parse("application/json;charset=utf-8");
-        okhttp3.RequestBody  requestBody = okhttp3.RequestBody.create( json.toJSONString() ,JSON);
+
+        okhttp3.RequestBody  requestBody = okhttp3.RequestBody.create(JSON,json.toJSONString());
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("https://www.baidu.com/")
-//                .url("http://127.0.0.1/t8")
-//                .post(requestBody)
+//                .url("https://www.baidu.com/")
+                .url("http://127.0.0.1/t8")
+                .post(requestBody)
                 .build();
         try {
 
@@ -553,7 +554,7 @@ public class Tc1 {
         logger.info("info");
         logger.warn("warn");
         logger.error("error");
-        logger.debug("debug");
+        logger.debug(JSON.toJSONString(user));
 
         return "aaaaaaaaaa";
     }

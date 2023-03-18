@@ -41,7 +41,7 @@ public class AgentMain {
 
 
     public static List<Class> classList = new ArrayList<>();
-    public static MyTransformer1 transformer1;
+    public static ReWriteHttpTransformer transformer1;
 
     public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {
         System.out.println("agentmain called");
@@ -49,7 +49,7 @@ public class AgentMain {
         ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1",Integer.valueOf(args)));
         inst1 = inst;
         JarFileHelper.addJarToBootstrap(inst);
-        final MyTransformer1 transformer = new MyTransformer1(args);
+        final ReWriteHttpTransformer transformer = new ReWriteHttpTransformer(args);
         transformer1 = transformer;
         inst.addTransformer(transformer, true);
 
