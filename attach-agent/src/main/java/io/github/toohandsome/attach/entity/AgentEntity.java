@@ -7,7 +7,8 @@ public class AgentEntity {
         return bussType;
     }
 
-    public void setBussType(String bussType) {
+    public AgentEntity setBussType(String bussType) {
         this.bussType = bussType;
+        return this;
     }
 }

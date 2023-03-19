@@ -58,13 +58,12 @@ public class InputStreamUtil {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
     }
 
     public static void getHttpConnectionRequestInfo(HttpClient client, MessageHeader header, PosterOutputStream var2) {
         try {
-
-
             Class httpClientClass = null;
             if ("sun.net.www.protocol.https.HttpsClient".equals(client.getClass().getCanonicalName())) {
                 httpClientClass = client.getClass().getSuperclass();
@@ -91,6 +90,7 @@ public class InputStreamUtil {
             AgentInfoSendUtil.send(traffic);
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
     }
 
@@ -125,7 +125,6 @@ public class InputStreamUtil {
                     httpURLConnectionClass = httpURLConnection.getClass();
                 }
 
-
                 final Field responses = httpURLConnectionClass.getDeclaredField("responses");
                 responses.setAccessible(true);
                 final MessageHeader header = (MessageHeader) responses.get(httpURLConnection);
@@ -147,6 +146,7 @@ public class InputStreamUtil {
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
         return input;
     }
@@ -172,6 +172,7 @@ public class InputStreamUtil {
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
         return input;
     }
@@ -208,6 +209,7 @@ public class InputStreamUtil {
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
         return input;
     }
@@ -235,13 +237,12 @@ public class InputStreamUtil {
                 respBodyBuffer.append(line + "\r\n");
             }
             respBody = respBodyBuffer.toString();
-
-
             //System.out.println("respBody: " + respBody);
             traffic.setResponseBody(respBody);
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
         return input;
     }
@@ -330,21 +331,9 @@ public class InputStreamUtil {
             return new ByteArrayInputStream(bytes);
         } catch (Exception e) {
             e.printStackTrace();
+            AgentInfoSendUtil.sendExcepTion(e);
         }
         return input;
     }
 
-
-    public static void readInputStream(InputStream inputStream) throws IOException {
-        inputStream.mark(0);
-        StringBuffer resultBuffer = new StringBuffer();
-        String line;
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
-        while ((line = buffer.readLine()) != null) {
-            resultBuffer.append(line + "\r\n");
-        }
-        //System.out.println("respBody:" + resultBuffer.toString());
-        inputStream.reset();
-
-    }
 }

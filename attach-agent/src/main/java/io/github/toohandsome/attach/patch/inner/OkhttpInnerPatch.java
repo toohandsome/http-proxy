@@ -78,6 +78,7 @@ public class OkhttpInnerPatch {
                 "   AgentInfoSendUtil.send(traffic); \n" +
                 " } catch (Exception e123){ \n" +
                 "   e123.printStackTrace(); \n" +
+                "   AgentInfoSendUtil.sendExcepTion(e123); \n" +
                 "}";
     }
 
@@ -119,6 +120,7 @@ public class OkhttpInnerPatch {
                 "   AgentInfoSendUtil.send(traffic); \n" +
                 " } catch (Exception e123){ \n" +
                 "   e123.printStackTrace(); \n" +
+                "   AgentInfoSendUtil.sendExcepTion(e123); \n" +
                 "}";
     }
 }

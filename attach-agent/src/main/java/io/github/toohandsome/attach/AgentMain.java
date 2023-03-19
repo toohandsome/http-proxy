@@ -1,5 +1,6 @@
 package io.github.toohandsome.attach;
 
+import io.github.toohandsome.attach.entity.AgentInfo;
 import io.github.toohandsome.attach.util.*;
 //import org.springframework.web.client.RestTemplate;
 
@@ -44,9 +45,11 @@ public class AgentMain {
     public static ReWriteHttpTransformer transformer1;
 
     public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {
-        System.out.println("agentmain called");
+
+        AgentInfoSendUtil.send(new AgentInfo().setType("info").setMsg("agent loaded.."));
+
         ProxyIns.PROXY = null;
-        ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1",Integer.valueOf(args)));
+        ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", Integer.valueOf(args)));
         inst1 = inst;
         JarFileHelper.addJarToBootstrap(inst);
         final ReWriteHttpTransformer transformer = new ReWriteHttpTransformer(args);

@@ -64,10 +64,8 @@ public class AgentController {
                         e.printStackTrace();
                         return false;
                     }
-
                 }
             }
-
         }
         return true;
     }

@@ -484,10 +484,8 @@
 
         </el-tab-pane>
 
-        <el-tab-pane label="正向代理">正向代理</el-tab-pane>
-
         <el-tab-pane label="agent">
-            <div style="width: 50%">
+            <div>
                 <el-form :inline="true" :model="agentFormInline" class="demo-form-inline">
                     <el-form-item label="进程名">
                         <el-input v-model="agentFormInline.processName" placeholder="进程名(包含即可,优先匹配)"></el-input>
@@ -503,9 +501,24 @@
                         <el-button type="primary" @click="agentOpt('reset')">重置</el-button>
                     </el-form-item>
                 </el-form>
+
+            </div>
+            <div style="    margin: -15px;">
+                <el-card id="logsCard" class="box-card" style="">
+                    <div slot="header" class="clearfix" style=" margin: -8px -12px;">
+                        <span>logs</span>
+                        <el-button style="float: right; padding: 3px 0" type="text" @click="clearAgentLogs">清空
+                        </el-button>
+                    </div>
+                    <div id="showAgentLogs" class="text item" style="  margin: -15px;height:calc(100vh - 160px);overflow-y:auto">
+                    </div>
+
+                </el-card>
             </div>
 
         </el-tab-pane>
+
+        <el-tab-pane label="正向代理">正向代理</el-tab-pane>
     </el-tabs>
 
 
@@ -595,6 +608,9 @@
             }
         },
         methods: {
+            clearAgentLogs() {
+                document.querySelector("#showAgentLogs").innerHTML = "";
+            },
             agentOpt(opt) {
                 console.log(this.agentFormInline);
 
@@ -780,20 +796,42 @@
             }
             ,
             initWs() {
-                var ws = new WebSocket("ws://"+window.location.host+"/trafficWebsocket/11");
+                var ws = new WebSocket("ws://" + window.location.host + "/trafficWebsocket/11");
                 ws.onmessage = this.wsOnmessage;
             }
             ,
             wsOnmessage(event) {
                 //console.log('服务端返回：' + event.data);
                 const trafficArr = JSON.parse(event.data);
+                const agentInfoArr = trafficArr.filter((traffic) => {
+                    return traffic.type == "info" || traffic.type == "error";
+                });
+                if (agentInfoArr.length > 0) {
+                    let div1 = document.querySelector("#showAgentLogs");
+                    // let div2 = document.querySelector("#logsCard");
+                    for (let i = 0, len = agentInfoArr.length; i < len; i++) {
+                        let tmpAgentInfo = agentInfoArr[i];
+                        tmpAgentInfo.msg = tmpAgentInfo.msg.replace(/\r\n/g, "<br>");
+                        tmpAgentInfo.msg = tmpAgentInfo.msg.replace(/\t/g, "&emsp;");
+                        if (tmpAgentInfo.type == "exception") {
+                            div1.insertAdjacentHTML('beforeEnd', "<div style='color: red'>" + tmpAgentInfo.msg + "</div>");
+                        } else {
+                            div1.insertAdjacentHTML('beforeEnd', "" + tmpAgentInfo.msg + "<br />");
+                        }
+
+                    }
+                    div1.scrollTo(0, div1.scrollHeight);
+                }
+
                 const upTrafficArr = trafficArr.filter((traffic) => {
                     return traffic.direction == "up";
                 });
                 const downTrafficArr = trafficArr.filter((traffic) => {
                     return traffic.direction == "down";
                 });
-                this.trafficTableData.push(...upTrafficArr);
+                if (upTrafficArr.length > 0) {
+                    this.trafficTableData.push(...upTrafficArr);
+                }
                 for (let i = 0, len = downTrafficArr.length; i < len; i++) {
                     let tmpDownTraffic = downTrafficArr[i];
                     for (let j = 0, len1 = this.trafficTableData.length; j < len1; j++) {

@@ -1,8 +1,9 @@
 package io.github.toohandsome.httproxy.netty;
 
 import com.alibaba.fastjson.JSON;
-import io.github.toohandsome.httproxy.core.TrafficQueueProcess;
+import io.github.toohandsome.httproxy.core.QueuesProcess;
 import io.github.toohandsome.httproxy.entity.AgentEntity;
+import io.github.toohandsome.httproxy.entity.AgentInfo;
 import io.github.toohandsome.httproxy.entity.Traffic;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,7 +24,10 @@ public class DiscardServerHandler extends SimpleChannelInboundHandler<Object> {
         AgentEntity agentEntity = JSON.parseObject(body, AgentEntity.class);
         if (Traffic.class.getSimpleName().equals(agentEntity.getBussType())) {
             Traffic traffic = JSON.parseObject(body, Traffic.class);
-            TrafficQueueProcess.trafficQueue.offer(traffic);
+            QueuesProcess.trafficQueue.offer(traffic);
+        } else if (AgentInfo.class.getSimpleName().equals(agentEntity.getBussType())) {
+            AgentInfo agentInfo = JSON.parseObject(body, AgentInfo.class);
+            QueuesProcess.agentInfoQueue.offer(agentInfo);
         }
     }
 

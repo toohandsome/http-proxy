@@ -1,6 +1,7 @@
 package io.github.toohandsome.attach.util;
 
 import io.github.toohandsome.attach.entity.AgentEntity;
+import io.github.toohandsome.attach.entity.AgentInfo;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
@@ -16,6 +17,20 @@ public class AgentInfoSendUtil {
         String infoStr = agentEntity.toString();
         String finalStr = infoStr.substring(0, infoStr.length() - 1) + ",\"bussType\":\"" + agentEntity.getClass().getSimpleName() + "\"}" + "$_httpProxy_$";
         agentInfoQueue.offer(finalStr);
+    }
+
+    public static void sendExcepTion(Exception exception) {
+        AgentInfo agentInfo = new AgentInfo();
+        String message = exception.getMessage();
+        StringBuilder stringBuilder = new StringBuilder(message);
+        stringBuilder.append("\r\n");
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        for (int i = 0; i < stackTrace.length; i++) {
+            stringBuilder.append("\t" + stackTrace[i].toString() + "\r\n");
+        }
+        agentInfo.setMsg(stringBuilder.toString());
+        agentInfo.setType("error");
+        send(agentInfo);
     }
 
     static {
