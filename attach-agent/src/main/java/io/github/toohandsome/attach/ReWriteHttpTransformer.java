@@ -23,14 +23,14 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                            ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+                            ProtectionDomain protectionDomain, byte[] classFileBuffer) {
         try {
             String replaceClassName = "";
             if (className != null) {
                 replaceClassName = className.replace("/", ".");
-                if (!AgentMain.retransformClassList.contains(replaceClassName)) {
-                    return null;
-                }
+//                if (!AgentMain.retransformClassList.contains(replaceClassName)) {
+//                    return null;
+//                }
             } else {
                 return null;
             }
@@ -45,7 +45,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
             if (cc.isFrozen()) {
                 cc.defrost();
             }
-            if (className.equals("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream")) {
+            if ("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream".equals(className)) {
 
                 CtConstructor[] declaredConstructors = cc.getDeclaredConstructors();
                 HttpURLConnectionInnerPatch httpURLConnectionInnerPatch = HttpURLConnectionInnerPatch.getInstance(pool);
@@ -54,7 +54,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                     declaredConstructor.insertAfter(httpURLConnectionInnerPatch.HttpURLConnection$HttpInputStream_Constructor_After());
                 }
 
-            } else if (className.equals("sun/net/www/http/HttpClient")) {
+            } else if ("sun/net/www/http/HttpClient".equals(className)) {
                 HttpURLConnectionInnerPatch httpURLConnectionInnerPatch = HttpURLConnectionInnerPatch.getInstance(pool);
                 CtClass cc1 = pool.get("sun.net.www.MessageHeader");
                 CtClass cc2 = pool.get("sun.net.www.http.PosterOutputStream");
@@ -63,18 +63,18 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 ctClasses[1] = cc2;
                 CtMethod ctMethod = cc.getDeclaredMethod("writeRequests", ctClasses);
                 ctMethod.insertBefore(httpURLConnectionInnerPatch.HttpClient_writeRequests_Before());
-            } else if (className.equals("sun/net/www/protocol/http/HttpURLConnection")) {
+            } else if ("sun/net/www/protocol/http/HttpURLConnection".equals(className)) {
 
                 HttpURLConnectionInnerPatch httpURLConnectionInnerPatch = HttpURLConnectionInnerPatch.getInstance(pool);
                 CtMethod ctMethod = cc.getDeclaredMethod("followRedirect");
                 ctMethod.insertBefore(httpURLConnectionInnerPatch.HttpURLConnectiont_followRedirect_Before());
-            } else if (className.equals("okhttp3/internal/http/CallServerInterceptor")) {
+            } else if ("okhttp3/internal/http/CallServerInterceptor".equals(className)) {
 
                 CtMethod ctMethod = cc.getDeclaredMethod("intercept");
                 OkhttpInnerPatch okhttpInnerPatch = new OkhttpInnerPatch(pool);
                 ctMethod.insertBefore(okhttpInnerPatch.CallServerInterceptor_intercept_Before());
                 ctMethod.insertAfter(okhttpInnerPatch.CallServerInterceptor_intercept_After());
-            } else if (className.equals("org/apache/http/protocol/HttpRequestExecutor")) {
+            } else if ("org/apache/http/protocol/HttpRequestExecutor".equals(className)) {
 
                 HttpClientInnerPatch httpClientInnerPatch = new HttpClientInnerPatch(pool);
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
@@ -83,32 +83,32 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
             }
 
             // proxy
-            if (className.equals("java/net/URL")) {
+            if ("java/net/URL".equals(className)) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
                 ctMethod.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol()) || \"https\".equals(this.getProtocol())) {return this.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY);}else{return handler.openConnection(this);} }");
-            } else if (className.equals("org/apache/http/client/config/RequestConfig")) {
+            } else if ("org/apache/http/client/config/RequestConfig".equals(className)) {
 
                 pool.importPackage("org.apache.http");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("getProxy");
                 ctMethod.setBody(" {return new HttpHost(\"127.0.0.1\"," + port + ");}");
-            } else if (className.equals("cn/hutool/http/HttpConnection")) {
+            } else if ("cn/hutool/http/HttpConnection".equals(className)) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
                 ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY); }");
-            } else if (className.equals("okhttp3/OkHttpClient")) {
+            } else if ("okhttp3/OkHttpClient".equals(className)) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("proxy");
                 ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
             }
-            AgentInfoSendUtil.send(new AgentInfo().setType("info").setMsg("calss: " + className + " transform success .."));
+            AgentInfoSendUtil.send(new AgentInfo().setType("info").setMsg("class: " + className + " transform success .."));
             return cc.toBytecode();
         } catch (Exception ex) {
             ex.printStackTrace();
