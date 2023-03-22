@@ -27,7 +27,7 @@ import java.util.List;
 @RequestMapping("/httpProxy/agentApi")
 @Slf4j
 public class AgentController {
-
+    VirtualMachine virtualMachine1 = null;
 
     public boolean attach(AgentOpt agentOpt) {
         List<VirtualMachineDescriptor> list = VirtualMachine.list(); // 寻找当前系统中所有运行着的JVM进程
@@ -57,7 +57,8 @@ public class AgentController {
                     try {
                         virtualMachine = VirtualMachine.attach(vmd.id());
                         virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", agentOpt.getPort());
-                        virtualMachine.detach();
+                        virtualMachine1 = virtualMachine;
+//                        virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
                         break;
                     } catch (Exception e) {
@@ -72,6 +73,7 @@ public class AgentController {
 
     public boolean reset(AgentOpt agentOpt) throws Exception {
         try {
+            virtualMachine1.detach();
             //创建发送端Socket对象（创建连接）
             Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 10086);
             //获取输出流对象

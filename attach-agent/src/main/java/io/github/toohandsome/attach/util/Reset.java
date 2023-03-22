@@ -1,6 +1,5 @@
 package io.github.toohandsome.attach.util;
 
-import io.github.toohandsome.attach.AgentMain;
 
 import java.lang.instrument.UnmodifiableClassException;
 
