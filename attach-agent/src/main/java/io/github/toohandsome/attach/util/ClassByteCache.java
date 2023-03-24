@@ -5,5 +5,5 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ClassByteCache {
-//    public static HashMap<String, byte[]> classCache = new HashMap<>();
+    public static HashMap<String, byte[]> classCache = new HashMap<>();
 }
