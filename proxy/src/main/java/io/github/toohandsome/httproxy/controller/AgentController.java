@@ -6,6 +6,7 @@ import io.github.toohandsome.httproxy.entity.AgentOpt;
 import io.github.toohandsome.httproxy.entity.Route;
 import io.github.toohandsome.httproxy.util.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -28,12 +29,15 @@ import java.util.List;
 @Slf4j
 public class AgentController {
     VirtualMachine virtualMachine1 = null;
+    @Value("${whiteListPath}")
+    String whiteListPath;
 
     public boolean attach(AgentOpt agentOpt) {
         List<VirtualMachineDescriptor> list = VirtualMachine.list(); // 寻找当前系统中所有运行着的JVM进程
         ApplicationHome h = new ApplicationHome(getClass());
         File jarF = h.getSource();
         String path = jarF.getParentFile().toString();
+        String args = agentOpt.getPort() + ";" + whiteListPath;
 
         for (VirtualMachineDescriptor vmd : list) {
 
@@ -42,7 +46,7 @@ public class AgentController {
                 try {
                     if (vmd.id().equals(agentOpt.getVal())) {
                         VirtualMachine virtualMachine = VirtualMachine.attach(vmd.id());
-                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", agentOpt.getPort());
+                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", args);
                         virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
                         break;
@@ -56,7 +60,7 @@ public class AgentController {
                     VirtualMachine virtualMachine = null;
                     try {
                         virtualMachine = VirtualMachine.attach(vmd.id());
-                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", agentOpt.getPort());
+                        virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", args);
                         virtualMachine1 = virtualMachine;
 //                        virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");

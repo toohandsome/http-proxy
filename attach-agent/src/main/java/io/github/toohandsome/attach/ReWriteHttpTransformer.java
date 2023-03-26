@@ -18,8 +18,9 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
     private String port;
     ClassPool pool = ClassPool.getDefault();
 
-    public ReWriteHttpTransformer(String port) {
-        this.port = port;
+    public ReWriteHttpTransformer(String args) {
+        this.port = args.split(";")[0];
+
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
