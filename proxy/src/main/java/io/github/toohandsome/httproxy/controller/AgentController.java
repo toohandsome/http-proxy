@@ -29,7 +29,7 @@ import java.util.List;
 @Slf4j
 public class AgentController {
     VirtualMachine virtualMachine1 = null;
-    @Value("${whiteListPath}")
+    @Value("${whiteListPath:whiteList.txt}")
     String whiteListPath;
 
     public boolean attach(AgentOpt agentOpt) {

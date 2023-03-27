@@ -13,7 +13,7 @@ import java.util.List;
 public class AgentMain {
 
 
-    static ArrayList<String> retransformClassList;
+    static ArrayList<String> retransformClassList = new ArrayList<>();
 
     static {
         // inner

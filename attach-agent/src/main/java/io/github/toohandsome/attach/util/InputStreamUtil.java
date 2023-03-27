@@ -10,6 +10,7 @@ import sun.net.www.protocol.http.HttpURLConnection;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.nio.charset.StandardCharsets;
@@ -99,10 +100,16 @@ public class InputStreamUtil {
             if (input instanceof ChunkedInputStream) {
                 return input;
             }
-            boolean empty = false;
-            if ("sun.net.www.protocol.http.EmptyInputStream".equals(input.getClass().getCanonicalName())) {
-                empty = true;
+            if (httpURLConnection != null) {
+                URL url = httpURLConnection.getURL();
+                String s = url.toString();
+                for (String s1 : WhiteListCache.whiteList) {
+                    if (s.startsWith(s1)) {
+                        return input;
+                    }
+                }
             }
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int len;
@@ -268,7 +275,15 @@ public class InputStreamUtil {
     public static InputStream cloneHttpConnectionInputStream1(InputStream input, InputStream input2, HttpURLConnection httpURLConnection) throws Exception {
 
         try {
-
+            if (httpURLConnection != null) {
+                URL url = httpURLConnection.getURL();
+                String s = url.toString();
+                for (String s1 : WhiteListCache.whiteList) {
+                    if (s.startsWith(s1)) {
+                        return input2;
+                    }
+                }
+            }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int len;
@@ -277,6 +292,7 @@ public class InputStreamUtil {
             }
             baos.flush();
             Traffic traffic = new Traffic();
+            InputStreamUtil.class.getEnclosingMethod().getName();
             traffic.setFrom("cloneHttpConnectionInputStream1");
             byte[] bytes = baos.toByteArray();
             InputStream input1 = new GZIPInputStream(new ByteArrayInputStream(bytes));
@@ -333,7 +349,7 @@ public class InputStreamUtil {
             e.printStackTrace();
             AgentInfoSendUtil.sendExcepTion(e);
         }
-        return input;
+        return input2;
     }
 
 }

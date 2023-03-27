@@ -5,10 +5,18 @@ import io.github.toohandsome.attach.patch.inner.HttpClientInnerPatch;
 import io.github.toohandsome.attach.patch.inner.HttpURLConnectionInnerPatch;
 import io.github.toohandsome.attach.patch.inner.OkhttpInnerPatch;
 import io.github.toohandsome.attach.util.AgentInfoSendUtil;
+import io.github.toohandsome.attach.util.WhiteListCache;
 import javassist.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Administrator
@@ -19,8 +27,17 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
     ClassPool pool = ClassPool.getDefault();
 
     public ReWriteHttpTransformer(String args) {
-        this.port = args.split(";")[0];
-
+        String[] split = args.split(";");
+        this.port = split[0];
+        String whiteListPath = split[1];
+        File file = new File(whiteListPath);
+        if (file.exists()){
+            try {
+                WhiteListCache.whiteList = Files.readAllLines(Paths.get(whiteListPath));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -29,9 +46,9 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
             String replaceClassName = "";
             if (className != null) {
                 replaceClassName = className.replace("/", ".");
-//                if (!AgentMain.retransformClassList.contains(replaceClassName)) {
-//                    return null;
-//                }
+                if (!AgentMain.retransformClassList.contains(replaceClassName)) {
+                    return null;
+                }
             } else {
                 return null;
             }
