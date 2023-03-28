@@ -103,20 +103,15 @@ public class InputStreamUtil {
             if (httpURLConnection != null) {
                 URL url = httpURLConnection.getURL();
                 String s = url.toString();
-                for (String s1 : WhiteListCache.whiteList) {
-                    if (s.startsWith(s1)) {
+                for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {
+                    String whitePath = WhiteListCache.whiteList.get(i);
+                    if (s.startsWith(whitePath)) {
                         return input;
                     }
                 }
             }
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = input.read(buffer)) > -1) {
-                baos.write(buffer, 0, len);
-            }
-            baos.flush();
+            ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             Traffic traffic = new Traffic();
             traffic.setFrom("cloneHttpConnectionInputStream");
             byte[] bytes = baos.toByteArray();
@@ -149,7 +144,6 @@ public class InputStreamUtil {
                 AgentInfoSendUtil.send(traffic);
             }
 
-
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,13 +154,7 @@ public class InputStreamUtil {
 
     public static InputStream cloneHttpClientInputStream(InputStream input, Traffic traffic) throws Exception {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = input.read(buffer)) > -1) {
-                baos.write(buffer, 0, len);
-            }
-            baos.flush();
+            ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             byte[] bytes = baos.toByteArray();
             String respBody = "";
             if (bytes != null) {
@@ -186,13 +174,7 @@ public class InputStreamUtil {
 
     public static InputStream cloneHttpClientInputStream1(InputStream input, Traffic traffic, String zipType) throws Exception {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = input.read(buffer)) > -1) {
-                baos.write(buffer, 0, len);
-            }
-            baos.flush();
+            ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             byte[] bytes = baos.toByteArray();
             String respBody = "";
             if (bytes != null) {
@@ -221,15 +203,20 @@ public class InputStreamUtil {
         return input;
     }
 
+    private static ByteArrayOutputStream getByteArrayOutputStream(InputStream input) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = input.read(buffer)) > -1) {
+            baos.write(buffer, 0, len);
+        }
+        baos.flush();
+        return baos;
+    }
+
     public static InputStream cloneOkHttpInputStream(InputStream input, Traffic traffic) throws Exception {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = input.read(buffer)) > -1) {
-                baos.write(buffer, 0, len);
-            }
-            baos.flush();
+            ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             byte[] bytes = baos.toByteArray();
             String respBody = "";
             if (bytes != null) {
@@ -284,13 +271,7 @@ public class InputStreamUtil {
                     }
                 }
             }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = input.read(buffer)) > -1) {
-                baos.write(buffer, 0, len);
-            }
-            baos.flush();
+            ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             Traffic traffic = new Traffic();
             InputStreamUtil.class.getEnclosingMethod().getName();
             traffic.setFrom("cloneHttpConnectionInputStream1");

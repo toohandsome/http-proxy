@@ -20,10 +20,19 @@ public class HttpClientInnerPatch {
         pool.importPackage("org.apache.http.HttpRequest");
         pool.importPackage("org.apache.http.client.methods.HttpRequestBase");
         pool.importPackage("io.github.toohandsome.attach.util.ReUtil");
+        pool.importPackage("io.github.toohandsome.attach.util.WhiteListCache");
     }
 
     public String HttpRequestExecutor_execute_Before(){
-        return "try{ \n" + " Traffic traffic = new Traffic();\n" +
+        return "try{ \n" +
+                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
+                " for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {\n" +
+                "                    String whitePath = WhiteListCache.whiteList.get(i);\n" +
+                "                    if (request1.getURI().toString().startsWith(whitePath)) {\n" +
+                "                        return input;\n" +
+                "                    }\n" +
+                "                }\n" +
+                " Traffic traffic = new Traffic();\n" +
                 "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.before\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "    myMap.put($1.getRequestLine().toString(), \"null\");  \n" +
@@ -32,7 +41,7 @@ public class HttpClientInnerPatch {
                 "  traffic.setReqDate(System.currentTimeMillis()); \n" +
                 "   traffic.setDirection(\"up\"); \n" +
                 "  traffic.setRequestHeaders(myMap); \n" +
-                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
+
                 "  traffic.setUrl(request1.getURI().toString());  \n" +
 
                 "    \n" +
