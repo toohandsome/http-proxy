@@ -5,6 +5,7 @@ import io.github.toohandsome.attach.patch.inner.HttpClientInnerPatch;
 import io.github.toohandsome.attach.patch.inner.HttpURLConnectionInnerPatch;
 import io.github.toohandsome.attach.patch.inner.OkhttpInnerPatch;
 import io.github.toohandsome.attach.util.AgentInfoSendUtil;
+import io.github.toohandsome.attach.util.Reset;
 import io.github.toohandsome.attach.util.WhiteListCache;
 import javassist.*;
 
@@ -14,6 +15,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.ProtectionDomain;
+
 /**
  * @author Administrator
  */
@@ -27,7 +29,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
         this.port = split[0];
         String whiteListPath = split[1];
         File file = new File(whiteListPath);
-        if (file.exists()){
+        if (file.exists()) {
             try {
                 WhiteListCache.whiteList = Files.readAllLines(Paths.get(whiteListPath));
             } catch (IOException e) {
@@ -123,6 +125,8 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
             }
             AgentInfoSendUtil.send(new AgentInfo().setType("info").setMsg("class: " + className + " transform success .."));
+
+            Reset.classMap.put(replaceClassName, classBeingRedefined);
             return cc.toBytecode();
         } catch (Exception ex) {
             ex.printStackTrace();

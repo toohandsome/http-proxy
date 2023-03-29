@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,52 +54,38 @@ public class AgentMain {
         ReWriteHttpTransformer transformer = new ReWriteHttpTransformer(args);
         Reset.transformer = transformer;
         inst.addTransformer(transformer, true);
-        List<Class> classList = new ArrayList<>();
         final Class[] allLoadedClasses = inst.getAllLoadedClasses();
         for (Class allLoadedClass : allLoadedClasses) {
             if (retransformClassList.contains(allLoadedClass.getName())) {
-                // 改为 MAP 判断是否存在
-                classList.add(allLoadedClass);
                 inst.retransformClasses(allLoadedClass);
             }
         }
 
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    ServerSocket serverSocket = new ServerSocket(10086);
-//                    while (true) {
-//                        //监听（阻塞）
-//                        Socket socket = serverSocket.accept();
-//                        //获取输入流对象
-//                        InputStream is = socket.getInputStream();
-//                        //获取数据
-//                        byte[] bys = new byte[1024];
-//                        int len;    //用于存储读到的字节个数
-//                        len = is.read(bys);
-//                        //输出数据
-//                        InetAddress inetAddress = socket.getInetAddress();
-//                        System.out.println(inetAddress.getHostName());
-//                        System.out.println(new String(bys, 0, len));
-//
-//                        AgentMain.inst1.removeTransformer(AgentMain.transformer1);
-//                        AgentMain.transformer1 = null;
-//                        for (Class aClass : AgentMain.classList) {
-//                            AgentMain.inst1.retransformClasses(aClass);
-//                        }
-//                        is.close();
-//                        socket.close();
-//                        serverSocket.close();
-//                        break;
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//                AgentInfoSendUtil.sendInfo(" 监听结束 .. ");
-//
-//            }
-//        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ServerSocket serverSocket = new ServerSocket(10086);
+                    //监听（阻塞）
+                    Socket socket = serverSocket.accept();
+                    //获取输入流对象
+                    InputStream is = socket.getInputStream();
+                    //获取数据
+                    byte[] bys = new byte[1024];
+                    int len;    //用于存储读到的字节个数
+                    len = is.read(bys);
+                    //输出数据
+                    AgentInfoSendUtil.sendInfo("agent 收到命令 : " + new String(bys, 0, len));
+                    Reset.reset();
+                    is.close();
+                    socket.close();
+                    serverSocket.close();
+                    AgentInfoSendUtil.sendInfo("重置增强类,监听结束 .. ");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
     }
 
