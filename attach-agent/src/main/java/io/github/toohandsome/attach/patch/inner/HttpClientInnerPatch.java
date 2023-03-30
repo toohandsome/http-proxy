@@ -91,7 +91,15 @@ public class HttpClientInnerPatch {
 
 
     public String HttpRequestExecutor_execute_After(){
-        return "try{ \n" + " Traffic traffic = new Traffic();\n" +
+        return "try{ \n" +
+                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
+                " for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {\n" +
+                "                    String whitePath = WhiteListCache.whiteList.get(i);\n" +
+                "                    if (request1.getURI().toString().startsWith(whitePath)) {\n" +
+                "                        return input;\n" +
+                "                    }\n" +
+                "                }\n" +
+                " Traffic traffic = new Traffic();\n" +
                 "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.after\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "  traffic.setResponseHeaders(myMap); \n" +

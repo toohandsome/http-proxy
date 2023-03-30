@@ -27,7 +27,9 @@ import java.util.jar.JarFile;
 
 
 /**
- * Created by tyy on 3/29/17.
+ *
+ * @author tyy
+ * @date 3/29/17
  * 对jar文件操作的工具类
  */
 public class JarFileHelper {
@@ -58,16 +60,6 @@ public class JarFileHelper {
             e.printStackTrace();
         }
         return path;
-    }
-
-    /**
-     * 获取当前jar包所在的文件夹路径
-     *
-     * @return jar包所在文件夹路径
-     */
-    public static String getLocalJarParentPath() {
-        String jarPath = getLocalJarPath();
-        return jarPath.substring(0, jarPath.lastIndexOf("/"));
     }
 
 }

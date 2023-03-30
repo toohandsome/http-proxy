@@ -33,7 +33,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
             try {
                 WhiteListCache.whiteList = Files.readAllLines(Paths.get(whiteListPath));
             } catch (IOException e) {
-                e.printStackTrace();
+                AgentInfoSendUtil.sendExcepTion(e);
             }
         }
     }
