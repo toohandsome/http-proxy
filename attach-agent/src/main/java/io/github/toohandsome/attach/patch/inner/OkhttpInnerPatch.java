@@ -20,6 +20,7 @@ public class OkhttpInnerPatch {
         pool.importPackage("io.github.toohandsome.attach.util.AgentInfoSendUtil");
         pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
         pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
+        pool.importPackage("io.github.toohandsome.attach.util.WhiteListCache");
         pool.importPackage("okio.BufferedSource");
         pool.importPackage("okio.Buffer");
         pool.importPackage("okio.Okio");
@@ -37,20 +38,27 @@ public class OkhttpInnerPatch {
 
     public String CallServerInterceptor_intercept_Before() {
         return "try{ \n" +
+                " RealInterceptorChain realChain_123 = (RealInterceptorChain) $1;\n" +
+                " Request request_123 = realChain_123.request(); \n" +
+                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
+                "   HttpUrl tempUrlObj =  request_123.url();  \n" +
+                " for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {\n" +
+                "                    String whitePath = WhiteListCache.whiteList.get(i);\n" +
+                "                    if (tempUrlObj.url().toString().startsWith(whitePath)) {\n" +
+                "                        return input;\n" +
+                "                    }\n" +
+                "                }\n" +
                 " Traffic traffic = new Traffic();\n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "   traffic.setFrom(\"okhttp3.internal.http.CallServerInterceptor.intercept.before\"); \n" +
-                " RealInterceptorChain realChain_123 = (RealInterceptorChain) $1;\n" +
-                " Request request_123 = realChain_123.request(); \n" +
+
                 " traffic.setKey(request_123.hashCode() + \"\"); \n" +
                 "  traffic.setReqDate(System.currentTimeMillis()); \n" +
                 "   traffic.setDirection(\"up\"); \n" +
                 "  traffic.setRequestHeaders(myMap); \n" +
-                "   HttpUrl tempUrlObj =  request_123.url();  \n" +
+
                 "  traffic.setUrl(tempUrlObj.url().toString());  \n" +
                 "  traffic.setHost(tempUrlObj.host()); \n" +
-//                "  Call call123 =  realChain_123.call().clone();\n" +
-//
                 " Headers headers_123 = request_123.headers(); \n" +
                 " java.util.Collections.UnmodifiableSet headerSet_123 = headers_123.names(); \n" +
                 " List headerList_123 = new ArrayList(headerSet_123);\n " +
@@ -83,7 +91,19 @@ public class OkhttpInnerPatch {
     }
 
     public String CallServerInterceptor_intercept_After(){
-        return "try{ \n" + "  Headers headers_123 = $_.headers();\n" +
+        return "try{ \n" +
+                " RealInterceptorChain realChain_123 = (RealInterceptorChain) $1;\n" +
+                " Request request_123 = realChain_123.request(); \n" +
+                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
+                "   HttpUrl tempUrlObj =  request_123.url();  \n" +
+
+                " for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {\n" +
+                "                    String whitePath = WhiteListCache.whiteList.get(i);\n" +
+                "                    if (tempUrlObj.url().toString().startsWith(whitePath)) {\n" +
+                "                        return input;\n" +
+                "                    }\n" +
+                "                }\n" +
+                "  Headers headers_123 = $_.headers();\n" +
                 " Traffic traffic = new Traffic();\n" +
                 "   traffic.setFrom(\"okhttp3.internal.http.CallServerInterceptor.intercept.after\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
@@ -91,7 +111,7 @@ public class OkhttpInnerPatch {
                 "  traffic.setRespDate(System.currentTimeMillis()); \n" +
                 "   traffic.setDirection(\"down\"); \n" +
                 "   traffic.setResponseHeaders(myMap); \n" +
-                "  traffic.setKey($1.request().hashCode() + \"\"); \n" +
+                "  traffic.setKey(request_123.hashCode() + \"\"); \n" +
                 "            java.util.Collections.UnmodifiableSet respNames_123 = headers_123.names();\n" +
                 "            List respHeaderList_123 = new ArrayList(respNames_123);\n " +
                 " for (int i = 0; i < respHeaderList_123.size(); i++){  \n" +
