@@ -496,6 +496,10 @@
                     <el-form-item label="监听端口">
                         <el-input v-model="agentFormInline.listenPort" placeholder="监听端口"></el-input>
                     </el-form-item>
+                    <el-form-item label="获取堆栈">
+                        <el-switch  v-model="agentFormInline.getStack" active-color="#13ce66"  inactive-color="#ff4949">
+                        </el-switch>
+                    </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="agentOpt('attach')">注入</el-button>
                         <el-button type="primary" @click="agentOpt('reset')">重置</el-button>
@@ -536,7 +540,8 @@
                 agentFormInline: {
                     processName: "demo",
                     processId: 1234,
-                    listenPort: 9875
+                    listenPort: 9875,
+                    getStack:false
                 },
                 currentTraffic: {
                     requestHeaders: {},
@@ -625,6 +630,7 @@
                     val = this.agentFormInline.processName
                 }
                 let port = this.agentFormInline.listenPort;
+                let getStack = this.agentFormInline.getStack;
 
                 fetch(url, {
                     method: 'post',
@@ -632,6 +638,7 @@
                         type: type,
                         val: val,
                         opt: opt,
+                        getStack: getStack,
                         port: port
                     }),
                     headers: {

@@ -9,4 +9,5 @@ public class AgentOpt {
     private String val;
     private String opt;
     private String port;
+    private boolean getStack = false;
 }

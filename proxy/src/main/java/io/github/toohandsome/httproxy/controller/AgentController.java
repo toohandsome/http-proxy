@@ -37,7 +37,7 @@ public class AgentController {
         ApplicationHome h = new ApplicationHome(getClass());
         File jarF = h.getSource();
         String path = jarF.getParentFile().toString();
-        String args = agentOpt.getPort() + ";" + whiteListPath;
+        String args = agentOpt.getPort() + ";" + whiteListPath+ ";" + agentOpt.isGetStack();
 
         for (VirtualMachineDescriptor vmd : list) {
 

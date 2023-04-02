@@ -1,9 +1,7 @@
 package io.github.toohandsome.attach;
 
 import io.github.toohandsome.attach.entity.AgentInfo;
-import io.github.toohandsome.attach.patch.inner.HttpClientInnerPatch;
-import io.github.toohandsome.attach.patch.inner.HttpURLConnectionInnerPatch;
-import io.github.toohandsome.attach.patch.inner.OkhttpInnerPatch;
+import io.github.toohandsome.attach.patch.inner.*;
 import io.github.toohandsome.attach.util.AgentInfoSendUtil;
 import io.github.toohandsome.attach.util.Reset;
 import io.github.toohandsome.attach.util.WhiteListCache;
@@ -96,6 +94,27 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
                 ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
                 ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
+            }
+            else if ("tomcat".equals(className)) {
+
+                TomcatInnerPatch httpClientInnerPatch = new TomcatInnerPatch(pool);
+                CtMethod ctMethod = cc.getDeclaredMethod("execute");
+//                ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
+//                ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
+            }
+            else if ("jetty".equals(className)) {
+
+                JettyInnerPatch httpClientInnerPatch = new JettyInnerPatch(pool);
+                CtMethod ctMethod = cc.getDeclaredMethod("execute");
+//                ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
+//                ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
+            }
+            else if ("undertow".equals(className)) {
+
+                UndertowInnerPatch httpClientInnerPatch = new UndertowInnerPatch(pool);
+                CtMethod ctMethod = cc.getDeclaredMethod("execute");
+//                ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
+//                ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
             }
 
             // proxy
