@@ -1,5 +1,6 @@
 package io.github.toohandsome.attach;
 
+import io.github.toohandsome.attach.config.GlobalConfig;
 import io.github.toohandsome.attach.entity.AgentInfo;
 import io.github.toohandsome.attach.patch.inner.*;
 import io.github.toohandsome.attach.util.AgentInfoSendUtil;
@@ -26,6 +27,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
         String[] split = args.split(";");
         this.port = split[0];
         String whiteListPath = split[1];
+        GlobalConfig.printStack = Boolean.valueOf(split[2]);
         File file = new File(whiteListPath);
         if (file.exists()) {
             try {
@@ -94,22 +96,19 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
                 ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
                 ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
-            }
-            else if ("tomcat".equals(className)) {
+            } else if ("tomcat".equals(className)) {
 
                 TomcatInnerPatch httpClientInnerPatch = new TomcatInnerPatch(pool);
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
 //                ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
 //                ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
-            }
-            else if ("jetty".equals(className)) {
+            } else if ("jetty".equals(className)) {
 
                 JettyInnerPatch httpClientInnerPatch = new JettyInnerPatch(pool);
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");
 //                ctMethod.insertBefore(httpClientInnerPatch.HttpRequestExecutor_execute_Before());
 //                ctMethod.insertAfter(httpClientInnerPatch.HttpRequestExecutor_execute_After());
-            }
-            else if ("undertow".equals(className)) {
+            } else if ("undertow".equals(className)) {
 
                 UndertowInnerPatch httpClientInnerPatch = new UndertowInnerPatch(pool);
                 CtMethod ctMethod = cc.getDeclaredMethod("execute");

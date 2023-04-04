@@ -21,4 +21,5 @@ public class Traffic {
     private Map<String, String> responseHeaders = new HashMap<>();
     private String requestBody;
     private String responseBody;
+    private String stackTrace;
 }

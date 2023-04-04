@@ -17,6 +17,7 @@ public class Traffic extends AgentEntity {
     private MyMap responseHeaders = new MyMap();
     private String requestBody;
     private String responseBody;
+    private String stackTrace;
 
     @Override
     public String toString() {
@@ -77,6 +78,11 @@ public class Traffic extends AgentEntity {
             stringBuilder.append(responseBody.replace("\\", "\\\\").replace("\"", "\\\"").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n"));
             stringBuilder.append("\",");
         }
+        if (stackTrace != null) {
+            stringBuilder.append("\"stackTrace\":\"");
+            stringBuilder.append(stackTrace.replace("\\", "\\\\").replace("\"", "\\\"").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n"));
+            stringBuilder.append("\",");
+        }
         if (requestHeaders != null) {
             stringBuilder.append("\"requestHeaders\":{");
             stringBuilder.append(requestHeaders.toString());
@@ -121,6 +127,14 @@ public class Traffic extends AgentEntity {
         m2.put("keyd", "valued");
         traffic.setResponseHeaders(m2);
         System.out.println(traffic.toString());
+    }
+
+    public String getStackTrace() {
+        return stackTrace;
+    }
+
+    public void setStackTrace(String stackTrace) {
+        this.stackTrace = stackTrace;
     }
 
     public String getFrom() {
