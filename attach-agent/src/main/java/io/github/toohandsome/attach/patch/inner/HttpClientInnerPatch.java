@@ -21,6 +21,7 @@ public class HttpClientInnerPatch {
         pool.importPackage("org.apache.http.client.methods.HttpRequestBase");
         pool.importPackage("io.github.toohandsome.attach.util.ReUtil");
         pool.importPackage("io.github.toohandsome.attach.util.WhiteListCache");
+        pool.importPackage("io.github.toohandsome.attach.config.GlobalConfig");
     }
 
     public String HttpRequestExecutor_execute_Before(){
@@ -33,6 +34,7 @@ public class HttpClientInnerPatch {
                 "                    }\n" +
                 "                }\n" +
                 " Traffic traffic = new Traffic();\n" +
+                "    GlobalConfig.printStack(traffic); \n" +
                 "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.before\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "    myMap.put($1.getRequestLine().toString(), \"null\");  \n" +
@@ -100,6 +102,7 @@ public class HttpClientInnerPatch {
                 "                    }\n" +
                 "                }\n" +
                 " Traffic traffic = new Traffic();\n" +
+                "    GlobalConfig.printStack(traffic); \n" +
                 "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.after\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "  traffic.setResponseHeaders(myMap); \n" +

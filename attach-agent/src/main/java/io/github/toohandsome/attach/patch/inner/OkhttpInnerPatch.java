@@ -49,6 +49,7 @@ public class OkhttpInnerPatch {
                 "                    }\n" +
                 "                }\n" +
                 " Traffic traffic = new Traffic();\n" +
+                "    GlobalConfig.printStack(traffic); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "   traffic.setFrom(\"okhttp3.internal.http.CallServerInterceptor.intercept.before\"); \n" +
 
@@ -105,6 +106,7 @@ public class OkhttpInnerPatch {
                 "                }\n" +
                 "  Headers headers_123 = $_.headers();\n" +
                 " Traffic traffic = new Traffic();\n" +
+                "    GlobalConfig.printStack(traffic); \n" +
                 "   traffic.setFrom(\"okhttp3.internal.http.CallServerInterceptor.intercept.after\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "   String zipType = \"\"; \n" +
