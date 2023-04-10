@@ -1,5 +1,6 @@
 package io.github.toohandsome.attach.util;
 
+import io.github.toohandsome.attach.config.GlobalConfig;
 import io.github.toohandsome.attach.entity.MyMap;
 import io.github.toohandsome.attach.entity.Traffic;
 import sun.net.www.MessageHeader;
@@ -36,6 +37,7 @@ public class InputStreamUtil {
                     httpURLConnectionClass = httpURLConnection.getClass();
                 }
                 Traffic traffic = new Traffic();
+                GlobalConfig.printStack(traffic);
                 traffic.setFrom("getHttpConnectionRedirectRespInfo");
                 String respBody = "";
                 //System.out.println("respBody: " + respBody);
@@ -73,8 +75,9 @@ public class InputStreamUtil {
             }
             Field host = httpClientClass.getDeclaredField("host");
             host.setAccessible(true);
-            MyMap myMap = printHeader(header, "req");
             Traffic traffic = new Traffic();
+            GlobalConfig.printStack(traffic);
+            MyMap myMap = printHeader(header, "req");
             traffic.setFrom("getHttpConnectionRequestInfo");
             traffic.setUrl(client.getURLFile());
             if (var2 != null) {
@@ -113,6 +116,7 @@ public class InputStreamUtil {
 
             ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             Traffic traffic = new Traffic();
+            GlobalConfig.printStack(traffic);
             traffic.setFrom("cloneHttpConnectionInputStream");
             byte[] bytes = baos.toByteArray();
             String respBody = new String(bytes, StandardCharsets.UTF_8);
@@ -273,6 +277,7 @@ public class InputStreamUtil {
             }
             ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             Traffic traffic = new Traffic();
+            GlobalConfig.printStack(traffic);
             InputStreamUtil.class.getEnclosingMethod().getName();
             traffic.setFrom("cloneHttpConnectionInputStream1");
             byte[] bytes = baos.toByteArray();
