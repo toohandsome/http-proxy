@@ -194,8 +194,9 @@ public class Tc1 {
             String string = body.string();
             System.out.println(string);
             response.close();
-            if (response.isSuccessful())
+            if (response.isSuccessful()) {
                 System.out.println("poaohua 完成");
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -286,7 +287,7 @@ public class Tc1 {
             //不使用缓存
             con.setUseCaches(false);
             OutputStream os = con.getOutputStream();
-            Map paraMap = new HashMap();
+            Map paraMap = new HashMap(10);
             paraMap.put("type", "wx");
             paraMap.put("mchid", "10101");
             //组装入参
@@ -412,7 +413,7 @@ public class Tc1 {
             //不使用缓存
             con.setUseCaches(false);
             OutputStream os = con.getOutputStream();
-            Map paraMap = new HashMap();
+            Map paraMap = new HashMap(10);
             paraMap.put("type", "wx");
             paraMap.put("mchid", "10101");
             //组装入参

@@ -14,10 +14,9 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
   import io.netty.handler.logging.LoggingHandler;
   import io.netty.handler.ssl.SslContext;
-  
-  /**
-   * Discards any incoming data.
-   */
+/**
+ * @author hudcan
+ */
   public final class DiscardServer {
 
   

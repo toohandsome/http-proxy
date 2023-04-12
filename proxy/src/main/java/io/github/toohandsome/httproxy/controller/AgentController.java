@@ -24,6 +24,9 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * @author hudcan
+ */
 @Component
 @RequestMapping("/httpProxy/agentApi")
 @Slf4j
@@ -33,7 +36,7 @@ public class AgentController {
     String whiteListPath;
 
     public boolean attach(AgentOpt agentOpt) {
-        List<VirtualMachineDescriptor> list = VirtualMachine.list(); // 寻找当前系统中所有运行着的JVM进程
+        List<VirtualMachineDescriptor> list = VirtualMachine.list();
         ApplicationHome h = new ApplicationHome(getClass());
         File jarF = h.getSource();
         String path = jarF.getParentFile().toString();
@@ -62,7 +65,7 @@ public class AgentController {
                         virtualMachine = VirtualMachine.attach(vmd.id());
                         virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", args);
                         virtualMachine1 = virtualMachine;
-//                        virtualMachine.detach();
+                        virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
                         break;
                     } catch (Exception e) {

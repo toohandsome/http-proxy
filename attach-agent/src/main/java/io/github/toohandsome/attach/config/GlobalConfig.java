@@ -1,7 +1,9 @@
 package io.github.toohandsome.attach.config;
 
 import io.github.toohandsome.attach.entity.Traffic;
-
+/**
+ * @author hudcan
+ */
 public class GlobalConfig {
     public static boolean printStack = false;
 

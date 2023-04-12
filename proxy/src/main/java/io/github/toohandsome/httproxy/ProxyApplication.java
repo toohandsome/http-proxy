@@ -29,7 +29,9 @@ import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-
+/**
+ * @author hudcan
+ */
 @SpringBootApplication
 public class ProxyApplication {
 

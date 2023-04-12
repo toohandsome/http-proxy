@@ -8,7 +8,9 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
-
+/**
+ * @author hudcan
+ */
 public class AgentInfoSendUtil {
 
 //    static LinkedBlockingQueue<String> agentInfoQueue = new LinkedBlockingQueue(1000);

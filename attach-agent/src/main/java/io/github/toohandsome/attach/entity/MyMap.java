@@ -2,7 +2,9 @@ package io.github.toohandsome.attach.entity;
 
 import java.util.HashMap;
 import java.util.Set;
-
+/**
+ * @author hudcan
+ */
 public class MyMap extends HashMap {
     @Override
     public String toString() {

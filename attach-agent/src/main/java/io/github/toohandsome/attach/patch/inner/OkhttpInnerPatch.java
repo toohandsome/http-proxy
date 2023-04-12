@@ -1,7 +1,9 @@
 package io.github.toohandsome.attach.patch.inner;
 
 import javassist.ClassPool;
-
+/**
+ * @author hudcan
+ */
 public class OkhttpInnerPatch {
     public OkhttpInnerPatch(ClassPool pool) {
         pool.importPackage("java.util.Set");

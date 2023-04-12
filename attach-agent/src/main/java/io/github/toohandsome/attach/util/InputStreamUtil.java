@@ -15,7 +15,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.nio.charset.StandardCharsets;
-
+/**
+ * @author hudcan
+ */
 public class InputStreamUtil {
 
 

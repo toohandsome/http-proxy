@@ -102,7 +102,7 @@ public class Utils {
 
     public static boolean addServelet(Route route) {
         try {
-            if (!route.getName().equals("ALL")) {
+            if (!"ALL".equals(route.getName())) {
                 return true;
             }
             route.setPrefix("*");
@@ -130,7 +130,7 @@ public class Utils {
             standardContext.addChild(wrapper);
             String prefix = route.getPrefix();
 
-            if (prefix.equals("*") || prefix.equals("")) {
+            if ("*".equals(prefix) || "".equals(prefix)) {
                 standardContext.addServletMappingDecoded("/*", route.getName());
             } else {
                 standardContext.addServletMappingDecoded(prefix + "/*", route.getName());

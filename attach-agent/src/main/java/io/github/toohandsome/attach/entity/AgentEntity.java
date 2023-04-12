@@ -1,5 +1,7 @@
 package io.github.toohandsome.attach.entity;
-
+/**
+ * @author hudcan
+ */
 public class AgentEntity {
     private String bussType;
 

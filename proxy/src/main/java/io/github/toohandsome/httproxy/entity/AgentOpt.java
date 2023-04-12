@@ -1,7 +1,9 @@
 package io.github.toohandsome.httproxy.entity;
 
 import lombok.Data;
-
+/**
+ * @author hudcan
+ */
 @Data
 public class AgentOpt {
 
