@@ -26,7 +26,9 @@ import java.util.Collection;
  * @author zhaoxb
  * @create 2019-09-26 17:52
  */
-
+/**
+ * @author hudcan
+ */
 public class ModifyResponseBodyWrapper extends ResponseFacade {
 
 

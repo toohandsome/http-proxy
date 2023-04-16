@@ -1,18 +1,17 @@
 package io.github.toohandsome.demo;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import cn.hutool.http.HttpUtil;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.github.toohandsome.demo.config.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import okio.BufferedSink;
-import okio.Okio;
-import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -21,46 +20,28 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-
 import java.util.zip.GZIPInputStream;
-
-import org.slf4j.LoggerFactory;
-import org.springframework.web.client.RestTemplate;
-import sun.net.www.http.ChunkedInputStream;
-import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 
 @RestController
 @Slf4j
@@ -183,9 +164,9 @@ public class Tc1 {
 
             Headers headers = request.headers();
             Set<String> names = headers.names();
-            for (int i = 0; i < names.size(); i++) {
-
-            }
+//            for (int i = 0; i < names.size(); i++) {
+//
+//            }
 
             Response response = client.newCall(request).execute();
 
@@ -351,9 +332,9 @@ public class Tc1 {
                 URL url = new URL("https://www.baidu.com");
                 connection = (HttpURLConnection) url.openConnection();
                 //通过此方法创建的HttpURLConnection对象，并没有真正执行连接操作，只是创建了一个新的实例，在正式连接前，往往还需要设置一些属性，如连接超时和请求方式等
-                connection.setRequestMethod("GET"); //设置请求方式
-                connection.setConnectTimeout(8000);//设置连接超时时间
-                connection.setReadTimeout(8000);//设置读取超时时间
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(8000);
+                connection.setReadTimeout(8000);
                 connection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
                 connection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
                 connection.setRequestProperty("Accept-Language", "max-age=0");

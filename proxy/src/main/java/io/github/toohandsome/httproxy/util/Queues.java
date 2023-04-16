@@ -30,7 +30,9 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * @author hudcan
+ */
 public final class Queues {
 
 
