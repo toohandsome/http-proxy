@@ -4,8 +4,8 @@ import io.github.toohandsome.attach.config.GlobalConfig;
 import io.github.toohandsome.attach.entity.AgentInfo;
 import io.github.toohandsome.attach.patch.inner.*;
 import io.github.toohandsome.attach.util.AgentInfoSendUtil;
-import io.github.toohandsome.attach.util.Reset;
-import io.github.toohandsome.attach.util.WhiteListCache;
+import io.github.toohandsome.attach.core.Reset;
+import io.github.toohandsome.attach.core.WhiteListCache;
 import javassist.*;
 
 import java.io.File;

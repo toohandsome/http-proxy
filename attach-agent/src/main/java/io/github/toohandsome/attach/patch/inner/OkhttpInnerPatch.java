@@ -22,7 +22,8 @@ public class OkhttpInnerPatch {
         pool.importPackage("io.github.toohandsome.attach.util.AgentInfoSendUtil");
         pool.importPackage("io.github.toohandsome.attach.entity.Traffic");
         pool.importPackage("io.github.toohandsome.attach.util.InputStreamUtil");
-        pool.importPackage("io.github.toohandsome.attach.util.WhiteListCache");
+        pool.importPackage("io.github.toohandsome.attach.core.WhiteListCache");
+        pool.importPackage("io.github.toohandsome.attach.config.GlobalConfig");
         pool.importPackage("okio.BufferedSource");
         pool.importPackage("okio.Buffer");
         pool.importPackage("okio.Okio");
@@ -42,14 +43,16 @@ public class OkhttpInnerPatch {
         return "try{ \n" +
                 " RealInterceptorChain realChain_123 = (RealInterceptorChain) $1;\n" +
                 " Request request_123 = realChain_123.request(); \n" +
-                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
-                "   HttpUrl tempUrlObj =  request_123.url();  \n" +
+                " boolean doRecord = true; \n" +
+                " HttpUrl tempUrlObj =  request_123.url();  \n" +
                 " for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {\n" +
                 "                    String whitePath = WhiteListCache.whiteList.get(i);\n" +
-                "                    if (tempUrlObj.url().toString().startsWith(whitePath)) {\n" +
-                "                        return input;\n" +
+                "                    if (tempUrlObj.toString().startsWith(whitePath)) {\n" +
+                "                        doRecord = false;\n" +
                 "                    }\n" +
                 "                }\n" +
+                " System.out.println(\"doRecord: \"+ doRecord ); \n" +
+                " if(doRecord){\n" +
                 " Traffic traffic = new Traffic();\n" +
                 "    GlobalConfig.printStack(traffic); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
@@ -87,9 +90,11 @@ public class OkhttpInnerPatch {
                 "  // System.out.println(reqBody2Str_123); \n" +
                 "  traffic.setRequestBody(reqBody2Str_123 ); \n" +
                 "   AgentInfoSendUtil.send(traffic); \n" +
+                "}\n"+
                 " } catch (Exception e123){ \n" +
                 "   e123.printStackTrace(); \n" +
                 "   AgentInfoSendUtil.sendExcepTion(e123); \n" +
+
                 "}";
     }
 
@@ -97,15 +102,15 @@ public class OkhttpInnerPatch {
         return "try{ \n" +
                 " RealInterceptorChain realChain_123 = (RealInterceptorChain) $1;\n" +
                 " Request request_123 = realChain_123.request(); \n" +
-                " HttpUriRequest request1 = (HttpUriRequest) $1; \n" +
-                "   HttpUrl tempUrlObj =  request_123.url();  \n" +
-
+                " HttpUrl tempUrlObj =  request_123.url();  \n" +
+                " boolean doRecord = true; \n" +
                 " for (int i = 0; i < WhiteListCache.whiteList.size(); i++) {\n" +
                 "                    String whitePath = WhiteListCache.whiteList.get(i);\n" +
-                "                    if (tempUrlObj.url().toString().startsWith(whitePath)) {\n" +
-                "                        return input;\n" +
+                "                    if (tempUrlObj.toString().startsWith(whitePath)) {\n" +
+                "                        doRecord = false;\n" +
                 "                    }\n" +
                 "                }\n" +
+                " if(doRecord){\n" +
                 "  Headers headers_123 = $_.headers();\n" +
                 " Traffic traffic = new Traffic();\n" +
                 "    GlobalConfig.printStack(traffic); \n" +
@@ -142,9 +147,11 @@ public class OkhttpInnerPatch {
                 "       traffic.setResponseBody(respBody2Str_123);\n" +
                 " } \n" +
                 "   AgentInfoSendUtil.send(traffic); \n" +
+                "}\n"+
                 " } catch (Exception e123){ \n" +
                 "   e123.printStackTrace(); \n" +
                 "   AgentInfoSendUtil.sendExcepTion(e123); \n" +
+
                 "}";
     }
 }

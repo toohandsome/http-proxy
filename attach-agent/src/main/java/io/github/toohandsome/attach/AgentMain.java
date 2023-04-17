@@ -1,17 +1,15 @@
 package io.github.toohandsome.attach;
 
-import io.github.toohandsome.attach.entity.AgentInfo;
+import io.github.toohandsome.attach.core.Reset;
+import io.github.toohandsome.attach.core.ResetListener;
 import io.github.toohandsome.attach.util.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * @author hudcan
  */
@@ -48,9 +46,9 @@ public class AgentMain {
 
     public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {
         AgentInfoSendUtil.sendInfo("agent loaded..");
-
-//        ProxyIns.PROXY = null;
-//        ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", Integer.valueOf(args)));
+//
+////        ProxyIns.PROXY = null;
+////        ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", Integer.valueOf(args)));
         Reset.inst = inst;
         JarFileHelper.addJarToBootstrap(inst);
         ReWriteHttpTransformer transformer = new ReWriteHttpTransformer(args);
@@ -63,31 +61,7 @@ public class AgentMain {
             }
         }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ServerSocket serverSocket = new ServerSocket(10086);
-                    //监听（阻塞）
-                    Socket socket = serverSocket.accept();
-                    //获取输入流对象
-                    InputStream is = socket.getInputStream();
-                    //获取数据
-                    byte[] bys = new byte[1024];
-                    int len;    //用于存储读到的字节个数
-                    len = is.read(bys);
-                    //输出数据
-                    AgentInfoSendUtil.sendInfo("agent 收到命令 : " + new String(bys, 0, len));
-                    Reset.reset();
-                    is.close();
-                    socket.close();
-                    serverSocket.close();
-                    AgentInfoSendUtil.sendInfo("重置增强类,监听结束 .. ");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        ResetListener.startListener();
 
     }
 

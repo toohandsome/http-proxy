@@ -1,6 +1,7 @@
 package io.github.toohandsome.attach.util;
 
 import io.github.toohandsome.attach.config.GlobalConfig;
+import io.github.toohandsome.attach.core.WhiteListCache;
 import io.github.toohandsome.attach.entity.MyMap;
 import io.github.toohandsome.attach.entity.Traffic;
 import sun.net.www.MessageHeader;

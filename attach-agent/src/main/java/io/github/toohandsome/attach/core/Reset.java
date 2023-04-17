@@ -1,4 +1,4 @@
-package io.github.toohandsome.attach.util;
+package io.github.toohandsome.attach.core;
 
 
 import io.github.toohandsome.attach.AgentMain;
