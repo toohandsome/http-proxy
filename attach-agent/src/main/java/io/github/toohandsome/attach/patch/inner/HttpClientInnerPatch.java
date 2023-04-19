@@ -109,7 +109,7 @@ public class HttpClientInnerPatch {
                 "                }\n" +
                 " if(doRecord){\n" +
                 " Traffic traffic = new Traffic();\n" +
-                "    GlobalConfig.printStack(traffic); \n" +
+//                "    GlobalConfig.printStack(traffic); \n" +
                 "   traffic.setFrom(\"org.apache.http.protocol.HttpRequestExecutor.execute.after\"); \n" +
                 "   MyMap myMap = new MyMap(); \n" +
                 "  traffic.setResponseHeaders(myMap); \n" +

@@ -40,7 +40,7 @@ public class InputStreamUtil {
                     httpURLConnectionClass = httpURLConnection.getClass();
                 }
                 Traffic traffic = new Traffic();
-                GlobalConfig.printStack(traffic);
+//                GlobalConfig.printStack(traffic);
                 traffic.setFrom("getHttpConnectionRedirectRespInfo");
                 String respBody = "";
                 //System.out.println("respBody: " + respBody);
@@ -119,7 +119,7 @@ public class InputStreamUtil {
 
             ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             Traffic traffic = new Traffic();
-            GlobalConfig.printStack(traffic);
+//            GlobalConfig.printStack(traffic);
             traffic.setFrom("cloneHttpConnectionInputStream");
             byte[] bytes = baos.toByteArray();
             String respBody = new String(bytes, StandardCharsets.UTF_8);
@@ -280,7 +280,7 @@ public class InputStreamUtil {
             }
             ByteArrayOutputStream baos = getByteArrayOutputStream(input);
             Traffic traffic = new Traffic();
-            GlobalConfig.printStack(traffic);
+//            GlobalConfig.printStack(traffic);
             InputStreamUtil.class.getEnclosingMethod().getName();
             traffic.setFrom("cloneHttpConnectionInputStream1");
             byte[] bytes = baos.toByteArray();

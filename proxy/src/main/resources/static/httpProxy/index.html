@@ -80,6 +80,9 @@
                                 <pre style=" white-space: pre-wrap; word-wrap: break-word;">{{currentTraffic.requestBody}}</pre>
                             </el-tab-pane>
                             <el-tab-pane label="raw" name="raw"></el-tab-pane>
+                            <el-tab-pane label="stackTrace" name="stackTrace">
+                                <pre> {{currentTraffic.stackTrace }}</pre>
+                            </el-tab-pane>
                         </el-tabs>
                         <div>
 
@@ -488,7 +491,8 @@
             <div>
                 <el-form :inline="true" :model="agentFormInline" class="demo-form-inline">
                     <el-form-item label="进程名">
-                        <el-input v-model="agentFormInline.processName" placeholder="进程名(包含即可,优先匹配)"></el-input>
+                        <el-input v-model="agentFormInline.processName"
+                                  placeholder="进程名(包含即可,优先匹配)"></el-input>
                     </el-form-item>
                     <el-form-item label="进程id">
                         <el-input v-model="agentFormInline.processId" placeholder="进程id(优先匹配进程名)"></el-input>
@@ -497,7 +501,7 @@
                         <el-input v-model="agentFormInline.listenPort" placeholder="监听端口"></el-input>
                     </el-form-item>
                     <el-form-item label="获取堆栈">
-                        <el-switch  v-model="agentFormInline.getStack" active-color="#13ce66"  inactive-color="#ff4949">
+                        <el-switch v-model="agentFormInline.getStack" active-color="#13ce66" inactive-color="#ff4949">
                         </el-switch>
                     </el-form-item>
                     <el-form-item>
@@ -514,7 +518,8 @@
                         <el-button style="float: right; padding: 3px 0" type="text" @click="clearAgentLogs">清空
                         </el-button>
                     </div>
-                    <div id="showAgentLogs" class="text item" style="  margin: -15px;height:calc(100vh - 160px);overflow-y:auto">
+                    <div id="showAgentLogs" class="text item"
+                         style="  margin: -15px;height:calc(100vh - 160px);overflow-y:auto">
                     </div>
 
                 </el-card>
@@ -541,7 +546,7 @@
                     processName: "demo",
                     processId: 1234,
                     listenPort: 9875,
-                    getStack:false
+                    getStack: false
                 },
                 currentTraffic: {
                     requestHeaders: {},
@@ -688,6 +693,8 @@
                     val = this.currentTraffic.requestBody;
                 } else if (this.reqTrafficShow == "raw") {
                     val = this.currentTraffic.requestRaw;
+                } else if (this.respTrafficShow == "raw") {
+                    val = this.currentTraffic.responseRaw;
                 }
                 this.copyText(val);
             },
@@ -701,6 +708,8 @@
                     }
                 } else if (this.respTrafficShow == "body") {
                     val = this.currentTraffic.responseBody;
+                } else if (this.respTrafficShow == "raw") {
+                    val = this.currentTraffic.responseRaw;
                 } else if (this.respTrafficShow == "raw") {
                     val = this.currentTraffic.responseRaw;
                 }

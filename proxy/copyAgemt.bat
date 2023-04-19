@@ -5,4 +5,4 @@ cd "../../attach-agent/"
 call mvn clean  install source:jar package
 cd "./target"
 copy "attach-agent-1.0.0.jar" "../../proxy/target"
-pause
+@REM pause

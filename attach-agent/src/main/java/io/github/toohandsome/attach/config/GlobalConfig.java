@@ -1,6 +1,7 @@
 package io.github.toohandsome.attach.config;
 
 import io.github.toohandsome.attach.entity.Traffic;
+
 /**
  * @author hudcan
  */
@@ -14,7 +15,9 @@ public class GlobalConfig {
         }
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         StringBuilder sb = new StringBuilder();
-        for (StackTraceElement stackTraceElement : stackTrace) {
+
+        for (int i = 2; i < stackTrace.length; i++) {
+            StackTraceElement stackTraceElement = stackTrace[i];
             sb.append("\t").append(stackTraceElement.getClassName());
             sb.append(".").append(stackTraceElement.getMethodName());
             sb.append("(").append(stackTraceElement.getFileName()).append(":");
