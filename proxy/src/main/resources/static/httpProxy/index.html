@@ -693,8 +693,8 @@
                     val = this.currentTraffic.requestBody;
                 } else if (this.reqTrafficShow == "raw") {
                     val = this.currentTraffic.requestRaw;
-                } else if (this.respTrafficShow == "raw") {
-                    val = this.currentTraffic.responseRaw;
+                } else if (this.reqTrafficShow == "stackTrace") {
+                    val = this.currentTraffic.stackTrace;
                 }
                 this.copyText(val);
             },
@@ -708,8 +708,6 @@
                     }
                 } else if (this.respTrafficShow == "body") {
                     val = this.currentTraffic.responseBody;
-                } else if (this.respTrafficShow == "raw") {
-                    val = this.currentTraffic.responseRaw;
                 } else if (this.respTrafficShow == "raw") {
                     val = this.currentTraffic.responseRaw;
                 }
