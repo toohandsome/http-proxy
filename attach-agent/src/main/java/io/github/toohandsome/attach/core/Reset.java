@@ -1,7 +1,6 @@
 package io.github.toohandsome.attach.core;
 
 
-import io.github.toohandsome.attach.AgentMain;
 import io.github.toohandsome.attach.ReWriteHttpTransformer;
 
 import java.lang.instrument.Instrumentation;
