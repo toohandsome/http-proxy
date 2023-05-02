@@ -38,4 +38,9 @@ public class WindowsPortForward implements PortForward {
         }
 
     }
+
+    @Override
+    public void reset() {
+
+    }
 }

@@ -15,6 +15,8 @@ public class Reset {
     // 原始class的逻辑
     public static HashMap<String, Class> classMap = new HashMap();
 
+    public static String portForward = "";
+
     public static void reset() throws UnmodifiableClassException {
         inst.removeTransformer(transformer);
         Set<String> strings = classMap.keySet();

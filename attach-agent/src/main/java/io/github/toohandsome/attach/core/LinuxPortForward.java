@@ -14,4 +14,9 @@ public class LinuxPortForward implements PortForward {
     public void forward(int localPort, String remoteAddr, int remotePort) {
 
     }
+
+    @Override
+    public void reset() {
+
+    }
 }
