@@ -12,4 +12,5 @@ public class AgentOpt {
     private String opt;
     private String port;
     private boolean getStack = false;
+    private boolean proxy = false;
 }
