@@ -7,6 +7,10 @@ import io.github.toohandsome.attach.entity.Traffic;
  */
 public class GlobalConfig {
     public static boolean printStack = false;
+    public static boolean proxyMode = false;
+
+    public static String listenPort = "10085";
+    public static String proxyPort = "10084";
 
     public static void printStack(Traffic traffic) {
 

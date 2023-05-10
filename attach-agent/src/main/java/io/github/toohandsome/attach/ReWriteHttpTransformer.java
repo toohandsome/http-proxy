@@ -20,14 +20,17 @@ import java.security.ProtectionDomain;
  */
 public class ReWriteHttpTransformer implements ClassFileTransformer {
 
-    private String port;
+
     ClassPool pool = ClassPool.getDefault();
 
     public ReWriteHttpTransformer(String args) {
         String[] split = args.split(";");
-        this.port = split[0];
+        GlobalConfig.listenPort = split[0];
         String whiteListPath = split[1];
         GlobalConfig.printStack = Boolean.valueOf(split[2]);
+        GlobalConfig.proxyMode = Boolean.valueOf(split[3]);
+        GlobalConfig.proxyPort = split[4];
+
         File file = new File(whiteListPath);
         if (file.exists()) {
             try {
@@ -128,19 +131,19 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 pool.importPackage("org.apache.http");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("getProxy");
-                ctMethod.setBody(" {return new HttpHost(\"127.0.0.1\"," + port + ");}");
+                ctMethod.setBody(" {return new HttpHost(\"127.0.0.1\"," + GlobalConfig.listenPort + ");}");
             } else if ("cn/hutool/http/HttpConnection".equals(className)) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
-                ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY); }");
+                ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.getProxy()); }");
             } else if ("okhttp3/OkHttpClient".equals(className)) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("proxy");
-                ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.PROXY; } ");
+                ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.getProxy(); } ");
             }
             AgentInfoSendUtil.send(new AgentInfo().setType("info").setMsg("class: " + className + " transform success .."));
 

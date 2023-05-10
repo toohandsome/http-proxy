@@ -508,6 +508,9 @@
                         <el-switch v-model="agentFormInline.proxy" active-color="#13ce66" inactive-color="#ff4949">
                         </el-switch>
                     </el-form-item>
+                    <el-form-item v-if="agentFormInline.proxy" label="代理端口">
+                        <el-input v-model="agentFormInline.proxyPort" placeholder="代理端口"></el-input>
+                    </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="agentOpt('attach')">注入</el-button>
                         <el-button type="primary" @click="agentOpt('reset')">重置</el-button>
@@ -551,7 +554,8 @@
                     processId: 1234,
                     listenPort: 9875,
                     getStack: false,
-                    proxy: false
+                    proxy: false,
+                    proxyPort: 10086
                 },
                 currentTraffic: {
                     requestHeaders: {},
@@ -642,6 +646,7 @@
                 let port = this.agentFormInline.listenPort;
                 let getStack = this.agentFormInline.getStack;
                 let proxy = this.agentFormInline.proxy;
+                let proxyPort = this.agentFormInline.proxyPort;
 
                 fetch(url, {
                     method: 'post',
@@ -651,7 +656,8 @@
                         opt: opt,
                         getStack: getStack,
                         port: port,
-                        proxy: proxy
+                        proxy: proxy,
+                        proxyPort: proxyPort
                     }),
                     headers: {
                         'Content-Type': 'x-www-form-urlencoded;charset=UTF-8'
