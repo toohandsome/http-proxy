@@ -46,9 +46,7 @@ public class AgentMain {
 
     public static void agentmain(String args, Instrumentation inst) throws IOException, UnmodifiableClassException {
         AgentInfoSendUtil.sendInfo("agent loaded..");
-//
-////        ProxyIns.PROXY = null;
-////        ProxyIns.PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", Integer.valueOf(args)));
+
         Reset.inst = inst;
         JarFileHelper.addJarToBootstrap(inst);
         ReWriteHttpTransformer transformer = new ReWriteHttpTransformer(args);

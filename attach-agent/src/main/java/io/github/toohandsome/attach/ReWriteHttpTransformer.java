@@ -29,7 +29,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
         String whiteListPath = split[1];
         GlobalConfig.printStack = Boolean.valueOf(split[2]);
         GlobalConfig.proxyMode = Boolean.valueOf(split[3]);
-        GlobalConfig.proxyPort = split[4];
+        GlobalConfig.proxyPort = Integer.valueOf(split[4]);
 
         File file = new File(whiteListPath);
         if (file.exists()) {
@@ -125,7 +125,7 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
-                ctMethod.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol()) || \"https\".equals(this.getProtocol())) {return this.openConnection(io.github.toohandsome.attach.util.ProxyIns.PROXY);}else{return handler.openConnection(this);} }");
+                ctMethod.setBody("{ System.out.println(\"--- openConnection ---\"+this.getProtocol()); if(\"http\".equals(this.getProtocol()) || \"https\".equals(this.getProtocol())) {return io.github.toohandsome.attach.config.GlobalConfig.getProxy());}else{return handler.openConnection(this);} }");
             } else if ("org/apache/http/client/config/RequestConfig".equals(className)) {
 
                 pool.importPackage("org.apache.http");
@@ -137,13 +137,13 @@ public class ReWriteHttpTransformer implements ClassFileTransformer {
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("openConnection");
-                ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.util.ProxyIns.getProxy()); }");
+                ctMethod.setBody("{ return  url.openConnection(io.github.toohandsome.attach.config.GlobalConfig.getProxy()); }");
             } else if ("okhttp3/OkHttpClient".equals(className)) {
 
                 pool.importPackage("java.net");
 
                 CtMethod ctMethod = cc.getDeclaredMethod("proxy");
-                ctMethod.setBody(" {  return io.github.toohandsome.attach.util.ProxyIns.getProxy(); } ");
+                ctMethod.setBody(" {  return io.github.toohandsome.attach.config.GlobalConfig.getProxy(); } ");
             }
             AgentInfoSendUtil.send(new AgentInfo().setType("info").setMsg("class: " + className + " transform success .."));
 

@@ -19,6 +19,7 @@ public class RouteController {
 
     /**
      * 参数是为了兼容 全部转发时反射获取方法和执行方法,无作用
+     *
      * @param route
      * @return
      * @throws IOException
@@ -26,7 +27,7 @@ public class RouteController {
      * @throws IllegalAccessException
      */
     @PostMapping("/getRouteList")
-    public List<Route> getRouteList(@RequestBody Route route) throws IOException, NoSuchFieldException, IllegalAccessException {
+    public List<Route> getRouteList(@RequestBody Route route) {
         if (Utils.routes.isEmpty()) {
             Utils.routes = Utils.loadRoutes();
         }
