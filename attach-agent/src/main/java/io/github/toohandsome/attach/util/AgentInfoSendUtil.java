@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class AgentInfoSendUtil {
 

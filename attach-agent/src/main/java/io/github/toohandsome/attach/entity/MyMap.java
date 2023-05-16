@@ -3,7 +3,7 @@ package io.github.toohandsome.attach.entity;
 import java.util.HashMap;
 import java.util.Set;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class MyMap extends HashMap {
     @Override

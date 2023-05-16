@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class ClassByteCache {
     public static HashMap<String, byte[]> classCache = new HashMap<>();

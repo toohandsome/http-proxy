@@ -1,6 +1,6 @@
 package io.github.toohandsome.httproxy.entity;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class AgentInfo extends AgentEntity {
     private String type;

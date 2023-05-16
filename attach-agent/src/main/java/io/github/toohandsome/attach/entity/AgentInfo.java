@@ -3,7 +3,7 @@ package io.github.toohandsome.attach.entity;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class AgentInfo extends AgentEntity {
     private String type;

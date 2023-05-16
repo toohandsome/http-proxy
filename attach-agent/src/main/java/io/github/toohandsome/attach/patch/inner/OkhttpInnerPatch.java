@@ -2,7 +2,7 @@ package io.github.toohandsome.attach.patch.inner;
 
 import javassist.ClassPool;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class OkhttpInnerPatch {
     public OkhttpInnerPatch(ClassPool pool) {

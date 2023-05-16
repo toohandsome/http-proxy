@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class WindowsPortForward implements PortForward {
 

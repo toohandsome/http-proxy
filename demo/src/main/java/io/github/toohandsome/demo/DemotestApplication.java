@@ -5,7 +5,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 //@EnableApolloConfig
 @SpringBootApplication

@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.nio.charset.StandardCharsets;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class InputStreamUtil {
 

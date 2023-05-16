@@ -1,7 +1,7 @@
 package io.github.toohandsome.attach.core;
 
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public interface PortForward {
 

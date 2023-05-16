@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class DiscardServerHandler extends SimpleChannelInboundHandler<Object> {
 

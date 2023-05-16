@@ -8,7 +8,7 @@ import org.springframework.web.filter.CorsFilter;
 
 import java.util.Collections;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 @Configuration
 public class CorsConfig {

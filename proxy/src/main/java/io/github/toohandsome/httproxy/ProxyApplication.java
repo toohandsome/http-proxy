@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 @SpringBootApplication
 public class ProxyApplication {

@@ -15,7 +15,7 @@ import io.netty.handler.logging.LogLevel;
   import io.netty.handler.logging.LoggingHandler;
   import io.netty.handler.ssl.SslContext;
 /**
- * @author hudcan
+ * @author toohandsome
  */
   public final class DiscardServer {
 

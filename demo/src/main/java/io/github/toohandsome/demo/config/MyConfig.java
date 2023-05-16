@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 /**
- * @author hudcan
+ * @author toohandsome
  */
 @Configuration
 public class MyConfig {

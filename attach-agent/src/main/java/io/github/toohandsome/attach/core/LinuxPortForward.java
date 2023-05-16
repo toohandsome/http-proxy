@@ -3,7 +3,7 @@ package io.github.toohandsome.attach.core;
 import io.github.toohandsome.attach.util.RuntimeUtil;
 
 /**
- * @author hudcan
+ * @author toohandsome
  */
 public class LinuxPortForward implements PortForward {
 
