@@ -12,6 +12,7 @@ public class AgentOpt {
     private String opt;
     private String port;
     private String proxyPort;
+    private String targetPort;
     private boolean getStack = false;
     private boolean proxy = false;
 }

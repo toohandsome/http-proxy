@@ -32,7 +32,7 @@ public class GlobalConfig {
             } else if (OsUtil.isWindows()) {
                 portForward = new WindowsPortForward();
             }
-            portForward.forward(serverPort,proxyPort);
+            portForward.forward(serverPort, proxyPort);
         }
         return PROXY;
     }

@@ -2,8 +2,12 @@ package io.github.toohandsome.httproxy.controller;
 
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
+import io.github.toohandsome.httproxy.core.LinuxPortForward;
+import io.github.toohandsome.httproxy.core.PortForward;
+import io.github.toohandsome.httproxy.core.WindowsPortForward;
 import io.github.toohandsome.httproxy.entity.AgentOpt;
 import io.github.toohandsome.httproxy.entity.Route;
+import io.github.toohandsome.httproxy.util.OsUtil;
 import io.github.toohandsome.httproxy.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,6 +43,17 @@ public class AgentController {
         File jarF = h.getSource();
         String path = jarF.getParentFile().toString();
         String args = agentOpt.getPort() + ";" + whiteListPath + ";" + agentOpt.isGetStack() + ";" + agentOpt.isProxy() + ";" + agentOpt.getProxyPort();
+
+
+        if (agentOpt.isProxy()) {
+            PortForward portForward = null;
+            if (OsUtil.isLinux()) {
+                portForward = new LinuxPortForward();
+            } else if (OsUtil.isWindows()) {
+                portForward = new WindowsPortForward();
+            }
+            portForward.forward(Integer.valueOf(agentOpt.getTargetPort()), Integer.valueOf(agentOpt.getProxyPort()));
+        }
 
         for (VirtualMachineDescriptor vmd : list) {
 
