@@ -55,6 +55,7 @@ public class AgentController {
             portForward.forward(Integer.valueOf(agentOpt.getTargetPort()), Integer.valueOf(agentOpt.getProxyPort()));
         }
 
+        boolean findProcess = false;
         for (VirtualMachineDescriptor vmd : list) {
 
             System.out.println("pid: " + vmd.id() + " --> process: " + vmd.displayName());
@@ -65,6 +66,7 @@ public class AgentController {
                         virtualMachine.loadAgent(path + File.separator + "attach-agent-1.0.0.jar", args);
                         virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
+                        findProcess = true;
                         break;
                     }
                 } catch (Exception e) {
@@ -80,6 +82,7 @@ public class AgentController {
                         virtualMachine1 = virtualMachine;
                         virtualMachine.detach();
                         System.out.println("attach " + vmd.displayName() + " success");
+                        findProcess = true;
                         break;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -87,6 +90,9 @@ public class AgentController {
                     }
                 }
             }
+        }
+        if (!findProcess){
+            logger.error("未找到对应进程");
         }
         return true;
     }
