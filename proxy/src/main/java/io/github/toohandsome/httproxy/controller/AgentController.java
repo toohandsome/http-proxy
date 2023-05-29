@@ -52,7 +52,8 @@ public class AgentController {
             } else if (OsUtil.isWindows()) {
                 portForward = new WindowsPortForward();
             }
-            portForward.forward(Integer.valueOf(agentOpt.getTargetPort()), Integer.valueOf(agentOpt.getProxyPort()));
+            portForward.forward(80, 8081);
+//            portForward.forward(Integer.valueOf(agentOpt.getTargetPort()), Integer.valueOf(agentOpt.getProxyPort()));
         }
 
         boolean findProcess = false;

@@ -1,6 +1,7 @@
 package io.github.toohandsome.httproxy.core;
 
-import io.github.toohandsome.attach.util.RuntimeUtil;
+
+import io.github.toohandsome.httproxy.util.RuntimeUtil;
 
 /**
  * @author toohandsome
