@@ -47,13 +47,6 @@ import java.util.zip.GZIPInputStream;
 @Slf4j
 public class Tc1 {
 
-    @Value("${a:aaa}")
-    private String a ;
-    @GetMapping("/a")
-    public String a() {
-        return a;
-    }
-
     @GetMapping("/tt")
     public String tt() {
         HttpURLConnection connection = null;
