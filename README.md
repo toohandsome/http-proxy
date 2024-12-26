@@ -1,5 +1,8 @@
 # http-proxy
 
+启动命令: java -Xbootclasspath/a:/opt/yanhua/base/jdk/jdk1.8.0_221/lib/tools.jar -jar proxy-1.0.0.jar
+访问路径: http://127.0.0.1:8081/httpProxy/index.html
+
 ## agent 模式
 一款支持在运行时无侵入的获取 java 程序的 所有发出(已完成)与接收(开发中)的 http 请求的 agent .
 

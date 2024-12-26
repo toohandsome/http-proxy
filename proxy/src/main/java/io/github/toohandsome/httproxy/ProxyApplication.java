@@ -35,6 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SpringBootApplication
 public class ProxyApplication {
 
+    /**
+     * java -Xbootclasspath/a:/opt/yanhua/base/jdk/jdk1.8.0_221/lib/tools.jar -jar proxy-1.0.0.jar
+     * @param args
+     */
 
     public static void main(String[] args) {
         SpringApplication.run(ProxyApplication.class, args);
